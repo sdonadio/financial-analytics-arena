@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Financial Analytics Arena — an interactive companion for a 10-week course</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── index-only ───────────────────────────────────────────── */
+  #hero{padding:64px 22px 46px;text-align:center;
+    background:radial-gradient(ellipse 900px 380px at 50% -12%,rgba(var(--accent-rgb),.34),transparent 66%),
+               radial-gradient(ellipse 620px 260px at 12% 108%,rgba(var(--accent-2-rgb),.1),transparent 62%)}
+  #hero h1{margin-left:auto;margin-right:auto;max-width:20ch}
+  #hero h1 .g{background:linear-gradient(92deg,var(--accent-2),#fecdd3,#e11d48);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  #hero .lead{margin:16px auto 0;max-width:70ch}
+  #hero .cta{margin-top:28px;display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
+  #hero .cta a{font-size:13px;font-weight:700;padding:11px 22px;border-radius:9px;border:1px solid var(--line);color:var(--muted)}
+  #hero .cta a.p{background:var(--accent);border-color:var(--accent);color:#fff}
+  #hero .cta a:hover{text-decoration:none;border-color:var(--accent-2);color:#fff}
+  #hero .cta a.p:hover{filter:brightness(1.25)}
+  .facts{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin:32px auto 0;max-width:820px;
+    border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+  .fact{flex:1;min-width:135px;padding:13px 16px;border-right:1px solid var(--line)}
+  .fact:last-child{border-right:none}
+  .fact .fv{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--accent-2)}
+  .fact .fl{font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--dim);margin-top:3px}
+
+  .weeks{display:grid;grid-template-columns:repeat(auto-fill,minmax(298px,1fr));gap:16px;margin-top:20px}
+  .wk{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);
+    border-radius:13px;overflow:hidden;color:inherit;transition:.2s}
+  .wk:hover{transform:translateY(-4px);border-color:var(--accent-2);box-shadow:0 14px 34px -18px rgba(var(--accent-rgb),.9);text-decoration:none}
+  .wk .art{height:96px;background:linear-gradient(165deg,rgba(255,255,255,.03),transparent 60%),var(--panel2);
+    border-bottom:1px solid var(--line)}
+  .wk .art svg{width:100%;height:96px}
+  .wk .bd{padding:14px 16px 16px;display:flex;flex-direction:column;flex:1}
+  .wk .n{font-size:10px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent-2)}
+  .wk h3{font-size:15.5px;font-weight:700;letter-spacing:-.2px;color:var(--ink);text-transform:none;
+    letter-spacing:-.2px;margin:6px 0 0}
+  .wk p{font-size:12.4px;color:var(--muted);margin:7px 0 0;flex:1;max-width:none}
+  .wk .go{margin-top:12px;font-size:11.5px;font-weight:700;color:var(--accent-2)}
+  .wk .go::after{content:" \2192"}
+  .wk .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+  .wk .tags span{font-size:9.5px;font-weight:650;padding:2px 8px;border-radius:11px;border:1px solid var(--line);color:var(--dim)}
+
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+
+  .role .rp{display:none} .role .rp.on{display:grid;gap:11px}
+  @media (max-width:720px){ .weeks{grid-template-columns:1fr} #hero{padding:44px 15px 34px} }
+
+
+  /* ── index-only · arcs + tearsheet widget ─────────────── */
+  .arcband{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:26px 0 4px;
+    padding-bottom:7px;border-bottom:1px solid var(--line)}
+  .arcband .an{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-2)}
+  .arcband .ad{font-size:12px;color:var(--muted)}
+  .arcblock.off{display:none}
+  .loopgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+  .budget{display:grid;gap:9px;margin-top:6px}
+  .brow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:center}
+  .brow .bl{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--dim)}
+  .btrack{position:relative;height:22px;border-radius:6px;background:#0b0e14;border:1px solid var(--line);overflow:hidden}
+  .btrack i{display:block;height:100%;width:0;transition:width .25s ease}
+  .btrack .lbl{position:absolute;top:0;right:7px;line-height:22px;font-family:var(--mono);font-size:10.5px;color:var(--ink-dim)}
+  .btrack .dl{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--bad);box-shadow:0 0 7px var(--bad)}
+  .brow.total .bl{color:var(--ink)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+
+
+  /* ── index-only · tearsheet chips + question router ────────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:10px;margin-top:18px}
+  .qb{text-align:left;font-family:inherit;cursor:pointer;color:var(--muted);background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px;transition:.16s;display:grid;gap:5px}
+  .qb:hover{border-color:var(--accent-2);color:var(--ink)}
+  .qb:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .qb.on{border-color:var(--accent-2);background:rgba(var(--accent-rgb),.16)}
+  .qb .qn{font-size:9.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--accent-2)}
+  .qb .qt{font-size:12.8px;font-weight:600;color:var(--ink);line-height:1.45}
+  @media (max-width:720px){ .qgrid{grid-template-columns:minmax(0,1fr)} }
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><b>Course home</b> · <a href="week1.html">Week 1 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="kicker">10 weeks · one analyst's toolkit · free public data</div>
+  <h1>Financial <span class="g">Analytics</span></h1>
+  <p class="lead">From prices to decisions: <strong>returns, factors, portfolios, risk, rates, options,
+  backtests, ML, and the order book — one analyst's toolkit</strong>. Ten weeks of pandas against data you
+  fetch yourself, ending inside <strong>AlgoArena</strong>, a live market where your strategy trades against
+  your classmates' and leaves a tape you then have to explain.</p>
+  <div class="cta">
+    <a class="p" href="week1.html">Start with Week 1</a>
+    <a href="#map">See the 10-week map</a>
+    <a href="#tearsheet">Anatomy of a tearsheet</a>
+    <a href="#router">What kind of question is this?</a>
+    <a href="#start">Set up your environment</a>
+  </div>
+  <div class="facts">
+    <div class="fact"><div class="fv">10</div><div class="fl">Weeks · one growing tearsheet</div></div>
+    <div class="fact"><div class="fv">$0</div><div class="fl">Data cost · all public</div></div>
+    <div class="fact"><div class="fv">7</div><div class="fl">Homeworks · CI-graded</div></div>
+    <div class="fact"><div class="fv">2</div><div class="fl">Live scored sessions</div></div>
+  </div>
+</section>
+
+<!-- ══════════════ 10-WEEK MAP ══════════════ -->
+<section id="map">
+  <div class="kicker">The learning path</div>
+  <h2>Ten weeks, five arcs, one dataset that compounds</h2>
+  <p class="lead">Nothing is thrown away. The return panel you build in week 1 is the substrate for
+  weeks 2, 3, 4 and 8; week 4 stresses the week-3 portfolio; weeks 8 and 10 report through the week-7
+  backtest harness; and weeks 9–10 point the whole stack at a live venue and then measure what the tape
+  says you actually paid.</p>
+
+  <div class="row" style="margin-top:16px" role="group" aria-label="Filter the week map by arc">
+    <div class="sw" id="arcSw">
+      <button type="button" data-arc="all" aria-pressed="true">All 10 weeks</button>
+      <button type="button" data-arc="found" aria-pressed="false">Foundations</button>
+      <button type="button" data-arc="port" aria-pressed="false">Portfolio &amp; risk</button>
+      <button type="button" data-arc="rates" aria-pressed="false">Rates &amp; derivatives</button>
+      <button type="button" data-arc="eval" aria-pressed="false">Evaluation</button>
+      <button type="button" data-arc="live" aria-pressed="false">Markets live</button>
+    </div>
+    <span class="pill acc" id="arcCount">10 weeks shown</span>
+  </div>
+
+  <!-- ARC 1 · FOUNDATIONS -->
+  <div class="arcblock" data-arc="found">
+  <div class="arcband"><span class="an">Arc 1 · Foundations</span><span class="ad">Weeks 1–2 · get the data right, then learn what a return is actually made of.</span></div>
+  <div class="weeks">
+    <a class="wk" href="week1.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A raw price line stepping down at a split and dividend, and a smooth total-return line rising above it">
+      <path d="M12 74 L64 62 L96 64 L96 78 L140 68 L180 72 L180 80 L232 66 L288 58" fill="none" stroke="#5f6673" stroke-width="1.5"/>
+      <path d="M12 74 L64 60 L96 58 L140 46 L180 44 L232 26 L288 14" fill="none" stroke="var(--accent-2)" stroke-width="1.8"/>
+      <line x1="96" y1="8" x2="96" y2="88" stroke="#d29922" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="180" y1="8" x2="180" y2="88" stroke="#d29922" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="100" y="16" font-size="7" fill="#d29922" font-family="monospace">split</text>
+      <text x="184" y="16" font-size="7" fill="#d29922" font-family="monospace">div</text>
+      <text x="286" y="10" text-anchor="end" font-size="7.5" fill="var(--accent-2)" font-family="monospace">total return</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 1</div><h3>Financial Data &amp; Returns</h3>
+      <p>Prices are not returns and closes are not total returns. Adjustments, alignment, survivorship and the look-ahead join.</p>
+      <div class="tags"><span>yfinance</span><span>log returns</span><span>corporate actions</span><span>HW1</span></div>
+      <div class="go">Open week 1</div></div></a>
+
+    <a class="wk" href="week2.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A scatter of asset returns against market returns with a fitted regression line and a residual marked">
+      <line x1="20" y1="84" x2="284" y2="84" stroke="#333a47" stroke-width="1"/>
+      <line x1="150" y1="8" x2="150" y2="88" stroke="#333a47" stroke-width="1" stroke-dasharray="2 3"/>
+      <path d="M28 74 L280 22" fill="none" stroke="var(--accent-2)" stroke-width="1.8"/>
+      <circle cx="58" cy="72" r="2.6" fill="#9aa0a6"/><circle cx="86" cy="58" r="2.6" fill="#9aa0a6"/>
+      <circle cx="104" cy="66" r="2.6" fill="#9aa0a6"/><circle cx="132" cy="52" r="2.6" fill="#9aa0a6"/>
+      <circle cx="168" cy="48" r="2.6" fill="#9aa0a6"/><circle cx="196" cy="30" r="2.6" fill="#9aa0a6"/>
+      <circle cx="214" cy="44" r="2.6" fill="#9aa0a6"/><circle cx="248" cy="24" r="2.6" fill="#9aa0a6"/>
+      <circle cx="230" cy="62" r="3" fill="#e11d48"/>
+      <line x1="230" y1="62" x2="230" y2="38" stroke="#e11d48" stroke-width="1.2" stroke-dasharray="2 2"/>
+      <text x="236" y="76" font-size="7" fill="#e11d48" font-family="monospace">residual</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 2</div><h3>Factor Models &amp; Cross-Sectional Regression</h3>
+      <p>CAPM, rolling beta, Fama-French 3 and 5 — and the t-stat that tells you your alpha is a story.</p>
+      <div class="tags"><span>statsmodels</span><span>Ken French</span><span>t-stats</span><span>HW2</span></div>
+      <div class="go">Open week 2</div></div></a>
+  </div></div>
+
+  <!-- ARC 2 · PORTFOLIO & RISK -->
+  <div class="arcblock" data-arc="port">
+  <div class="arcband"><span class="an">Arc 2 · Portfolio &amp; risk</span><span class="ad">Weeks 3–4 · turn a panel into weights, then find out how badly the weights can hurt.</span></div>
+  <div class="weeks">
+    <a class="wk" href="week3.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="An efficient frontier curve with a cloud of resampled frontiers behind it and a one-over-N dot inside">
+      <path d="M40 86 C90 74 140 40 284 14" fill="none" stroke="#3a4150" stroke-width="1.1" opacity=".7"/>
+      <path d="M32 82 C86 62 132 34 276 12" fill="none" stroke="#3a4150" stroke-width="1.1" opacity=".7"/>
+      <path d="M36 88 C92 70 146 44 288 20" fill="none" stroke="#3a4150" stroke-width="1.1" opacity=".7"/>
+      <path d="M36 84 C88 68 138 38 280 14" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
+      <circle cx="132" cy="52" r="3.4" fill="#3fb950"/>
+      <text x="140" y="56" font-size="7.5" fill="#3fb950" font-family="monospace">1/N</text>
+      <text x="12" y="16" font-size="7.5" fill="#9aa0a6" font-family="monospace">E[r]</text>
+      <text x="284" y="92" text-anchor="end" font-size="7.5" fill="#9aa0a6" font-family="monospace">vol</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 3</div><h3>Portfolio Analytics &amp; Optimisation</h3>
+      <p>Mean-variance, the estimation-error problem, Ledoit-Wolf shrinkage, risk parity — and 1/N, which is hard to beat.</p>
+      <div class="tags"><span>scipy.optimize</span><span>shrinkage</span><span>turnover</span><span>HW3 · Phase 1</span></div>
+      <div class="go">Open week 3</div></div></a>
+
+    <a class="wk" href="week4.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A return distribution histogram with a fat left tail, a VaR cut line and the expected-shortfall region shaded">
+      <rect x="24" y="76" width="14" height="8" fill="rgba(248,81,73,.55)"/><rect x="40" y="70" width="14" height="14" fill="rgba(248,81,73,.55)"/>
+      <rect x="56" y="60" width="14" height="24" fill="rgba(248,81,73,.5)"/><rect x="72" y="46" width="14" height="38" fill="#2b313d"/>
+      <rect x="88" y="30" width="14" height="54" fill="#2b313d"/><rect x="104" y="16" width="14" height="68" fill="#2b313d"/>
+      <rect x="120" y="12" width="14" height="72" fill="#2b313d"/><rect x="136" y="20" width="14" height="64" fill="#2b313d"/>
+      <rect x="152" y="34" width="14" height="50" fill="#2b313d"/><rect x="168" y="52" width="14" height="32" fill="#2b313d"/>
+      <rect x="184" y="66" width="14" height="18" fill="#2b313d"/><rect x="200" y="74" width="14" height="10" fill="#2b313d"/>
+      <line x1="70" y1="6" x2="70" y2="90" stroke="var(--accent-2)" stroke-width="1.6"/>
+      <text x="74" y="12" font-size="7.5" fill="var(--accent-2)" font-family="monospace">VaR 95%</text>
+      <text x="222" y="52" font-size="7.5" fill="#f85149" font-family="monospace">ES = mean</text>
+      <text x="222" y="62" font-size="7.5" fill="#f85149" font-family="monospace">of the tail</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 4</div><h3>Risk Analytics</h3>
+      <p>Vol, skew, drawdown, VaR and Expected Shortfall three ways, EWMA and GARCH — then backtest the risk model itself.</p>
+      <div class="tags"><span>arch</span><span>EWMA</span><span>Kupiec</span><span>HW4</span></div>
+      <div class="go">Open week 4</div></div></a>
+  </div></div>
+
+  <!-- ARC 3 · RATES & DERIVATIVES -->
+  <div class="arcblock" data-arc="rates">
+  <div class="arcband"><span class="an">Arc 3 · Rates &amp; derivatives</span><span class="ad">Weeks 5–6 · price the time value of money, then the optionality written on top of it.</span></div>
+  <div class="weeks">
+    <a class="wk" href="week5.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="An upward-sloping yield curve with an inverted curve behind it and level, slope and curvature loadings below">
+      <path d="M18 74 C70 52 140 34 284 26" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
+      <path d="M18 40 C74 44 142 58 284 66" fill="none" stroke="#5f6673" stroke-width="1.4" stroke-dasharray="4 3"/>
+      <circle cx="18" cy="74" r="2.4" fill="var(--accent-2)"/><circle cx="94" cy="47" r="2.4" fill="var(--accent-2)"/>
+      <circle cx="180" cy="33" r="2.4" fill="var(--accent-2)"/><circle cx="284" cy="26" r="2.4" fill="var(--accent-2)"/>
+      <text x="16" y="90" font-size="7" fill="#5f6673" font-family="monospace">3m</text>
+      <text x="94" y="90" text-anchor="middle" font-size="7" fill="#5f6673" font-family="monospace">2y</text>
+      <text x="180" y="90" text-anchor="middle" font-size="7" fill="#5f6673" font-family="monospace">10y</text>
+      <text x="288" y="90" text-anchor="end" font-size="7" fill="#5f6673" font-family="monospace">30y</text>
+      <text x="284" y="16" text-anchor="end" font-size="7" fill="#5f6673" font-family="monospace">inverted</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 5</div><h3>Rates, Inflation &amp; the Macro Panel</h3>
+      <p>Bootstrap the Treasury curve from FRED, discount factors, duration, TIPS breakevens — then PCA it into level, slope, curvature.</p>
+      <div class="tags"><span>FRED</span><span>bootstrapping</span><span>PCA</span><span>HW5</span></div>
+      <div class="go">Open week 5</div></div></a>
+
+    <a class="wk" href="week6.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A volatility smile curve above a hockey-stick call payoff diagram">
+      <path d="M24 30 C80 62 150 66 200 50 C238 38 262 26 282 20" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
+      <text x="24" y="20" font-size="7.5" fill="var(--accent-2)" font-family="monospace">implied vol</text>
+      <line x1="24" y1="84" x2="284" y2="84" stroke="#333a47" stroke-width="1"/>
+      <path d="M24 78 L150 78 L268 40" fill="none" stroke="#3fb950" stroke-width="1.6"/>
+      <line x1="150" y1="72" x2="150" y2="90" stroke="#5f6673" stroke-width="1" stroke-dasharray="2 2"/>
+      <text x="150" y="96" text-anchor="middle" font-size="7" fill="#5f6673" font-family="monospace">K</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 6</div><h3>Derivatives Analytics</h3>
+      <p>Payoffs, Black-Scholes, the Greeks, and inverting a live chain for implied vol — then the smile, the surface, and the stale-quote "arbitrage".</p>
+      <div class="tags"><span>option chain</span><span>Greeks</span><span>put-call parity</span><span>Phase 1 due</span></div>
+      <div class="go">Open week 6</div></div></a>
+  </div></div>
+
+  <!-- ARC 4 · EVALUATION -->
+  <div class="arcblock" data-arc="eval">
+  <div class="arcband"><span class="an">Arc 4 · Evaluation</span><span class="ad">Weeks 7–8 · the honesty arc — cost it, lag it, purge it, and say how many things you tried.</span></div>
+  <div class="weeks">
+    <a class="wk" href="week7.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A gross equity curve rising steeply and a net-of-costs curve well below it, with walk-forward folds underneath">
+      <path d="M14 74 L70 58 L120 48 L180 30 L240 22 L288 10" fill="none" stroke="#5f6673" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <path d="M14 74 L70 68 L120 66 L180 58 L240 58 L288 52" fill="none" stroke="var(--accent-2)" stroke-width="2"/>
+      <text x="286" y="6" text-anchor="end" font-size="7" fill="#5f6673" font-family="monospace">gross</text>
+      <text x="286" y="64" text-anchor="end" font-size="7" fill="var(--accent-2)" font-family="monospace">net</text>
+      <rect x="14" y="84" width="60" height="7" rx="2" fill="rgba(var(--accent-rgb),.45)"/>
+      <rect x="78" y="84" width="20" height="7" rx="2" fill="#3fb950"/>
+      <rect x="102" y="84" width="60" height="7" rx="2" fill="rgba(var(--accent-rgb),.45)"/>
+      <rect x="166" y="84" width="20" height="7" rx="2" fill="#3fb950"/>
+      <rect x="190" y="84" width="60" height="7" rx="2" fill="rgba(var(--accent-rgb),.45)"/>
+      <rect x="254" y="84" width="20" height="7" rx="2" fill="#3fb950"/>
+    </svg></div><div class="bd">
+      <div class="n">Week 7</div><h3>Backtesting &amp; Performance Attribution</h3>
+      <p>Event-driven vs vectorised, costs and slippage, walk-forward, deflated Sharpe, and Brinson attribution on a real arena tape.</p>
+      <div class="tags"><span>walk-forward</span><span>slippage</span><span>Brinson</span><span>HW6</span></div>
+      <div class="go">Open week 7</div></div></a>
+
+    <a class="wk" href="week8.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A leaky K-fold split above a purged and embargoed walk-forward split, with an AUC needle just above one half">
+      <rect x="14" y="14" width="180" height="9" rx="2" fill="rgba(var(--accent-rgb),.4)"/>
+      <rect x="74" y="14" width="34" height="9" rx="2" fill="#f85149"/>
+      <text x="200" y="22" font-size="7" fill="#f85149" font-family="monospace">KFold · leaks</text>
+      <rect x="14" y="40" width="70" height="9" rx="2" fill="rgba(var(--accent-rgb),.4)"/>
+      <rect x="88" y="40" width="16" height="9" rx="2" fill="#d29922"/>
+      <rect x="108" y="40" width="34" height="9" rx="2" fill="#3fb950"/>
+      <text x="200" y="48" font-size="7" fill="#3fb950" font-family="monospace">purged + embargo</text>
+      <line x1="14" y1="76" x2="284" y2="76" stroke="#333a47" stroke-width="1"/>
+      <line x1="140" y1="68" x2="140" y2="84" stroke="#5f6673" stroke-width="1.2"/>
+      <text x="140" y="94" text-anchor="middle" font-size="7" fill="#5f6673" font-family="monospace">0.50</text>
+      <circle cx="158" cy="76" r="3.4" fill="var(--accent-2)"/>
+      <text x="166" y="70" font-size="7" fill="var(--accent-2)" font-family="monospace">AUC 0.55</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 8</div><h3>Machine Learning for Finance</h3>
+      <p>Labelling, leakage, purged and embargoed CV, feature importance — and why AUC 0.55 out of sample is a good day.</p>
+      <div class="tags"><span>scikit-learn</span><span>purged CV</span><span>model card</span><span>HW7</span></div>
+      <div class="go">Open week 8</div></div></a>
+  </div></div>
+
+  <!-- ARC 5 · MARKETS LIVE -->
+  <div class="arcblock" data-arc="live">
+  <div class="arcband"><span class="an">Arc 5 · Markets live</span><span class="ad">Weeks 9–10 · two scored sessions in the class's own venue, then measure what the tape says you paid.</span></div>
+  <div class="weeks">
+    <a class="wk" href="week9.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="An order-book ladder with bids and asks either side of a mid price and a fill marked away from the mid">
+      <rect x="18" y="14" width="112" height="9" rx="2" fill="rgba(63,185,80,.5)"/>
+      <rect x="46" y="27" width="84" height="9" rx="2" fill="rgba(63,185,80,.36)"/>
+      <rect x="82" y="40" width="48" height="9" rx="2" fill="rgba(63,185,80,.22)"/>
+      <rect x="170" y="40" width="56" height="9" rx="2" fill="rgba(248,81,73,.24)"/>
+      <rect x="170" y="53" width="90" height="9" rx="2" fill="rgba(248,81,73,.38)"/>
+      <rect x="170" y="66" width="116" height="9" rx="2" fill="rgba(248,81,73,.5)"/>
+      <path d="M150 6 L150 88" stroke="var(--accent-2)" stroke-width="1.4" stroke-dasharray="4 3"/>
+      <text x="150" y="95" text-anchor="middle" font-size="7.5" fill="var(--accent-2)" font-family="monospace">mid</text>
+      <circle cx="196" cy="57" r="3.2" fill="#d29922"/>
+      <text x="204" y="60" font-size="7" fill="#d29922" font-family="monospace">your fill</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 9</div><h3>Market Microstructure &amp; Execution Analytics</h3>
+      <p>Spreads, depth, adverse selection, TCA against the prevailing mid — and three manipulation detectors on a seeded tape.</p>
+      <div class="tags"><span>AlgoArena</span><span>TCA</span><span>surveillance</span><span>live session 1</span></div>
+      <div class="go">Open week 9</div></div></a>
+
+    <a class="wk" href="week10.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="A six-panel tearsheet grid next to a review checkmark and an exam paper">
+      <rect x="12" y="12" width="52" height="30" rx="3" fill="none" stroke="var(--accent-2)" stroke-width="1.2"/>
+      <rect x="70" y="12" width="52" height="30" rx="3" fill="none" stroke="#3a4150" stroke-width="1.2"/>
+      <rect x="128" y="12" width="52" height="30" rx="3" fill="none" stroke="#3a4150" stroke-width="1.2"/>
+      <rect x="12" y="48" width="52" height="30" rx="3" fill="none" stroke="#3a4150" stroke-width="1.2"/>
+      <rect x="70" y="48" width="52" height="30" rx="3" fill="none" stroke="var(--accent-2)" stroke-width="1.2"/>
+      <rect x="128" y="48" width="52" height="30" rx="3" fill="none" stroke="#3a4150" stroke-width="1.2"/>
+      <rect x="200" y="12" width="86" height="66" rx="4" fill="rgba(var(--accent-rgb),.16)" stroke="var(--accent-2)" stroke-width="1.3"/>
+      <path d="M216 46 l10 11 l24 -26" fill="none" stroke="#3fb950" stroke-width="2.4"/>
+      <text x="243" y="70" text-anchor="middle" font-size="7.5" fill="var(--accent-2)" font-family="monospace">final</text>
+    </svg></div><div class="bd">
+      <div class="n">Week 10</div><h3>Review Day &amp; Final</h3>
+      <p>A second live session, peer analyst-reviews of every team's tearsheet in the room, then the closed-book final.</p>
+      <div class="tags"><span>peer review</span><span>final exam</span><span>Phase 2 due</span><span>live session 2</span></div>
+      <div class="go">Open week 10</div></div></a>
+  </div></div>
+</section>
+
+<!-- ══════════════ TEARSHEET ══════════════ -->
+<section id="tearsheet">
+  <div class="kicker">The one artefact</div>
+  <h2>Anatomy of a tearsheet</h2>
+  <p class="lead">Everything this course teaches ends up on one page: a fund's return series, cut six ways.
+  Below is a <strong>seeded synthetic fund</strong> — 756 trading days, three years — measured against a
+  benchmark. Move the sliders and every panel re-computes from the same series, so you can watch which
+  numbers are robust and which are an artefact of the sample. Each panel is labelled with the week that
+  teaches it; click a week in the list to see what it is claiming.</p>
+
+  <div class="split" style="margin-top:18px">
+    <div class="stack">
+      <div class="svgwrap" id="wrapEq" data-week="1">
+        <svg id="tsEq" viewBox="0 0 660 220" role="img" aria-label="Cumulative return of the fund against its benchmark over three years"></svg>
+      </div>
+      <div class="svgwrap" id="wrapDd" data-week="4">
+        <svg id="tsDd" viewBox="0 0 660 150" role="img" aria-label="Underwater drawdown chart: how far below the previous high-water mark the fund is on each day"></svg>
+      </div>
+      <div class="grid2">
+        <div class="svgwrap" id="wrapVol" data-week="3">
+          <svg id="tsVol" viewBox="0 0 330 170" role="img" aria-label="Rolling annualised volatility of the fund over the chosen window"></svg>
+        </div>
+        <div class="svgwrap" id="wrapBeta" data-week="2">
+          <svg id="tsBeta" viewBox="0 0 330 170" role="img" aria-label="Scatter of daily fund returns against benchmark returns with the fitted beta line"></svg>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent-2)"></i>fund</span>
+        <span><i style="background:#6cb6ff"></i>benchmark</span>
+        <span><i style="background:#f85149"></i>drawdown / tail</span>
+        <span><i style="background:#3fb950"></i>fitted line</span>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="panel">
+        <h3>Controls</h3>
+        <div class="ctl"><label for="tsAlpha">True annual alpha <b id="tsAlphaV">+150 bps</b></label>
+          <input type="range" id="tsAlpha" min="-200" max="600" step="10" value="150" aria-label="True annual alpha in basis points"/></div>
+        <div class="ctl"><label for="tsBeta2">Beta to benchmark <b id="tsBeta2V">1.00</b></label>
+          <input type="range" id="tsBeta2" min="0" max="180" value="100" aria-label="Beta of the fund to the benchmark, times one hundred"/></div>
+        <div class="ctl"><label for="tsIdio">Idiosyncratic vol <b id="tsIdioV">9%</b></label>
+          <input type="range" id="tsIdio" min="2" max="30" value="9" aria-label="Annualised idiosyncratic volatility in percent"/></div>
+        <div class="ctl"><label for="tsCost">Costs &amp; fees <b id="tsCostV">60 bps/yr</b></label>
+          <input type="range" id="tsCost" min="0" max="300" step="5" value="60" aria-label="Annual costs and fees in basis points"/></div>
+        <div class="ctl"><label for="tsWin">Rolling window <b id="tsWinV">63 d</b></label>
+          <input type="range" id="tsWin" min="21" max="189" step="1" value="63" aria-label="Rolling window length in trading days"/></div>
+        <div class="row" style="margin-bottom:10px">
+          <div class="sw" id="tsCrisisSw" role="group" aria-label="Include a crisis regime in the sample">
+            <button type="button" data-v="0" aria-pressed="true">Calm sample</button>
+            <button type="button" data-v="1" aria-pressed="false">Add a crash</button>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn" type="button" id="tsLog" aria-pressed="false">Log scale</button>
+          <button class="btn" type="button" id="tsSeed">New sample →</button>
+          <button class="btn" type="button" id="tsReset">Reset</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="sl">Cumulative</div><div class="sv acc" id="tsCum">—</div></div>
+        <div class="stat"><div class="sl">CAGR</div><div class="sv acc" id="tsCagr">—</div></div>
+        <div class="stat"><div class="sl">Ann. vol</div><div class="sv" id="tsVolS">—</div></div>
+        <div class="stat"><div class="sl">Sharpe</div><div class="sv" id="tsSharpe">—</div></div>
+        <div class="stat"><div class="sl">Max drawdown</div><div class="sv bad" id="tsMdd">—</div></div>
+        <div class="stat"><div class="sl">Beta (est.)</div><div class="sv" id="tsBetaS">—</div></div>
+        <div class="stat"><div class="sl">Alpha (est.)</div><div class="sv" id="tsAlphaS">—</div></div>
+        <div class="stat"><div class="sl">Alpha t-stat</div><div class="sv" id="tsTstat">—</div></div>
+        <div class="stat"><div class="sl">VaR 95% · 1d</div><div class="sv warn" id="tsVar">—</div></div>
+        <div class="stat"><div class="sl">ES 95% · 1d</div><div class="sv bad" id="tsEs">—</div></div>
+        <div class="stat"><div class="sl">Hit rate</div><div class="sv" id="tsHit">—</div></div>
+        <div class="stat"><div class="sl">Excess kurtosis</div><div class="sv" id="tsKurt">—</div></div>
+      </div>
+
+      <div class="panel tight">
+        <h3>Which week teaches which panel</h3>
+        <div class="chips" id="tsChips" role="group" aria-label="Pick a panel to see which week teaches it">
+          <button class="chip" type="button" data-w="1">Wk 1 · returns</button>
+          <button class="chip" type="button" data-w="2">Wk 2 · beta &amp; alpha</button>
+          <button class="chip" type="button" data-w="3">Wk 3 · vol &amp; weights</button>
+          <button class="chip" type="button" data-w="4">Wk 4 · drawdown, VaR, ES</button>
+          <button class="chip" type="button" data-w="7">Wk 7 · Sharpe, honestly</button>
+        </div>
+        <div class="note" id="tsWeekNote" style="margin-top:11px"><b>Pick a week.</b> Each panel above is
+        somebody's whole lecture. Click a chip to find out whose.</div>
+      </div>
+
+      <div class="note"><b>Read the t-stat, not the alpha.</b> With three years of daily data and 9%
+      idiosyncratic vol, an alpha of 150&#8239;bps a year is roughly a t-stat of 0.9 — indistinguishable
+      from zero. Drag <em class="hi">idiosyncratic vol</em> down and watch the same alpha become
+      "significant" without becoming any more real. That is the whole argument of weeks 2, 7 and 8.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ ROUTER ══════════════ -->
+<section id="router">
+  <div class="kicker">The method finder</div>
+  <h2>What kind of question is this?</h2>
+  <p class="lead">An analyst is mostly a router: a question arrives in English and has to leave as a
+  method, a dataset and a number with an error bar on it. Pick a question you might actually be asked
+  and see which week answers it, with what tool, and what the answer is <em class="hi">not</em>
+  allowed to claim.</p>
+
+  <div class="qgrid" id="qGrid" role="group" aria-label="Pick an analyst question">
+  </div>
+
+  <div class="split" style="margin-top:18px">
+    <div class="panel" id="qAns">
+      <h3 id="qKick">No question picked yet</h3>
+      <h4 id="qTitle">Pick one of the questions above</h4>
+      <p class="sub" id="qBody">Every one of them is a real question somebody gets asked in a meeting,
+      and every one of them has a week, a method and a specific way of being answered badly.</p>
+      <div class="row" style="margin-top:12px">
+        <span class="pill" id="qTool">tool</span>
+        <span class="pill" id="qData">data</span>
+      </div>
+      <div class="note" style="margin-top:12px" id="qTrap"></div>
+      <div class="row" style="margin-top:12px"><a class="btn primary" id="qLink" href="week1.html">Open the week →</a></div>
+    </div>
+    <div class="panel tight">
+      <h3>The four answers that are always wrong</h3>
+      <ul class="plain">
+        <li><b>A single number with no interval.</b> "VaR is $1.2&#8239;m" is not a risk report; "VaR 95%
+        1-day is $1.2&#8239;m, with 14 exceedances in 500 days against 25 expected" is.</li>
+        <li><b>An in-sample number.</b> If the parameter was chosen on the data it is measured on, the
+        number is a description of the past, not a forecast.</li>
+        <li><b>A number with no cost.</b> Gross of fees, gross of spread, gross of impact — three ways to
+        turn a losing strategy into a slide.</li>
+        <li><b>A number with no count of attempts.</b> The best of 200 backtests has a Sharpe of about
+        2.5 even when every one of them is pure noise. Say how many you ran.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ START HERE ══════════════ -->
+<section id="start">
+  <div class="kicker">Before week 1</div>
+  <h2>Start here — five steps to a return panel</h2>
+  <p class="lead">Week 1 assumes you can already fetch data and run a test. Tick each step as you finish
+  it; the lamp turns green when your laptop can produce the panel every later week consumes. (Ticks are
+  kept only in this browser tab, and nothing is sent anywhere.)</p>
+
+  <div class="split" style="margin-top:18px">
+    <div>
+      <div class="chk" id="chkList">
+        <label class="item"><input type="checkbox" data-i="0" aria-label="Step 1: create a Python 3.11 environment"/>
+          <span class="txt"><span class="t">1 · Python 3.11+ environment</span>
+          <span class="c">python3.11 -m venv .venv &amp;&amp; source .venv/bin/activate</span></span></label>
+        <label class="item"><input type="checkbox" data-i="1" aria-label="Step 2: clone the starter repository"/>
+          <span class="txt"><span class="t">2 · Clone the starter repo</span>
+          <span class="c">git clone &lt;your-team-repo&gt; &amp;&amp; cd &lt;your-team-repo&gt;</span></span></label>
+        <label class="item"><input type="checkbox" data-i="2" aria-label="Step 3: install the analytics dependencies"/>
+          <span class="txt"><span class="t">3 · Install the dependencies</span>
+          <span class="c">pip install -r requirements-fa.txt   # pandas, statsmodels, sklearn, arch, yfinance</span></span></label>
+        <label class="item"><input type="checkbox" data-i="3" aria-label="Step 4: pull a price panel with yfinance"/>
+          <span class="txt"><span class="t">4 · Pull your first panel</span>
+          <span class="c">python -c "import yfinance as yf; print(yf.download('AAPL MSFT NVDA', period='1y', auto_adjust=False).tail())"</span></span></label>
+        <label class="item"><input type="checkbox" data-i="4" aria-label="Step 5: run the smoke test suite"/>
+          <span class="txt"><span class="t">5 · Smoke test passes</span>
+          <span class="c">python -m pytest tests/test_smoke.py -v</span></span></label>
+      </div>
+      <div class="bar"><i id="chkBar"></i></div>
+      <div class="smoke" id="smokeBadge"><span class="lamp"></span><span id="smokeTxt">Smoke test: RED · 0 of 5 steps</span></div>
+      <p class="sub" style="margin-top:12px">No GPU, no cluster, no cloud account, no brokerage account and
+      no vendor subscription is needed for any week of this course. A cached offline snapshot ships with the
+      starter repo, so no lab depends on the network — and for the arena weeks, the offline simulator
+      (<code>make sim</code>) is always an acceptable substitute for the live venue.</p>
+    </div>
+
+    <div class="stack">
+      <div class="panel tight"><h3>If something is red</h3>
+        <details class="pit"><summary><code>yfinance</code> returns an empty frame</summary>
+          <div class="body"><p>Usually a rate limit or a ticker that no longer exists, and both come back as
+          an empty frame rather than an exception — which is exactly how a survivorship bug enters a
+          panel silently.</p>
+          <p class="fix">Fix: assert on <code>df.shape</code> immediately after every download, cache to
+          Parquet on first success, and read the cache thereafter. Never let an empty frame become a row of
+          zeros.</p></div></details>
+        <details class="pit"><summary><code>Adj Close</code> and <code>Close</code> are identical</summary>
+          <div class="body"><p>You called <code>yf.download(...)</code> with <code>auto_adjust=True</code>
+          (the modern default), so <code>Close</code> has already been adjusted in place and the raw close
+          is gone.</p>
+          <p class="fix">Fix: pass <code>auto_adjust=False</code> when you want both series — week 1 asks
+          you to re-derive the adjustment, which is impossible if you only have the adjusted one.</p></div></details>
+        <details class="pit"><summary><code>pandas-datareader</code> cannot reach FRED or Ken French</summary>
+          <div class="body"><p>Both are plain HTTP endpoints behind a university proxy that sometimes
+          blocks them, and the reader surfaces that as a parse error rather than a network error.</p>
+          <p class="fix">Fix: use the cached snapshot in the starter repo
+          (<code>data/cache/</code>), and treat the network as an optimisation, not a dependency.</p></div></details>
+        <details class="pit"><summary><code>arch</code> or <code>scipy</code> will not build</summary>
+          <div class="body"><p>Weeks 4–5 need compiled wheels, and those are the ones that bite on a mixed
+          Mac/Windows cohort with a too-new Python.</p>
+          <p class="fix">Fix: Python 3.11 exactly, in a fresh venv, then
+          <code>pip install --only-binary :all: arch scipy</code> so pip refuses to compile from source.</p></div></details>
+        <details class="pit"><summary>Your team token is in a file you are about to commit</summary>
+          <div class="body"><p>The team token authorises trades against your team's capital in the arena
+          weeks. It belongs in a <code>.gitignore</code>d <code>.env</code> and nowhere else — not in a
+          notebook cell, not in a screenshot, not in a chat message.</p>
+          <p class="fix">Fix: <code>git check-ignore -v .env</code> before your first commit; if you have
+          already pushed one, rotate it immediately.</p></div></details>
+      </div>
+      <div class="note"><b>Reproducibility is graded.</b> Every deliverable in this course is read from a
+      repo that runs on a clean checkout, with data fetched by a script and cached — never from a
+      screenshot of a number. A result you cannot re-run is not a result.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ ELSEWHERE ══════════════ -->
+<section id="next">
+  <div class="kicker">Where to go next</div>
+  <h2>Begin, get the code, or read the prequels</h2>
+  <div class="nextgrid" style="margin-top:16px">
+    <a class="nextcard" href="week1.html"><div class="nl">Begin</div><div class="nt">Week 1 · Financial Data &amp; Returns</div>
+      <div class="nd">Prices vs total returns, corporate actions, alignment — and the join that invents a profit.</div></a>
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course's own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/"><div class="nl">See also · finance primer</div>
+      <div class="nt">Financial Markets Arena</div><div class="nd">The prerequisite reading. What a share, a bond, a future and an option each actually are, and the venue they trade on — no finance background assumed. Start at <em class="hi">Part 1</em>.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/computer-architecture-arena/"><div class="nl">See also · the machine</div>
+      <div class="nt">Computer Architecture Arena</div><div class="nd">The prequel underneath the timings: caches, branches and memory, i.e. why your vectorised pandas beats your loop by 40×.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/"><div class="nl">See also · the builder's course</div>
+      <div class="nt">Systematic Trading Arena</div><div class="nd">Nine weeks building the machinery this course analyses — backtester architecture, complexity, ML signal ops, CI/CD.</div></a>
+  </div>
+  <p class="sub" style="margin-top:16px">Cross-links appear again on each week page, pointed at the
+  specific part that helps: <a href="https://sdonadio.github.io/financial-markets-arena/assets.html">asset
+  classes</a> for week 1, <a href="https://sdonadio.github.io/financial-markets-arena/derivatives.html">derivatives</a>
+  for week 6, <a href="https://sdonadio.github.io/financial-markets-arena/microstructure.html">microstructure</a>
+  for week 9, and <a href="https://sdonadio.github.io/systematic-trading-arena/week4.html">backtester
+  architecture</a> for week 7.</p>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Financial Analytics Arena — course map
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("tsEq").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function pct(x, d) { return (x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+
+/* ════ 1. ARC FILTER ON THE WEEK MAP ══════════════════════════ */
+(function () {
+  var sw = $("arcSw"), blocks = document.querySelectorAll(".arcblock");
+  var btns = sw.querySelectorAll("button");
+  function apply(arc) {
+    var shown = 0, i;
+    for (i = 0; i < blocks.length; i++) {
+      var on = (arc === "all" || blocks[i].getAttribute("data-arc") === arc);
+      if (on) { blocks[i].classList.remove("off"); shown += blocks[i].querySelectorAll("a.wk").length; }
+      else blocks[i].classList.add("off");
+    }
+    for (i = 0; i < btns.length; i++) btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-arc") === arc ? "true" : "false");
+    $("arcCount").textContent = shown + (shown === 1 ? " week shown" : " weeks shown");
+  }
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener("click", function () { apply(this.getAttribute("data-arc")); });
+  }
+  apply("all");
+})();
+
+/* ════ 2. ANATOMY OF A TEARSHEET ══════════════════════════════ */
+(function () {
+  var N = 756;                       /* three years of trading days */
+  var BM_MU = 0.07 / 252;            /* benchmark drift, 7%/yr */
+  var BM_SIG = 0.16 / Math.sqrt(252);/* benchmark vol, 16%/yr */
+  var RF = 0.02 / 252;               /* risk-free, 2%/yr */
+  var DEF = { alpha: 150, beta: 100, idio: 9, cost: 60, win: 63, crisis: 0, log: 0, seed: 20260101 };
+  var st = { alpha: DEF.alpha, beta: DEF.beta, idio: DEF.idio, cost: DEF.cost, win: DEF.win,
+             crisis: DEF.crisis, log: DEF.log, seed: DEF.seed };
+
+  function gauss(rnd) {
+    var u = rnd(); if (u < 1e-12) u = 1e-12;
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd());
+  }
+
+  /* Seeded synthetic fund: r_fund = alpha/252 + beta*r_bm + idio*z - cost/252 */
+  function build() {
+    var rnd = lcg(st.seed);
+    var aD = (st.alpha / 10000) / 252;
+    var cD = (st.cost / 10000) / 252;
+    var b = st.beta / 100;
+    var iD = (st.idio / 100) / Math.sqrt(252);
+    var bm = [], fd = [], i;
+    for (i = 0; i < N; i++) {
+      var mu = BM_MU, sg = BM_SIG;
+      if (st.crisis) {
+        if (i >= 380 && i < 402) { mu = -0.0135; sg = BM_SIG * 3.1; }       /* the crash */
+        else if (i >= 402 && i < 470) { mu = 0.0028; sg = BM_SIG * 1.9; }   /* the ragged recovery */
+      }
+      var rb = mu + sg * gauss(rnd);
+      var rf2 = aD - cD + b * rb + iD * gauss(rnd);
+      bm.push(rb); fd.push(rf2);
+    }
+    return { bm: bm, fd: fd };
+  }
+
+  function curve(r) { var e = [1], i; for (i = 0; i < r.length; i++) e.push(e[i] * (1 + r[i])); return e; }
+  function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+  function sd(a) { var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+  function quantile(a, p) {
+    var b = a.slice().sort(function (x, y) { return x - y; });
+    var idx = Math.max(0, Math.min(b.length - 1, Math.floor(p * b.length)));
+    return b[idx];
+  }
+  function drawdowns(eq) {
+    var dd = [], peak = eq[0], i;
+    for (i = 0; i < eq.length; i++) { if (eq[i] > peak) peak = eq[i]; dd.push(eq[i] / peak - 1); }
+    return dd;
+  }
+  function rollVol(r, w) {
+    var out = [], i;
+    for (i = w; i <= r.length; i++) out.push(sd(r.slice(i - w, i)) * Math.sqrt(252));
+    return out;
+  }
+  function ols(y, x) {
+    var mx = mean(x), my = mean(y), sxy = 0, sxx = 0, i;
+    for (i = 0; i < x.length; i++) { sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) * (x[i] - mx); }
+    var b = sxx > 0 ? sxy / sxx : 0;
+    var a = my - b * mx;
+    var res = [], i2;
+    for (i2 = 0; i2 < x.length; i2++) res.push(y[i2] - a - b * x[i2]);
+    var sres = sd(res);
+    var seA = sres / Math.sqrt(x.length);                    /* SE of the intercept, x centred */
+    return { a: a, b: b, seA: seA, res: res };
+  }
+
+  /* ── plot helpers ───────────────────────────────────────── */
+  function axes(svg, W, H, pad, x0, x1, y0, y1, yfmt, ticks) {
+    var g = mk("g", {}), i;
+    var n = ticks || 4;
+    for (i = 0; i <= n; i++) {
+      var v = y0 + (y1 - y0) * i / n;
+      var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+      g.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+        stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+      g.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+    }
+    svg.appendChild(g);
+  }
+  function line(svg, xs, ys, W, H, pad, x0, x1, y0, y1, color, width, dash) {
+    var d = "", i;
+    for (i = 0; i < ys.length; i++) {
+      var px = pad.l + (xs[i] - x0) / (x1 - x0) * (W - pad.l - pad.r);
+      var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+      d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+    }
+    var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7 });
+    if (dash) p.setAttribute("stroke-dasharray", dash);
+    svg.appendChild(p);
+    return p;
+  }
+  function area(svg, xs, ys, W, H, pad, x0, x1, y0, y1, fill) {
+    var d = "", i;
+    var base = H - pad.b - (0 - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    for (i = 0; i < ys.length; i++) {
+      var px = pad.l + (xs[i] - x0) / (x1 - x0) * (W - pad.l - pad.r);
+      var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+      d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+    }
+    d += " L" + (pad.l + (W - pad.l - pad.r)).toFixed(1) + " " + base.toFixed(1) +
+         " L" + pad.l.toFixed(1) + " " + base.toFixed(1) + " Z";
+    svg.appendChild(mk("path", { d: d, fill: fill, stroke: "none" }));
+  }
+
+  function render() {
+    var s = build();
+    var eqF = curve(s.fd), eqB = curve(s.bm);
+    var xs = [], i; for (i = 0; i < eqF.length; i++) xs.push(i);
+
+    /* ── stats ── */
+    var cum = eqF[eqF.length - 1] - 1;
+    var cagr = Math.pow(eqF[eqF.length - 1], 252 / N) - 1;
+    var vol = sd(s.fd) * Math.sqrt(252);
+    var sharpe = (mean(s.fd) - RF) / sd(s.fd) * Math.sqrt(252);
+    var dd = drawdowns(eqF);
+    var mdd = Math.min.apply(null, dd);
+    var reg = ols(s.fd, s.bm);
+    var aAnn = reg.a * 252;
+    var tstat = reg.seA > 0 ? reg.a / reg.seA : 0;
+    var v95 = quantile(s.fd, 0.05);
+    var tail = [], j; for (j = 0; j < s.fd.length; j++) if (s.fd[j] <= v95) tail.push(s.fd[j]);
+    var es95 = tail.length ? mean(tail) : v95;
+    var wins = 0; for (j = 0; j < s.fd.length; j++) if (s.fd[j] > 0) wins++;
+
+    var m4 = 0, sdv = sd(s.fd), mf = mean(s.fd);
+    for (j = 0; j < s.fd.length; j++) m4 += Math.pow(s.fd[j] - mf, 4);
+    var kurt = m4 / s.fd.length / Math.pow(sdv, 4) - 3;
+    $("tsCum").textContent = pct(cum);
+    $("tsKurt").textContent = kurt.toFixed(1);
+    $("tsKurt").className = "sv " + (kurt > 3 ? "bad" : kurt > 1 ? "warn" : "");
+    $("tsCagr").textContent = pct(cagr);
+    $("tsCagr").className = "sv " + (cagr >= 0 ? "acc" : "bad");
+    $("tsVolS").textContent = pct(vol);
+    $("tsSharpe").textContent = sharpe.toFixed(2);
+    $("tsSharpe").className = "sv " + (sharpe > 0.8 ? "ok" : sharpe > 0 ? "warn" : "bad");
+    $("tsMdd").textContent = pct(mdd);
+    $("tsBetaS").textContent = reg.b.toFixed(2);
+    $("tsAlphaS").textContent = (aAnn >= 0 ? "+" : "") + Math.round(aAnn * 10000) + " bps";
+    $("tsTstat").textContent = tstat.toFixed(2);
+    $("tsTstat").className = "sv " + (Math.abs(tstat) >= 2 ? "ok" : "warn");
+    $("tsVar").textContent = pct(-v95, 2);
+    $("tsEs").textContent = pct(-es95, 2);
+    $("tsHit").textContent = pct(wins / s.fd.length);
+
+    /* ── panel 1 · cumulative return ── */
+    var svg = $("tsEq"); clear(svg);
+    var W = 660, H = 220, pad = { l: 46, r: 12, t: 16, b: 24 };
+    var fF = st.log ? eqF.map(Math.log) : eqF.map(function (v) { return v - 1; });
+    var fB = st.log ? eqB.map(Math.log) : eqB.map(function (v) { return v - 1; });
+    var lo = Math.min(Math.min.apply(null, fF), Math.min.apply(null, fB));
+    var hi = Math.max(Math.max.apply(null, fF), Math.max.apply(null, fB));
+    var padY = (hi - lo) * 0.12 || 0.1;
+    lo -= padY; hi += padY;
+    axes(svg, W, H, pad, 0, N, lo, hi, st.log
+      ? function (v) { return v.toFixed(2); }
+      : function (v) { return Math.round(v * 100) + "%"; });
+    line(svg, xs, fB, W, H, pad, 0, N, lo, hi, "#6cb6ff", 1.5, "5 4");
+    line(svg, xs, fF, W, H, pad, 0, N, lo, hi, "#fda4af", 2.1);
+    if (st.crisis) {
+      var cx0 = pad.l + 380 / N * (W - pad.l - pad.r), cx1 = pad.l + 470 / N * (W - pad.l - pad.r);
+      svg.appendChild(mk("rect", { x: cx0, y: pad.t, width: (cx1 - cx0), height: (H - pad.t - pad.b),
+        fill: "rgba(248,81,73,.09)" }));
+      svg.appendChild(txt(cx0 + 4, pad.t + 11, "crash regime", 8.5, "#f85149"));
+    }
+    svg.appendChild(txt(pad.l, H - 7, "day 0", 9, "#5f6673"));
+    svg.appendChild(txt(W - pad.r, H - 7, "day " + N, 9, "#5f6673", "end"));
+    svg.appendChild(txt(W - pad.r - 4, pad.t + 11, st.log ? "log wealth" : "cumulative return",
+      9.5, "#fda4af", "end", "700"));
+
+    /* ── panel 2 · underwater ── */
+    svg = $("tsDd"); clear(svg);
+    W = 660; H = 150; pad = { l: 46, r: 12, t: 16, b: 24 };
+    var ddLo = Math.min(-0.02, mdd * 1.15);
+    axes(svg, W, H, pad, 0, N, ddLo, 0, function (v) { return Math.round(v * 100) + "%"; }, 3);
+    area(svg, xs, dd, W, H, pad, 0, N, ddLo, 0, "rgba(248,81,73,.24)");
+    line(svg, xs, dd, W, H, pad, 0, N, ddLo, 0, "#f85149", 1.4);
+    var mi = dd.indexOf(mdd);
+    var mx = pad.l + mi / N * (W - pad.l - pad.r);
+    svg.appendChild(mk("line", { x1: mx, y1: pad.t, x2: mx, y2: H - pad.b, stroke: "#f85149",
+      "stroke-width": 1, "stroke-dasharray": "3 3" }));
+    svg.appendChild(txt(Math.min(mx + 5, W - 120), pad.t + 11,
+      "max drawdown " + pct(mdd) + " on day " + mi, 9.5, "#f85149"));
+    svg.appendChild(txt(W - pad.r - 4, H - 7, "underwater · week 4", 9, "#5f6673", "end"));
+
+    /* ── panel 3 · rolling vol ── */
+    svg = $("tsVol"); clear(svg);
+    W = 330; H = 170; pad = { l: 40, r: 10, t: 16, b: 22 };
+    var rv = rollVol(s.fd, st.win);
+    var rvx = []; for (i = 0; i < rv.length; i++) rvx.push(i + st.win);
+    var rvLo = 0, rvHi = Math.max.apply(null, rv) * 1.12;
+    axes(svg, W, H, pad, st.win, N, rvLo, rvHi, function (v) { return Math.round(v * 100) + "%"; }, 3);
+    line(svg, rvx, rv, W, H, pad, st.win, N, rvLo, rvHi, "#fda4af", 1.8);
+    var fullY = H - pad.b - (vol - rvLo) / (rvHi - rvLo) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: fullY, x2: W - pad.r, y2: fullY, stroke: "#3fb950",
+      "stroke-width": 1.2, "stroke-dasharray": "4 3" }));
+    svg.appendChild(txt(pad.l + 3, pad.t + 11, st.win + "-day rolling vol", 9.5, "#fda4af", null, "700"));
+    svg.appendChild(txt(W - pad.r - 3, fullY - 4, "full-sample " + pct(vol, 0), 8.5, "#3fb950", "end"));
+
+    /* ── panel 4 · beta scatter ── */
+    svg = $("tsBeta"); clear(svg);
+    W = 330; H = 170; pad = { l: 40, r: 10, t: 16, b: 24 };
+    var xr = Math.max(Math.abs(quantile(s.bm, 0.005)), Math.abs(quantile(s.bm, 0.995))) * 1.05;
+    var yr = Math.max(Math.abs(quantile(s.fd, 0.005)), Math.abs(quantile(s.fd, 0.995))) * 1.05;
+    axes(svg, W, H, pad, -xr, xr, -yr, yr, function (v) { return (v * 100).toFixed(1); }, 4);
+    var zeroX = pad.l + (0 + xr) / (2 * xr) * (W - pad.l - pad.r);
+    svg.appendChild(mk("line", { x1: zeroX, y1: pad.t, x2: zeroX, y2: H - pad.b, stroke: "#333a47", "stroke-width": 1 }));
+    var step = Math.max(1, Math.floor(N / 260));
+    for (i = 0; i < s.bm.length; i += step) {
+      var px = pad.l + (s.bm[i] + xr) / (2 * xr) * (W - pad.l - pad.r);
+      var py = H - pad.b - (s.fd[i] + yr) / (2 * yr) * (H - pad.t - pad.b);
+      svg.appendChild(mk("circle", { cx: px.toFixed(1), cy: py.toFixed(1), r: 1.7,
+        fill: "rgba(253,164,175,.5)" }));
+    }
+    line(svg, [-xr, xr], [reg.a + reg.b * -xr, reg.a + reg.b * xr], W, H, pad, -xr, xr, -yr, yr, "#3fb950", 1.8);
+    svg.appendChild(txt(pad.l + 3, pad.t + 11, "beta " + reg.b.toFixed(2) + " · t(alpha) " + tstat.toFixed(2),
+      9.5, "#3fb950", null, "700"));
+    svg.appendChild(txt(W - pad.r - 3, H - 7, "benchmark daily %", 9, "#5f6673", "end"));
+  }
+
+  /* ── wiring ─────────────────────────────────────────────── */
+  function labels() {
+    $("tsAlphaV").textContent = (st.alpha >= 0 ? "+" : "") + st.alpha + " bps";
+    $("tsBeta2V").textContent = (st.beta / 100).toFixed(2);
+    $("tsIdioV").textContent = st.idio + "%";
+    $("tsCostV").textContent = st.cost + " bps/yr";
+    $("tsWinV").textContent = st.win + " d";
+  }
+  function bind(id, key, scale) {
+    $(id).addEventListener("input", function () {
+      st[key] = parseInt(this.value, 10) * (scale || 1);
+      labels(); render();
+    });
+  }
+  bind("tsAlpha", "alpha"); bind("tsBeta2", "beta"); bind("tsIdio", "idio");
+  bind("tsCost", "cost"); bind("tsWin", "win");
+
+  var csw = $("tsCrisisSw").querySelectorAll("button");
+  for (var ci = 0; ci < csw.length; ci++) {
+    csw[ci].addEventListener("click", function () {
+      st.crisis = parseInt(this.getAttribute("data-v"), 10);
+      for (var k = 0; k < csw.length; k++) csw[k].setAttribute("aria-pressed", csw[k] === this ? "true" : "false");
+      render();
+    });
+  }
+  $("tsLog").addEventListener("click", function () {
+    st.log = st.log ? 0 : 1;
+    this.setAttribute("aria-pressed", st.log ? "true" : "false");
+    this.classList.toggle("on", !!st.log);
+    render();
+  });
+  $("tsSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  $("tsReset").addEventListener("click", function () {
+    st.alpha = DEF.alpha; st.beta = DEF.beta; st.idio = DEF.idio; st.cost = DEF.cost;
+    st.win = DEF.win; st.crisis = DEF.crisis; st.log = DEF.log; st.seed = DEF.seed;
+    $("tsAlpha").value = DEF.alpha; $("tsBeta2").value = DEF.beta; $("tsIdio").value = DEF.idio;
+    $("tsCost").value = DEF.cost; $("tsWin").value = DEF.win;
+    $("tsLog").setAttribute("aria-pressed", "false"); $("tsLog").classList.remove("on");
+    for (var k = 0; k < csw.length; k++) csw[k].setAttribute("aria-pressed", csw[k].getAttribute("data-v") === "0" ? "true" : "false");
+    labels(); render();
+  });
+
+  var WEEKNOTE = {
+    1: { panels: ["wrapEq"], html: "<b>Week 1 · returns.</b> Before any of these panels exists, somebody had to decide what a return <em class=\"hi\">is</em>: simple or log, price or total, adjusted for which split and which dividend, aligned on whose calendar. Get that wrong and every number to the right of it is wrong in a way no later week can detect." },
+    2: { panels: ["wrapBeta"], html: "<b>Week 2 · beta and alpha.</b> The scatter is the whole of CAPM: slope is beta, intercept is alpha, and the standard error of that intercept is the only thing that decides whether the alpha is a result. Fama-French adds three or five more slopes and usually eats most of the intercept." },
+    3: { panels: ["wrapVol"], html: "<b>Week 3 · vol and weights.</b> Rolling volatility is what an optimiser consumes, and its instability is why mean-variance weights swing wildly out of sample. Ledoit-Wolf shrinkage, risk parity and 1/N are three different answers to the same estimation-error problem." },
+    4: { panels: ["wrapDd"], html: "<b>Week 4 · drawdown, VaR, ES.</b> Drawdown is the risk investors actually feel; VaR is the quantile you promise not to breach and ES is the average of the breaches. All three come from the same left tail, and the crash toggle is the reminder that they are estimates of a regime you may not have sampled." },
+    7: { panels: ["wrapEq", "wrapDd"], html: "<b>Week 7 · Sharpe, honestly.</b> The Sharpe on the right is in-sample, gross of everything the cost slider represents, and computed once. Deflate it for the number of configurations you tried, cost it, lag the execution by one bar, and re-run it walk-forward — then it is a claim." }
+  };
+  var chips = $("tsChips").querySelectorAll(".chip");
+  for (var chi = 0; chi < chips.length; chi++) {
+    chips[chi].addEventListener("click", function () {
+      var w = this.getAttribute("data-w"), k;
+      for (k = 0; k < chips.length; k++) chips[k].classList.toggle("on", chips[k] === this);
+      var all = ["wrapEq", "wrapDd", "wrapVol", "wrapBeta"];
+      for (k = 0; k < all.length; k++) $(all[k]).classList.remove("hl");
+      var info = WEEKNOTE[w];
+      for (k = 0; k < info.panels.length; k++) $(info.panels[k]).classList.add("hl");
+      $("tsWeekNote").innerHTML = info.html;
+    });
+  }
+
+  labels(); render();
+})();
+
+/* ════ 3. "WHAT KIND OF QUESTION IS THIS?" ROUTER ═════════════ */
+(function () {
+  var Q = [
+    { q: "Why does my adjusted price differ from the close I see on the screen?",
+      wk: 1, t: "Financial Data &amp; Returns",
+      m: "Re-derive the split and dividend adjustment factor from the corporate-action history and reconcile it against <code>Adj&nbsp;Close</code> to a stated tolerance.",
+      tool: "pandas · yfinance", data: "Yahoo actions + raw OHLC",
+      trap: "<b>The trap:</b> comparing an adjusted series to a raw one and calling the gap a return. Every adjustment is a rescaling of history, so a panel refreshed a year later has different prices for the same past day — and any cached signal computed on the old prices is now unreproducible." },
+    { q: "Is this fund's 12% a year skill, or just the market with leverage?",
+      wk: 2, t: "Factor Models",
+      m: "Regress excess fund returns on the market, or on Fama-French 3/5, and read the intercept <em class=\"hi\">with its standard error</em>.",
+      tool: "statsmodels OLS", data: "Ken French library",
+      trap: "<b>The trap:</b> reporting alpha without its t-stat. Three years of daily data on a 9%-vol fund cannot distinguish 150 bps of alpha from zero. If beta is 1.4 and the market did 9%, the 12% is not a discovery." },
+    { q: "How much of each name should I actually hold?",
+      wk: 3, t: "Portfolio Analytics",
+      m: "Mean-variance with a shrunk covariance, against risk parity and 1/N, measured out of sample and with turnover counted.",
+      tool: "scipy.optimize · sklearn.covariance", data: "your week-1 return panel",
+      trap: "<b>The trap:</b> trusting the in-sample frontier. With 30 names and 3 years you are estimating 465 covariances from 756 observations; the optimiser will happily put 40% in whichever name got lucky. 1/N beats unshrunk MVO out of sample far more often than anyone admits." },
+    { q: "How bad could tomorrow be, and how often will I be wrong about that?",
+      wk: 4, t: "Risk Analytics",
+      m: "VaR and Expected Shortfall three ways — historical, Gaussian, EWMA — plus a GARCH(1,1) fit, then a Kupiec exceedance backtest of the model itself.",
+      tool: "arch · numpy", data: "portfolio return series",
+      trap: "<b>The trap:</b> a Gaussian VaR on returns with kurtosis of 8. It will understate the tail precisely on the days you needed it, and you will only find out from the exceedance count — which is why the backtest of the risk model is the deliverable, not the number." },
+    { q: "What does the market think inflation will be over the next five years?",
+      wk: 5, t: "Rates &amp; the Macro Panel",
+      m: "Nominal Treasury yield minus the matched-maturity TIPS real yield: the breakeven. Then PCA the whole curve into level, slope and curvature.",
+      tool: "pandas-datareader (FRED)", data: "DGS5, DFII5, SOFR",
+      trap: "<b>The trap:</b> reading the breakeven as a forecast. It is a forecast plus an inflation-risk premium plus a TIPS liquidity premium, and in March 2020 the last term moved by more than the first." },
+    { q: "What volatility is priced into this option, and why does the smile slope?",
+      wk: 6, t: "Derivatives Analytics",
+      m: "Invert Black-Scholes numerically for implied vol across the chain, build the smile per expiry and the surface across them, then test put-call parity.",
+      tool: "scipy.optimize.brentq", data: "yfinance option chain",
+      trap: "<b>The trap:</b> the parity \"arbitrage\" you find on a deep out-of-the-money strike. It is a stale mid on a contract that has not traded since Tuesday. Filter on open interest and quote age before you believe any implied vol." },
+    { q: "Would this signal have made money after costs?",
+      wk: 7, t: "Backtesting &amp; Attribution",
+      m: "Walk-forward backtest with explicit fees, spread and impact, executed on the bar <em class=\"hi\">after</em> the signal; then attribute the gap between gross and net.",
+      tool: "scripts/backtest.py", data: "AlgoArena session tape",
+      trap: "<b>The trap:</b> executing at the same bar's close that generated the signal. It is a one-line bug that reliably adds 2–4 points of annual return and survives every unit test you will write." },
+    { q: "Is my model learning, or is it reading tomorrow's newspaper?",
+      wk: 8, t: "ML for Finance",
+      m: "Purged, embargoed walk-forward cross-validation, compared head-to-head with plain <code>KFold</code> on the same features so the collapse is visible.",
+      tool: "scikit-learn", data: "your week-1 panel",
+      trap: "<b>The trap:</b> a shuffled split on overlapping labels. A 5-day forward return label leaks four days into every neighbouring fold; the AUC goes to 0.70 and means nothing. Out of sample, 0.55 is a good day." },
+    { q: "Why did I get filled 4 bps worse than the mid I was looking at?",
+      wk: 9, t: "Microstructure &amp; Execution",
+      m: "Transaction-cost analysis on your own tape: maker/taker mix, fees paid, and slippage measured against the prevailing mid at order arrival.",
+      tool: "scripts/tca_report.py", data: "your AlgoArena fills",
+      trap: "<b>The trap:</b> benchmarking against the mid <em class=\"hi\">after</em> your trade. Your own order moved it, so the impact you caused shows up as favourable execution. Use the arrival mid, and report the two separately." },
+    { q: "My Sharpe is 2.1. Should anyone believe it?",
+      wk: 7, t: "Backtesting &amp; Attribution",
+      m: "Deflated Sharpe: adjust the observed Sharpe for the number of configurations trialled, the sample length, and the skew and kurtosis of the returns.",
+      tool: "numpy · scipy.stats", data: "your own experiment log",
+      trap: "<b>The trap:</b> not counting the attempts. The best of 200 independent noise strategies over 3 years has an expected Sharpe near 2.5. Without the count of trials, a Sharpe is not evidence — which is why the project asks for it in writing." }
+  ];
+  var grid = $("qGrid"), i;
+  for (i = 0; i < Q.length; i++) {
+    var b = document.createElement("button");
+    b.className = "qb"; b.type = "button"; b.setAttribute("data-i", i);
+    b.innerHTML = "<span class=\"qn\">Week " + Q[i].wk + "</span><span class=\"qt\">" + Q[i].q + "</span>";
+    grid.appendChild(b);
+  }
+  var qbs = grid.querySelectorAll(".qb");
+  for (i = 0; i < qbs.length; i++) {
+    qbs[i].addEventListener("click", function () {
+      var d = Q[parseInt(this.getAttribute("data-i"), 10)], k;
+      for (k = 0; k < qbs.length; k++) qbs[k].classList.toggle("on", qbs[k] === this);
+      $("qKick").textContent = "Week " + d.wk + " answers this";
+      $("qTitle").innerHTML = d.t;
+      $("qBody").innerHTML = d.m;
+      $("qTool").textContent = d.tool;
+      $("qData").textContent = d.data;
+      $("qTrap").innerHTML = d.trap;
+      $("qLink").setAttribute("href", "week" + d.wk + ".html");
+      $("qLink").textContent = "Open week " + d.wk + " →";
+    });
+  }
+})();
+
+/* ════ 4. START-HERE CHECKLIST ════════════════════════════════ */
+(function () {
+  var boxes = $("chkList").querySelectorAll("input[type=checkbox]");
+  function upd() {
+    var n = 0, i;
+    for (i = 0; i < boxes.length; i++) {
+      var item = boxes[i].parentNode;
+      if (boxes[i].checked) { n++; item.classList.add("done"); } else item.classList.remove("done");
+    }
+    $("chkBar").style.width = (n / boxes.length * 100) + "%";
+    var badge = $("smokeBadge");
+    if (n === boxes.length) { badge.classList.add("green"); $("smokeTxt").textContent = "Smoke test: GREEN · ready for week 1"; }
+    else { badge.classList.remove("green"); $("smokeTxt").textContent = "Smoke test: RED · " + n + " of " + boxes.length + " steps"; }
+  }
+  for (var i = 0; i < boxes.length; i++) boxes[i].addEventListener("change", upd);
+  upd();
+})();
+</script>
+</body>
+</html>

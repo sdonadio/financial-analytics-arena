@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 2 · Factor Models &amp; Cross-Sectional Regression — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week1.html">← Week 1</a> · <b>Week 2 · Factor Models &amp; Cross-Sectional Regression</b> · <a href="week3.html">Week 3 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 2</div>
+  <h1>Factor Models &amp; Cross-Sectional Regression</h1>
+  <p class="promise">A return is not a number, it is a sum: so much of it is the market, so much is
+  small-versus-large, so much is cheap-versus-expensive, and whatever is left over is the part somebody
+  wants to be paid for. This week you take that sum apart — and then you learn how easy it is to
+  manufacture the leftover.</p>
+  <ul class="you">
+    <li>Fit and <em class="hi">defend</em> a CAPM regression: beta, alpha, the standard error of each, and the residual plot you are supposed to look at.</li>
+    <li>Compute <strong>rolling betas</strong> and say out loud what your window length is trading off.</li>
+    <li>Run a <strong>Fama-French 3-factor attribution</strong> of a fund's returns, and report how much of its "alpha" was a value tilt with a good story.</li>
+    <li>Say how long a track record has to be before an alpha of a given size is even <em class="hi">detectable</em> — and what happens to that threshold when you have tested a hundred strategies.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: FF factors from the Ken French library, rolling betas on 20 names</span>
+    <span class="pill">HW2: factor attribution of a fund — "is this alpha?"</span>
+    <span class="pill warn">Read the diagnostics, not the R²</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? One regression, and what each coefficient is claiming</h2>
+  <p class="lead">A factor model is a regression of excess returns on the excess returns of things you
+  could have bought instead. The slopes say <strong>what you were exposed to</strong>; the intercept says
+  <strong>what you got that the exposures do not explain</strong>. Both are estimates, both have standard
+  errors, and the intercept's standard error is the single number that decides whether the week's headline
+  claim survives.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h4>CAPM, as a regression you can run</h4>
+      <pre class="code">r<sub>i,t</sub> − rf<sub>t</sub> = α + β (r<sub>m,t</sub> − rf<sub>t</sub>) + ε<sub>t</sub></pre>
+      <p class="sub" style="margin-top:9px"><b>β</b> is the slope: how much of the market you were
+      carrying. <b>α</b> is the intercept: average excess return left after paying for that exposure at
+      the market's own price. <b>ε</b> is what is left each day, and <code>sd(ε)</code> annualised is
+      <em class="hi">tracking error</em> — the denominator of every information ratio you will ever
+      quote.</p>
+      <div class="note" style="margin-top:11px"><b>The identity that matters.</b>
+      <code>t(α) = (α/σ<sub>ε</sub>) × √T</code> — the information ratio times the square root of the
+      sample length. Nothing else. Everything in Part 4 follows from those three symbols.</div>
+    </div>
+    <div class="panel">
+      <h4>Fama-French, as two more columns</h4>
+      <pre class="code">r<sub>i</sub> − rf = α + β<sub>m</sub>·MKT + β<sub>s</sub>·SMB
+             + β<sub>v</sub>·HML + ε</pre>
+      <p class="sub" style="margin-top:9px">The three-factor model adds <b>SMB</b> (small minus big) and
+      <b>HML</b> (high book-to-market minus low). The five-factor model adds profitability (<b>RMW</b>) and
+      investment (<b>CMA</b>); momentum (<b>UMD</b>) is usually bolted on separately.</p>
+      <p class="sub">The point is not the R². The point is that a fund's CAPM alpha of 300&#8239;bps
+      routinely becomes an FF3 alpha of 40&#8239;bps, because the manager was holding cheap small
+      companies and those have a <em class="hi">published price</em>. What survives that is the claim.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · fit the line yourself, then let OLS do it</h3>
+  <p class="sub" style="margin-bottom:12px">Sixty months of excess returns for one fund against the
+  market. Drag the line on the chart — or use the sliders, which are the accessible route — to minimise
+  the sum of squared residuals. Then press <b>Solve OLS</b> and see how close you got, and what the
+  standard errors say about whether your intercept is anything at all.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="capSvg" viewBox="0 0 660 400" role="img" aria-label="Scatter of monthly fund excess returns against market excess returns, with a fitted line you can move"
+             style="touch-action:none;cursor:ns-resize"></svg>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="button" id="capSolve">Solve OLS</button>
+        <button class="btn" type="button" id="capResid" aria-pressed="true">Show residuals</button>
+        <button class="btn" type="button" id="capSeed">New fund →</button>
+        <button class="btn" type="button" id="capReset">Reset the line</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Your SSR</div><div class="sv" id="capSsrU">—</div></div>
+        <div class="stat"><div class="sl">OLS SSR (the minimum)</div><div class="sv ok" id="capSsrO">—</div></div>
+        <div class="stat"><div class="sl">How far off</div><div class="sv warn" id="capGap">—</div></div>
+        <div class="stat"><div class="sl">R² of the OLS fit</div><div class="sv acc" id="capR2">—</div></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>Your line</h3>
+        <div class="ctl"><label for="capB">Your beta (slope) <b id="capBV">1.00</b></label>
+          <input type="range" id="capB" min="-50" max="250" value="100" aria-label="Slope of your fitted line, times one hundred"/></div>
+        <div class="ctl"><label for="capA">Your alpha (intercept) <b id="capAV">+0 bps/mo</b></label>
+          <input type="range" id="capA" min="-150" max="150" step="5" value="0" aria-label="Intercept of your fitted line, in basis points per month"/></div>
+        <h3 style="margin-top:14px">The fund</h3>
+        <div class="ctl"><label for="capTrueB">True beta <b id="capTrueBV">1.15</b></label>
+          <input type="range" id="capTrueB" min="0" max="220" value="115" aria-label="True beta of the fund, times one hundred"/></div>
+        <div class="ctl"><label for="capTrueA">True annual alpha <b id="capTrueAV">+200 bps</b></label>
+          <input type="range" id="capTrueA" min="-400" max="800" step="25" value="200" aria-label="True annual alpha in basis points"/></div>
+        <div class="ctl"><label for="capIdio">Tracking error <b id="capIdioV">8%</b></label>
+          <input type="range" id="capIdio" min="1" max="25" value="8" aria-label="Annualised tracking error in percent"/></div>
+        <div class="ctl"><label for="capMonths">Months of history <b id="capMonthsV">60</b></label>
+          <input type="range" id="capMonths" min="12" max="240" step="6" value="60" aria-label="Length of the sample in months"/></div>
+      </div>
+      <div class="tablewrap">
+        <table class="t">
+          <thead><tr><th>Coefficient</th><th>Estimate</th><th>Std. error</th><th>t</th><th>Verdict</th></tr></thead>
+          <tbody id="capTable"></tbody>
+        </table>
+      </div>
+      <div class="note" id="capNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How you use it — rolling exposures and a real attribution</h2>
+  <p class="lead">A single full-sample beta is a claim that the fund never changed. It always did. So the
+  working tool is a <em class="hi">rolling</em> regression, and the working deliverable is an attribution
+  table that says how much of the return each exposure bought at the market's own price.</p>
+
+  <h3 style="margin-top:22px">Interactive · rolling beta, and what your window is trading off</h3>
+  <p class="sub" style="margin-bottom:12px">This fund really does change its beta — from 0.80 to 1.40
+  halfway through the sample. Move the window and watch the estimate become either <b>slow</b> or
+  <b>noisy</b>. There is no window that is neither; picking one is the analyst's judgement, and stating it
+  is the analyst's job.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel">
+        <h3>Controls</h3>
+        <div class="ctl"><label for="rbWin">Rolling window <b id="rbWinV">126 d</b></label>
+          <input type="range" id="rbWin" min="21" max="504" step="1" value="126" aria-label="Rolling regression window in trading days"/></div>
+        <div class="ctl"><label for="rbIdio">Tracking error <b id="rbIdioV">10%</b></label>
+          <input type="range" id="rbIdio" min="2" max="30" value="10" aria-label="Annualised tracking error in percent"/></div>
+        <div class="row">
+          <div class="sw" id="rbSw" role="group" aria-label="Choose how the true beta behaves">
+            <button type="button" data-v="step" aria-pressed="true">A sudden shift</button>
+            <button type="button" data-v="drift" aria-pressed="false">A slow drift</button>
+            <button type="button" data-v="flat" aria-pressed="false">Constant beta</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" type="button" id="rbBand" aria-pressed="true">±2 s.e. band</button>
+          <button class="btn" type="button" id="rbSeed">New sample →</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Mean abs. error</div><div class="sv warn" id="rbMae">—</div></div>
+        <div class="stat"><div class="sl">Est. noise (s.d.)</div><div class="sv" id="rbNoise">—</div></div>
+        <div class="stat"><div class="sl">Lag to detect shift</div><div class="sv acc" id="rbLag">—</div></div>
+        <div class="stat"><div class="sl">Full-sample beta</div><div class="sv" id="rbFull">—</div></div>
+      </div>
+      <div class="note" id="rbNote"></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="rbSvg" viewBox="0 0 660 300" role="img" aria-label="Rolling beta estimate against the true beta over four years, with a two standard error band"></svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:#3fb950"></i>true beta</span>
+        <span><i style="background:#fda4af"></i>rolling estimate</span>
+        <span><i style="background:rgba(253,164,175,.22)"></i>±2 s.e.</span>
+        <span><i style="background:#6cb6ff"></i>full-sample beta</span>
+      </div>
+      <pre class="code" id="rbCode"></pre>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · the Fama-French attribution, line by line</h3>
+  <p class="sub" style="margin-bottom:12px">The fund returned what it returned. The question is how much
+  of that you could have bought for free. Each row is a <b>loading × premium</b>; the residual at the
+  bottom is what is left for the manager to claim. Pick a fund archetype, then push the loadings around
+  and watch the alpha get eaten.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="ffSvg" viewBox="0 0 660 300" role="img" aria-label="Waterfall of a fund's annual return decomposed into risk-free rate, factor contributions and residual alpha"></svg>
+      </div>
+      <div class="tablewrap">
+        <table class="t">
+          <thead><tr><th>Source</th><th>Loading</th><th>Premium</th><th>Contribution</th><th>Share of return</th></tr></thead>
+          <tbody id="ffTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>The fund</h3>
+        <div class="ctl"><label for="ffPreset">Archetype</label>
+          <select id="ffPreset" aria-label="Choose a fund archetype">
+            <option value="value" selected="selected">Large-cap value, 12.0% a year</option>
+            <option value="smallgrowth">Small-cap growth, 15.5% a year</option>
+            <option value="quality">Low-vol quality, 9.0% a year</option>
+            <option value="ls">Market-neutral long/short, 6.5% a year</option>
+            <option value="closet">Closet indexer, 10.4% a year</option>
+          </select></div>
+        <div class="ctl"><label for="ffTotal">Fund return <b id="ffTotalV">12.0%</b></label>
+          <input type="range" id="ffTotal" min="-100" max="350" step="5" value="120" aria-label="Fund total annual return, in tenths of a percent"/></div>
+        <div class="ctl"><label for="ffBm">Loading · MKT <b id="ffBmV">0.95</b></label>
+          <input type="range" id="ffBm" min="-50" max="200" value="95" aria-label="Market loading, times one hundred"/></div>
+        <div class="ctl"><label for="ffBs">Loading · SMB <b id="ffBsV">−0.15</b></label>
+          <input type="range" id="ffBs" min="-100" max="150" value="-15" aria-label="SMB loading, times one hundred"/></div>
+        <div class="ctl"><label for="ffBv">Loading · HML <b id="ffBvV">0.55</b></label>
+          <input type="range" id="ffBv" min="-100" max="150" value="55" aria-label="HML loading, times one hundred"/></div>
+        <h3 style="margin-top:14px">The premia you assume</h3>
+        <div class="ctl"><label for="ffPm">MKT − RF <b id="ffPmV">6.5%</b></label>
+          <input type="range" id="ffPm" min="0" max="120" step="1" value="65" aria-label="Market risk premium, in tenths of a percent"/></div>
+        <div class="ctl"><label for="ffPs">SMB <b id="ffPsV">1.8%</b></label>
+          <input type="range" id="ffPs" min="-40" max="60" step="1" value="18" aria-label="SMB premium, in tenths of a percent"/></div>
+        <div class="ctl"><label for="ffPv">HML <b id="ffPvV">3.2%</b></label>
+          <input type="range" id="ffPv" min="-40" max="80" step="1" value="32" aria-label="HML premium, in tenths of a percent"/></div>
+        <div class="ctl"><label for="ffRf">Risk-free <b id="ffRfV">2.0%</b></label>
+          <input type="range" id="ffRf" min="0" max="70" step="1" value="20" aria-label="Risk-free rate, in tenths of a percent"/></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">CAPM alpha</div><div class="sv" id="ffCapm">—</div></div>
+        <div class="stat"><div class="sl">FF3 alpha</div><div class="sv acc" id="ffAlpha">—</div></div>
+        <div class="stat"><div class="sl">Explained by factors</div><div class="sv ok" id="ffExp">—</div></div>
+        <div class="stat"><div class="sl">Eaten by FF3</div><div class="sv warn" id="ffEaten">—</div></div>
+      </div>
+      <div class="note" id="ffNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: how long before an alpha is even detectable?</h2>
+  <p class="lead">This is the section that changes how you read a pitch. An alpha is not a number you
+  measure, it is a hypothesis you test, and the test has a power. With a 0.25 information ratio you need
+  <em class="hi">sixty-four years</em> of data for a two-standard-error result — which is longer than the
+  fund has existed, longer than the manager will work, and longer than the strategy will survive.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="tsSvg" viewBox="0 0 660 300" role="img" aria-label="The t-statistic of an alpha estimate as a function of sample length, against the conventional two standard error threshold"></svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:#fda4af"></i>|t| of your alpha</span>
+        <span><i style="background:#3fb950"></i>t = 2.0 · the convention</span>
+        <span><i style="background:#d29922"></i>Bonferroni threshold for N tests</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Information ratio</div><div class="sv acc" id="tsIr">—</div></div>
+        <div class="stat"><div class="sl">t at your sample</div><div class="sv" id="tsT">—</div></div>
+        <div class="stat"><div class="sl">Years for t = 2</div><div class="sv warn" id="tsYr2">—</div></div>
+        <div class="stat"><div class="sl">Years after N tests</div><div class="sv bad" id="tsYrN">—</div></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>Controls</h3>
+        <div class="ctl"><label for="tsAl">True annual alpha <b id="tsAlV">200 bps</b></label>
+          <input type="range" id="tsAl" min="10" max="1200" step="10" value="200" aria-label="True annual alpha in basis points"/></div>
+        <div class="ctl"><label for="tsTe">Tracking error <b id="tsTeV">8%</b></label>
+          <input type="range" id="tsTe" min="1" max="30" value="8" aria-label="Annualised tracking error in percent"/></div>
+        <div class="ctl"><label for="tsYrs">Sample you have <b id="tsYrsV">5 yr</b></label>
+          <input type="range" id="tsYrs" min="1" max="60" value="5" aria-label="Length of the sample in years"/></div>
+        <div class="ctl"><label for="tsN">Strategies you tried <b id="tsNV">1</b></label>
+          <input type="range" id="tsN" min="1" max="500" value="1" aria-label="Number of strategies tested"/></div>
+      </div>
+      <div class="note" id="tsNote"></div>
+      <div class="panel tight">
+        <h3>The arithmetic, in three symbols</h3>
+        <pre class="code">IR  = alpha_ann / te_ann
+t   = IR * sqrt(T_years)
+T*  = (t_crit / IR) ** 2          # years needed
+t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
+        <p class="sub" style="margin-top:9px">Everything in this section is those four lines. The
+        uncomfortable part is the square root: to halve the sample you need for a result, you have to
+        <em class="hi">double</em> the information ratio.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · the multiple-testing trap</h3>
+  <p class="sub" style="margin-bottom:12px">Here are N strategies. By default <b>every single one of them
+  is pure noise</b> — no alpha, no skill, nothing. Run them and count how many come back "significant" at
+  the 5% level, then look at the best one and ask yourself what its pitch deck would look like.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="mtSvg" viewBox="0 0 660 280" role="img" aria-label="Histogram of t-statistics across many tested strategies, with the significance thresholds marked"></svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:rgba(95,102,115,.75)"></i>no real edge</span>
+        <span><i style="background:rgba(63,185,80,.7)"></i>genuine edge</span>
+        <span><i style="background:#f85149"></i>t = ±1.96</span>
+        <span><i style="background:#d29922"></i>Bonferroni</span>
+      </div>
+      <div class="tablewrap">
+        <table class="t">
+          <thead><tr><th>Rank</th><th>Strategy</th><th>Real edge?</th><th>Sharpe</th><th>t</th><th>Passes 5%?</th><th>Passes Bonferroni?</th></tr></thead>
+          <tbody id="mtTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>The experiment</h3>
+        <div class="ctl"><label for="mtN">Strategies tested <b id="mtNV">100</b></label>
+          <input type="range" id="mtN" min="10" max="500" step="10" value="100" aria-label="Number of strategies tested"/></div>
+        <div class="ctl"><label for="mtYrs">Backtest length <b id="mtYrsV">5 yr</b></label>
+          <input type="range" id="mtYrs" min="1" max="25" value="5" aria-label="Backtest length in years"/></div>
+        <div class="ctl"><label for="mtReal">Of them, genuinely skilled <b id="mtRealV">0</b></label>
+          <input type="range" id="mtReal" min="0" max="20" value="0" aria-label="Number of strategies with a genuine edge"/></div>
+        <div class="ctl"><label for="mtIr">Their information ratio <b id="mtIrV">0.40</b></label>
+          <input type="range" id="mtIr" min="10" max="120" step="5" value="40" aria-label="Information ratio of the genuinely skilled strategies, times one hundred"/></div>
+        <div class="row"><button class="btn primary" type="button" id="mtRun">Run them again →</button></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">"Significant" at 5%</div><div class="sv bad" id="mtSig">—</div></div>
+        <div class="stat"><div class="sl">Of those, false</div><div class="sv warn" id="mtFalse">—</div></div>
+        <div class="stat"><div class="sl">Best t of the batch</div><div class="sv" id="mtBest">—</div></div>
+        <div class="stat"><div class="sl">Its Sharpe</div><div class="sv acc" id="mtBestS">—</div></div>
+        <div class="stat"><div class="sl">Survive Bonferroni</div><div class="sv ok" id="mtBonf">—</div></div>
+        <div class="stat"><div class="sl">Survive Benjamini-Hochberg</div><div class="sv ok" id="mtBh">—</div></div>
+        <div class="stat"><div class="sl">Expected best t · pure noise</div><div class="sv" id="mtExp">—</div></div>
+        <div class="stat"><div class="sl">Sharpe needed to survive</div><div class="sv warn" id="mtNeed">—</div></div>
+      </div>
+      <div class="note" id="mtNote"></div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:26px">
+    <div class="panel">
+      <h4>What this changes about the decision</h4>
+      <p class="sub">An allocator does not fund alphas, they fund <em class="hi">claims about alphas</em>.
+      A 300&#8239;bps CAPM alpha that becomes 40&#8239;bps under FF3 is not a manager to hire, it is a
+      value ETF with a fee attached — and the correct decision is to buy the ETF. That is a real,
+      repeated, multi-billion-dollar conclusion and it comes out of one regression with three extra
+      columns.</p>
+      <p class="sub">The same logic runs backwards: a fund with a <em class="hi">negative</em> market
+      loading and a small positive alpha can be worth far more than its headline return, because you can
+      lever it. Loadings are the whole conversation.</p>
+    </div>
+    <div class="panel">
+      <h4>What this changes about your own project</h4>
+      <p class="sub">Phase 2 asks for an explicit overfitting section stating how many configurations you
+      tried. That is not a confession, it is a <em class="hi">parameter of the test</em>: without N, a
+      t-stat has no threshold, and a Sharpe has no meaning. Keep the log as you go — reconstructing it
+      afterwards is both harder and less honest.</p>
+      <p class="sub">Week 7 turns this into deflated Sharpe, and week 8 into purged cross-validation. Both
+      are the same idea as this page, applied to a search rather than a single test.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Every one of these has been submitted with a straight face. Open them.</p>
+
+  <details class="pit"><summary>Reporting R² as if it were the result</summary>
+    <div class="body">
+      <p>"My FF3 regression has an R² of 0.94, so the model is good." An R² of 0.94 on a long-only equity
+      fund is not a finding, it is arithmetic: the fund holds equities and so does MKT. You can get 0.9
+      by regressing a fund on itself with noise added.</p>
+      <p>Worse, a <em class="hi">high</em> R² and a large alpha usually means the alpha is being carried
+      by a handful of outlier months, which the R² cannot see.</p>
+      <p class="fix">Fix: report the coefficients with standard errors, plot the residuals against time
+      and against fitted values, and look for the three months doing all the work. R² belongs in a
+      footnote.</p>
+    </div></details>
+
+  <details class="pit"><summary>Regressing raw returns instead of excess returns</summary>
+    <div class="body">
+      <p>CAPM is a statement about <em class="hi">excess</em> returns. Subtract the risk-free rate from
+      both sides or the intercept absorbs <code>rf·(1 − β)</code>, which in a 5% rates regime is
+      hundreds of basis points of entirely fake alpha for any fund with a beta below 1.</p>
+      <p>The Ken French factor files already give you <code>Mkt-RF</code> and <code>RF</code> as separate
+      columns, in percent per day, which is the other half of this bug: mixing percent and decimal is the
+      single most common cause of a beta of 0.0001.</p>
+      <p class="fix">Fix: build one function that returns excess returns in decimals and use it
+      everywhere. Assert that <code>abs(factors).max() &lt; 0.3</code> before regressing — if it fails,
+      you are in percent.</p>
+    </div></details>
+
+  <details class="pit"><summary>Overlapping windows, and t-stats that believe them</summary>
+    <div class="body">
+      <p>Rolling betas from a 126-day window on daily data are massively autocorrelated: consecutive
+      estimates share 125 of 126 observations. Any test that treats a series of rolling estimates as
+      independent observations — "beta was above 1.2 in 400 of 800 days, so the shift is significant" —
+      is inflating its sample size by two orders of magnitude.</p>
+      <p>The same trap applies to overlapping k-day forward returns in a predictive regression, which is
+      week 8's version of the problem.</p>
+      <p class="fix">Fix: Newey-West standard errors (<code>cov_type="HAC"</code> in statsmodels), or
+      non-overlapping windows, or both. And never count rolling estimates as data points.</p>
+    </div></details>
+
+  <details class="pit"><summary>A factor zoo, fitted to a five-year sample</summary>
+    <div class="body">
+      <p>Twelve factors, sixty monthly observations. The regression will run, the R² will be lovely, and
+      every loading will be a linear combination of the others: MKT, SMB, HML, RMW, CMA, UMD, BAB, QMJ and
+      a low-vol factor are not nine independent things.</p>
+      <p>The tells are enormous standard errors, loadings that flip sign when you add one more month, and
+      a condition number in the thousands.</p>
+      <p class="fix">Fix: start at three factors, add one only when it survives on its own and improves
+      the <em class="hi">residual</em>, and always print the variance inflation factors. Ten
+      observations per regressor is a floor, not a target.</p>
+    </div></details>
+
+  <details class="pit"><summary>"I only tested one strategy" — after testing forty</summary>
+    <div class="body">
+      <p>The most human of these. You tried a 20-day lookback, then 10, then 50; you tried it on the
+      S&amp;P 500 and then on the Russell; you dropped 2008 because it was "not representative". That is
+      not one test, and the 1.96 threshold no longer applies to it — the relevant threshold for 40 tests
+      is about 3.2.</p>
+      <p>Every one of those choices was made <em class="hi">after</em> seeing data, which is what makes
+      them tests rather than design decisions.</p>
+      <p class="fix">Fix: a log file, appended to as you go, with one line per configuration you ran.
+      Then a Bonferroni or Benjamini-Hochberg threshold computed from its length, and a deflated Sharpe in
+      week 7. Publish N. It is the cheapest credibility you will ever buy.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="3" data-exp="<b>It is a value tilt, and you should compare it to a value index, not hire it.</b> An HML loading of 0.6 at a 3% HML premium is about 180 bps a year of factor return, which is most of the CAPM alpha. What is left — 40 bps with a large standard error — is indistinguishable from zero. Nothing here says the manager is dishonest or unskilled at picking cheap stocks; it says the exposure they deliver has a published price, and paying an active fee for it is the wrong trade. Note also what does NOT follow: a low FF3 alpha does not make the fund a bad holding, it makes it a cheap-to-replicate one.">
+    <p class="q"><span>Q1</span>A fund has a CAPM alpha of +220&#8239;bps (t = 2.1). Adding SMB and HML drops the alpha to +40&#8239;bps (t = 0.4) with an HML loading of 0.6. What is the honest read?</p>
+    <div class="opts">
+      <button class="opt" type="button">The CAPM alpha is the real one; adding factors always shrinks alpha, so ignore FF3</button>
+      <button class="opt" type="button">The manager has genuine skill that the three-factor model is too crude to capture</button>
+      <button class="opt" type="button">The fund is mis-specified; you should add more factors until the alpha returns</button>
+      <button class="opt" type="button">Most of the "alpha" was a value tilt with a published price — benchmark it against a value index</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="0" data-exp="<b>64 years.</b> t = IR × √T, so T = (t_crit / IR)² = (2 / 0.25)² = 64. That is the whole point of Part 3: at a 0.25 information ratio — which is a perfectly respectable real-world number — no achievable track record can establish the alpha at conventional significance. It follows that most published manager alphas are not established either, and that the honest response is to argue about the exposures and the process, which you CAN measure in five years, rather than about the intercept, which you cannot.">
+    <p class="q"><span>Q2</span>A strategy has an information ratio of 0.25. Roughly how many years of returns do you need for its alpha to reach t = 2?</p>
+    <div class="opts">
+      <button class="opt" type="button">About 64 years</button>
+      <button class="opt" type="button">About 16 years</button>
+      <button class="opt" type="button">About 8 years</button>
+      <button class="opt" type="button">It depends on the beta, not on the information ratio</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="2" data-exp="<b>About five, and that is exactly what a 5% level means.</b> With 100 independent true nulls, the number of |t| &gt; 1.96 results is binomial(100, 0.05), so around five, and the largest of 100 standard normals is typically about 2.5 — a Sharpe near 2.5 over five years. None of them is real. This is why N has to be reported: the 1.96 threshold is a statement about ONE test. For 100 tests the Bonferroni threshold is roughly 3.5, and the best-of-100 noise strategy will not clear it.">
+    <p class="q"><span>Q3</span>You backtest 100 strategies that are all pure noise, at the 5% significance level. How many come back "significant"?</p>
+    <div class="opts">
+      <button class="opt" type="button">None — they have no edge, so no test can find one</button>
+      <button class="opt" type="button">One, on average, since 1/100 is the natural false-positive rate</button>
+      <button class="opt" type="button">About five, because that is what a 5% false-positive rate means</button>
+      <button class="opt" type="button">About fifty, since half of them will be profitable by chance</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Pull the Fama-French daily factors from the Ken French library with
+      <code>pandas_datareader</code>, and reconcile the units — they arrive in percent.</li>
+      <li>Join them to your week-1 panel on the trading calendar and run FF3 regressions on 20 names with
+      <code>statsmodels</code>, HAC standard errors on.</li>
+      <li>Compute 126-day rolling betas for five of them; find the name whose beta moved most and explain
+      what the fund did.</li>
+      <li>Read the diagnostics: residual plots, the three biggest residuals by date, and the variance
+      inflation factors. Not the R².</li>
+    </ul></div>
+    <div class="panel"><h4>Homework 2 · "is this alpha?"</h4><ul class="plain">
+      <li>A full factor attribution of one fund's monthly returns: CAPM, FF3 and FF5, side by side, with
+      standard errors and HAC t-stats.</li>
+      <li>A written verdict — one paragraph — on whether the alpha exists, including the sample length
+      needed for t = 2 at the measured information ratio.</li>
+      <li>A count of how many specifications you ran, and the corresponding multiple-testing threshold.</li>
+      <li>One-line <code>AI-USE</code> note on the deliverable.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course's own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/intro.html"><div class="nl">See also</div>
+      <div class="nt">Financial Markets Arena · Part 1</div><div class="nd">Where factor premia sit among the alpha families, and the four ways a backtest lies — the same argument as Part 3 here, from the trading side.</div></a>
+    <a class="nextcard" href="week1.html"><div class="nl">Previous</div>
+      <div class="nt">← Week 1 · Financial Data &amp; Returns</div><div class="nd">The panel these regressions consume, and the four errors that make every coefficient on this page wrong.</div></a>
+    <a class="nextcard" href="week3.html"><div class="nl">Next</div>
+      <div class="nt">Week 3 · Portfolio Analytics &amp; Optimisation →</div><div class="nd">Now turn exposures into weights — and meet the estimation error that makes the optimiser worse than 1/N.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 2 — Factor Models & Cross-Sectional Regression
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("capSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "") + (x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+/* two-sided normal quantile, Beasley-Springer-Moro; good to ~1e-9 in the body */
+function ppf(p) {
+  var a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.3577518672690, -30.66479806614716, 2.506628277459239];
+  var b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+  var c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+  var d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+  var pl = 0.02425, q, r;
+  if (p < pl) { q = Math.sqrt(-2 * Math.log(p)); return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+  if (p > 1 - pl) { q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+  q = p - 0.5; r = q * q;
+  return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+         (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+}
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7, "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function ols(y, x) {
+  var mx = mean(x), my = mean(y), sxy = 0, sxx = 0, i;
+  for (i = 0; i < x.length; i++) { sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) * (x[i] - mx); }
+  var b = sxx > 0 ? sxy / sxx : 0, a = my - b * mx, ssr = 0, sty = 0;
+  for (i = 0; i < x.length; i++) { var e = y[i] - a - b * x[i]; ssr += e * e; sty += (y[i] - my) * (y[i] - my); }
+  var n = x.length, s2 = n > 2 ? ssr / (n - 2) : 0;
+  return { a: a, b: b, ssr: ssr, r2: sty > 0 ? 1 - ssr / sty : 0,
+           seB: sxx > 0 ? Math.sqrt(s2 / sxx) : 0,
+           seA: Math.sqrt(s2 * (1 / n + mx * mx / (sxx || 1))),
+           sig: Math.sqrt(s2), n: n };
+}
+
+/* ════ 1. CAPM SCATTER WITH A LINE YOU MOVE ═══════════════════ */
+(function () {
+  var DEF = { b: 100, a: 0, trueB: 115, trueA: 200, idio: 8, months: 60, seed: 5150, resid: 1 };
+  var st = { b: DEF.b, a: DEF.a, trueB: DEF.trueB, trueA: DEF.trueA, idio: DEF.idio,
+             months: DEF.months, seed: DEF.seed, resid: DEF.resid };
+  var data = null, geom = null;
+
+  function build() {
+    var rnd = lcg(st.seed), n = st.months, i;
+    var mSig = 0.15 / Math.sqrt(12), mMu = 0.055 / 12;
+    var eSig = (st.idio / 100) / Math.sqrt(12), aM = (st.trueA / 10000) / 12, b = st.trueB / 100;
+    var xs = [], ys = [];
+    for (i = 0; i < n; i++) {
+      var xm = mMu + mSig * gauss(rnd);
+      xs.push(xm); ys.push(aM + b * xm + eSig * gauss(rnd));
+    }
+    return { x: xs, y: ys };
+  }
+  function ssrOf(a, b) {
+    var s = 0, i;
+    for (i = 0; i < data.x.length; i++) { var e = data.y[i] - a - b * data.x[i]; s += e * e; }
+    return s;
+  }
+
+  function render() {
+    data = build();
+    var fit = ols(data.y, data.x);
+    var svg = $("capSvg"); clear(svg);
+    var W = 660, H = 400, pad = { l: 54, r: 16, t: 18, b: 34 }, i;
+    var xr = 0, yr = 0;
+    for (i = 0; i < data.x.length; i++) { xr = Math.max(xr, Math.abs(data.x[i])); yr = Math.max(yr, Math.abs(data.y[i])); }
+    xr *= 1.12; yr = Math.max(yr * 1.12, xr * 0.6);
+    geom = { W: W, H: H, pad: pad, xr: xr, yr: yr };
+    axes(svg, W, H, pad, -yr, yr, function (v) { return (v * 100).toFixed(0) + "%"; }, 6);
+    var zx = pad.l + 0.5 * (W - pad.l - pad.r);
+    svg.appendChild(mk("line", { x1: zx, y1: pad.t, x2: zx, y2: H - pad.b, stroke: "#333a47", "stroke-width": 1 }));
+    function PX(v) { return pad.l + (v + xr) / (2 * xr) * (W - pad.l - pad.r); }
+    function PY(v) { return H - pad.b - (v + yr) / (2 * yr) * (H - pad.t - pad.b); }
+    var ua = st.a / 10000, ub = st.b / 100;
+    /* residual sticks to the user's line */
+    if (st.resid) {
+      for (i = 0; i < data.x.length; i++) {
+        var yh = ua + ub * data.x[i];
+        svg.appendChild(mk("line", { x1: PX(data.x[i]).toFixed(1), y1: PY(data.y[i]).toFixed(1),
+          x2: PX(data.x[i]).toFixed(1), y2: PY(yh).toFixed(1), stroke: "rgba(248,81,73,.45)", "stroke-width": 1 }));
+      }
+    }
+    /* the OLS line, faint */
+    svg.appendChild(mk("line", { x1: PX(-xr), y1: PY(fit.a + fit.b * -xr), x2: PX(xr), y2: PY(fit.a + fit.b * xr),
+      stroke: "#3fb950", "stroke-width": 1.5, "stroke-dasharray": "6 4" }));
+    /* the user's line */
+    svg.appendChild(mk("line", { x1: PX(-xr), y1: PY(ua + ub * -xr), x2: PX(xr), y2: PY(ua + ub * xr),
+      stroke: "#fda4af", "stroke-width": 2.4 }));
+    for (i = 0; i < data.x.length; i++) {
+      svg.appendChild(mk("circle", { cx: PX(data.x[i]).toFixed(1), cy: PY(data.y[i]).toFixed(1), r: 3,
+        fill: "rgba(253,164,175,.32)", stroke: "rgba(253,164,175,.8)", "stroke-width": .8 }));
+    }
+    /* the drag handle */
+    svg.appendChild(mk("circle", { cx: PX(xr * 0.78).toFixed(1), cy: PY(ua + ub * xr * 0.78).toFixed(1), r: 6,
+      fill: "#fda4af", stroke: "#0f1115", "stroke-width": 2 }));
+    svg.appendChild(txt(W - pad.r - 4, H - 8, "market excess return, monthly", 9.5, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l + 4, pad.t + 12, "drag the line, or use the sliders", 9.5, "#fda4af"));
+    svg.appendChild(txt(pad.l + 4, pad.t + 26, "dashed green = the OLS solution", 9.5, "#3fb950"));
+
+    var su = ssrOf(ua, ub);
+    $("capSsrU").textContent = (su * 1e4).toFixed(1);
+    $("capSsrO").textContent = (fit.ssr * 1e4).toFixed(1);
+    $("capGap").textContent = "+" + ((su / fit.ssr - 1) * 100).toFixed(1) + "%";
+    $("capR2").textContent = fit.r2.toFixed(3);
+
+    var tb = $("capTable"); clear(tb);
+    var tA = fit.seA > 0 ? fit.a / fit.seA : 0, tB = fit.seB > 0 ? fit.b / fit.seB : 0;
+    function row(name, est, se, t, verdict, cls) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td class=\"n\">" + name + "</td><td>" + est + "</td><td>" + se + "</td><td class=\"" +
+        cls + "\">" + t + "</td><td class=\"" + cls + "\">" + verdict + "</td>";
+      tb.appendChild(tr);
+    }
+    var aAnn = fit.a * 12 * 10000, seAnn = fit.seA * 12 * 10000;
+    row("alpha (ann.)", Math.round(aAnn) + " bps", "±" + Math.round(seAnn) + " bps", tA.toFixed(2),
+      Math.abs(tA) >= 2 ? "significant" : "noise", Math.abs(tA) >= 2 ? "ok" : "bad");
+    row("beta", fit.b.toFixed(3), "±" + fit.seB.toFixed(3), tB.toFixed(1),
+      Math.abs(tB) >= 2 ? "solid" : "weak", Math.abs(tB) >= 2 ? "ok" : "bad");
+    row("tracking error", (fit.sig * Math.sqrt(12) * 100).toFixed(1) + "%", "—", "—", "sd of residual", "");
+    row("your line", "b=" + ub.toFixed(2) + " a=" + Math.round(ua * 12 * 10000) + " bps", "—",
+      "—", (su / fit.ssr - 1) < 0.02 ? "close enough" : "not the minimum",
+      (su / fit.ssr - 1) < 0.02 ? "ok" : "");
+
+    var ir = fit.sig > 0 ? (fit.a * 12) / (fit.sig * Math.sqrt(12)) : 0;
+    var need = ir !== 0 ? Math.pow(2 / Math.abs(ir), 2) : 999;
+    $("capNote").innerHTML = "<b>The estimate is not the truth.</b> You set the true alpha to " +
+      st.trueA + " bps and OLS recovered " + Math.round(aAnn) + " bps &plusmn; " + Math.round(seAnn) +
+      " — over " + st.months + " months, with " + st.idio + "% tracking error. The implied information " +
+      "ratio is " + ir.toFixed(2) + ", so a t of 2 would need about <b>" +
+      (need > 200 ? "200+" : need.toFixed(0)) + " years</b> of this fund. Drag <em class=\"hi\">months of " +
+      "history</em> to the right and watch the standard error shrink as &radic;T, slowly.";
+  }
+
+  /* dragging: slope follows the pointer's vertical position at a fixed x */
+  function fromEvent(ev) {
+    var r = $("capSvg").getBoundingClientRect();
+    var vx = (ev.clientX - r.left) / r.width * geom.W;
+    var vy = (ev.clientY - r.top) / r.height * geom.H;
+    var pad = geom.pad;
+    var xv = (vx - pad.l) / (geom.W - pad.l - pad.r) * 2 * geom.xr - geom.xr;
+    var yv = (geom.H - pad.b - vy) / (geom.H - pad.t - pad.b) * 2 * geom.yr - geom.yr;
+    if (Math.abs(xv) < geom.xr * 0.12) return;                 /* too close to the intercept to be a slope */
+    var ua = st.a / 10000;
+    var nb = (yv - ua) / xv;
+    st.b = Math.max(-50, Math.min(250, Math.round(nb * 100)));
+    $("capB").value = st.b;
+    labels(); render();
+  }
+  var dragging = false;
+  $("capSvg").addEventListener("pointerdown", function (ev) { dragging = true; fromEvent(ev); });
+  window.addEventListener("pointermove", function (ev) { if (dragging) fromEvent(ev); });
+  window.addEventListener("pointerup", function () { dragging = false; });
+
+  function labels() {
+    $("capBV").textContent = (st.b / 100).toFixed(2);
+    $("capAV").textContent = (st.a >= 0 ? "+" : "") + st.a + " bps/mo";
+    $("capTrueBV").textContent = (st.trueB / 100).toFixed(2);
+    $("capTrueAV").textContent = (st.trueA >= 0 ? "+" : "") + st.trueA + " bps";
+    $("capIdioV").textContent = st.idio + "%";
+    $("capMonthsV").textContent = st.months;
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("capB", "b"); bind("capA", "a"); bind("capTrueB", "trueB");
+  bind("capTrueA", "trueA"); bind("capIdio", "idio"); bind("capMonths", "months");
+  $("capSolve").addEventListener("click", function () {
+    var fit = ols(data.y, data.x);
+    st.b = Math.round(fit.b * 100); st.a = Math.round(fit.a * 10000 / 5) * 5;
+    $("capB").value = st.b; $("capA").value = st.a; labels(); render();
+  });
+  $("capResid").addEventListener("click", function () {
+    st.resid = st.resid ? 0 : 1;
+    this.setAttribute("aria-pressed", st.resid ? "true" : "false");
+    this.classList.toggle("on", !st.resid ? false : true);
+    render();
+  });
+  $("capSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  $("capReset").addEventListener("click", function () {
+    st.b = DEF.b; st.a = DEF.a; $("capB").value = DEF.b; $("capA").value = DEF.a; labels(); render();
+  });
+  labels(); render();
+})();
+
+/* ════ 2. ROLLING BETA ════════════════════════════════════════ */
+(function () {
+  var N = 1008;                                /* four years */
+  var st = { win: 126, idio: 10, mode: "step", band: 1, seed: 33333 };
+
+  function trueBeta(i) {
+    if (st.mode === "flat") return 1.05;
+    if (st.mode === "drift") return 0.8 + 0.6 * (i / N);
+    return i < N / 2 ? 0.80 : 1.40;
+  }
+  function build() {
+    var rnd = lcg(st.seed), i;
+    var mSig = 0.16 / Math.sqrt(252), eSig = (st.idio / 100) / Math.sqrt(252);
+    var x = [], y = [];
+    for (i = 0; i < N; i++) {
+      var xm = 0.06 / 252 + mSig * gauss(rnd);
+      x.push(xm); y.push(trueBeta(i) * xm + eSig * gauss(rnd));
+    }
+    return { x: x, y: y };
+  }
+  function render() {
+    var d = build(), w = st.win, i;
+    var est = [], se = [], xsIdx = [];
+    for (i = w; i <= N; i++) {
+      var f = ols(d.y.slice(i - w, i), d.x.slice(i - w, i));
+      est.push(f.b); se.push(f.seB); xsIdx.push(i);
+    }
+    var full = ols(d.y, d.x);
+    var tru = [], truX = [];
+    for (i = 0; i < N; i += 4) { tru.push(trueBeta(i)); truX.push(i); }
+
+    var svg = $("rbSvg"); clear(svg);
+    var W = 660, H = 300, pad = { l: 46, r: 14, t: 18, b: 28 };
+    var lo = 0.2, hi = 1.9;
+    for (i = 0; i < est.length; i++) { lo = Math.min(lo, est[i] - 2 * se[i]); hi = Math.max(hi, est[i] + 2 * se[i]); }
+    lo = Math.max(-1.5, lo - 0.1); hi = Math.min(4, hi + 0.1);
+    axes(svg, W, H, pad, lo, hi, function (v) { return v.toFixed(2); }, 5);
+    if (st.band) {
+      var dpath = "", j;
+      for (i = 0; i < est.length; i++) {
+        var px = pad.l + xsIdx[i] / N * (W - pad.l - pad.r);
+        var py = H - pad.b - (est[i] + 2 * se[i] - lo) / (hi - lo) * (H - pad.t - pad.b);
+        dpath += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+      }
+      for (j = est.length - 1; j >= 0; j--) {
+        var px2 = pad.l + xsIdx[j] / N * (W - pad.l - pad.r);
+        var py2 = H - pad.b - (est[j] - 2 * se[j] - lo) / (hi - lo) * (H - pad.t - pad.b);
+        dpath += " L" + px2.toFixed(1) + " " + py2.toFixed(1);
+      }
+      dpath += " Z";
+      svg.appendChild(mk("path", { d: dpath, fill: "rgba(253,164,175,.18)", stroke: "none" }));
+    }
+    polyline(svg, tru, W, H, pad, 0, N, lo, hi, "#3fb950", 2, "", truX);
+    polyline(svg, est, W, H, pad, 0, N, lo, hi, "#fda4af", 1.9, "", xsIdx);
+    var fy = H - pad.b - (full.b - lo) / (hi - lo) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: fy, x2: W - pad.r, y2: fy, stroke: "#6cb6ff",
+      "stroke-width": 1.3, "stroke-dasharray": "5 4" }));
+    svg.appendChild(txt(W - pad.r - 3, fy - 5, "full-sample " + full.b.toFixed(2), 9, "#6cb6ff", "end"));
+    if (st.mode === "step") {
+      var sx = pad.l + 0.5 * (W - pad.l - pad.r);
+      svg.appendChild(mk("line", { x1: sx, y1: pad.t, x2: sx, y2: H - pad.b, stroke: "#d29922",
+        "stroke-width": 1, "stroke-dasharray": "3 3" }));
+      svg.appendChild(txt(sx + 4, pad.t + 11, "the fund changes", 9, "#d29922"));
+    }
+    svg.appendChild(txt(pad.l, H - 8, "day 0", 9, "#5f6673"));
+    svg.appendChild(txt(W - pad.r, H - 8, "day " + N + " · " + w + "-day window", 9, "#5f6673", "end"));
+
+    /* metrics */
+    var mae = 0, errs = [];
+    for (i = 0; i < est.length; i++) { var e = est[i] - trueBeta(xsIdx[i] - 1); mae += Math.abs(e); errs.push(e); }
+    mae /= est.length;
+    $("rbMae").textContent = mae.toFixed(3);
+    $("rbNoise").textContent = sd(est).toFixed(3);
+    $("rbFull").textContent = full.b.toFixed(3);
+    if (st.mode === "step") {
+      var target = 0.5 * (0.80 + 1.40), lag = -1;
+      for (i = 0; i < est.length; i++) { if (xsIdx[i] > N / 2 && est[i] > target) { lag = xsIdx[i] - N / 2; break; } }
+      $("rbLag").textContent = lag < 0 ? "never" : lag + " d";
+    } else $("rbLag").textContent = "n/a";
+
+    $("rbCode").textContent =
+      "beta = (ret[\"FUND\"].rolling(" + w + ")\n" +
+      "          .cov(ret[\"MKT\"])\n" +
+      "        / ret[\"MKT\"].rolling(" + w + ").var())\n" +
+      "# " + est.length + " estimates, each sharing " + (w - 1) + " of " + w + " observations\n" +
+      "# with its neighbour — they are NOT " + est.length + " data points.";
+
+    var mean2 = mean(est);
+    $("rbNote").innerHTML = "<b>" + w + " days.</b> The estimate wobbles with s.d. " + sd(est).toFixed(3) +
+      " around a truth it tracks with mean absolute error " + mae.toFixed(3) +
+      (st.mode === "step" ? ", and it takes " + $("rbLag").textContent + " to cross the midpoint after the fund actually changes" : "") +
+      ". Shorten the window and the wobble grows as 1/&radic;w; lengthen it and the lag grows linearly. " +
+      "The full-sample beta of " + full.b.toFixed(2) + " is the average of two regimes and describes " +
+      "neither" + (st.mode === "flat" ? " — except here, where it is exactly right, which is the case you almost never have" : "") + ".";
+    if (mean2 === 0) $("rbNote").textContent = "";
+  }
+  function labels() { $("rbWinV").textContent = st.win + " d"; $("rbIdioV").textContent = st.idio + "%"; }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("rbWin", "win"); bind("rbIdio", "idio");
+  var sw = $("rbSw").querySelectorAll("button");
+  for (var si = 0; si < sw.length; si++) {
+    sw[si].addEventListener("click", function () {
+      st.mode = this.getAttribute("data-v");
+      for (var k = 0; k < sw.length; k++) sw[k].setAttribute("aria-pressed", sw[k] === this ? "true" : "false");
+      render();
+    });
+  }
+  $("rbBand").addEventListener("click", function () {
+    st.band = st.band ? 0 : 1;
+    this.setAttribute("aria-pressed", st.band ? "true" : "false");
+    render();
+  });
+  $("rbSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  labels(); render();
+})();
+
+/* ════ 3. FAMA-FRENCH ATTRIBUTION WATERFALL ══════════════════ */
+(function () {
+  var PRE = {
+    value:       { total: 120, bm: 95,  bs: -15, bv: 55 },
+    smallgrowth: { total: 155, bm: 112, bs: 78,  bv: -45 },
+    quality:     { total: 90,  bm: 68,  bs: -25, bv: 12 },
+    ls:          { total: 65,  bm: 8,   bs: 30,  bv: 40 },
+    closet:      { total: 104, bm: 99,  bs: 2,   bv: 4 }
+  };
+  var st = { total: 120, bm: 95, bs: -15, bv: 55, pm: 65, ps: 18, pv: 32, rf: 20 };
+
+  function render() {
+    var tot = st.total / 1000, rf = st.rf / 1000;
+    var cm = (st.bm / 100) * (st.pm / 1000);
+    var cs = (st.bs / 100) * (st.ps / 1000);
+    var cv = (st.bv / 100) * (st.pv / 1000);
+    var exp = cm + cs + cv;
+    var alpha = tot - rf - exp;
+    var capm = tot - rf - cm;
+
+    var rows = [
+      { n: "Risk-free rate", l: "—", p: pct(rf, 2), v: rf, c: "#5f6673" },
+      { n: "MKT − RF", l: (st.bm / 100).toFixed(2), p: pct(st.pm / 1000, 2), v: cm, c: "#6cb6ff" },
+      { n: "SMB (size)", l: (st.bs / 100).toFixed(2), p: pct(st.ps / 1000, 2), v: cs, c: "#a78bfa" },
+      { n: "HML (value)", l: (st.bv / 100).toFixed(2), p: pct(st.pv / 1000, 2), v: cv, c: "#d29922" },
+      { n: "Residual α", l: "—", p: "—", v: alpha, c: alpha >= 0 ? "#3fb950" : "#f85149" }
+    ];
+
+    var svg = $("ffSvg"); clear(svg);
+    var W = 660, H = 300, pad = { l: 56, r: 20, t: 22, b: 40 }, i;
+    var cum = 0, lo = 0, hi = 0;
+    for (i = 0; i < rows.length; i++) { cum += rows[i].v; lo = Math.min(lo, cum); hi = Math.max(hi, cum); }
+    hi = Math.max(hi, tot) * 1.16; lo = Math.min(lo, 0) - Math.abs(hi) * 0.12;
+    axes(svg, W, H, pad, lo, hi, function (v) { return (v * 100).toFixed(0) + "%"; }, 5);
+    var bw = (W - pad.l - pad.r) / (rows.length + 1);
+    function PY(v) { return H - pad.b - (v - lo) / (hi - lo) * (H - pad.t - pad.b); }
+    cum = 0;
+    for (i = 0; i < rows.length; i++) {
+      var y0 = cum, y1 = cum + rows[i].v;
+      cum = y1;
+      var top = Math.min(y0, y1), bot = Math.max(y0, y1);
+      var x = pad.l + i * bw + bw * 0.16;
+      svg.appendChild(mk("rect", { x: x, y: PY(bot), width: bw * 0.68,
+        height: Math.max(1.5, PY(top) - PY(bot)), rx: 3, fill: rows[i].c, opacity: .72 }));
+      svg.appendChild(txt(x + bw * 0.34, PY(bot) - 6, pct(rows[i].v, 2), 9.5, rows[i].c, "middle", "700"));
+      svg.appendChild(txt(x + bw * 0.34, H - pad.b + 14, rows[i].n.split(" ")[0], 9, "#9aa0a6", "middle"));
+      if (i < rows.length - 1) {
+        svg.appendChild(mk("line", { x1: x + bw * 0.68, y1: PY(y1), x2: pad.l + (i + 1) * bw + bw * 0.16,
+          y2: PY(y1), stroke: "#3a4150", "stroke-width": 1, "stroke-dasharray": "3 2" }));
+      }
+    }
+    var xT = pad.l + rows.length * bw + bw * 0.16;
+    svg.appendChild(mk("rect", { x: xT, y: PY(tot), width: bw * 0.68, height: Math.max(1.5, PY(0) - PY(tot)),
+      rx: 3, fill: "#fda4af", opacity: .55 }));
+    svg.appendChild(txt(xT + bw * 0.34, PY(tot) - 6, pct(tot, 2), 10, "#fda4af", "middle", "700"));
+    svg.appendChild(txt(xT + bw * 0.34, H - pad.b + 14, "TOTAL", 9, "#fda4af", "middle", "700"));
+    svg.appendChild(txt(pad.l + 3, pad.t + 10, "loading × premium, stacked to the fund's return",
+      9.5, "#9aa0a6"));
+
+    var tb = $("ffTable"); clear(tb);
+    for (i = 0; i < rows.length; i++) {
+      var tr = document.createElement("tr");
+      var cls = i === rows.length - 1 ? (alpha >= 0 ? "ok" : "bad") : "";
+      tr.innerHTML = "<td class=\"n\">" + rows[i].n + "</td><td>" + rows[i].l + "</td><td>" + rows[i].p +
+        "</td><td class=\"" + cls + "\">" + pct(rows[i].v, 2) + "</td><td>" +
+        (tot !== 0 ? (rows[i].v / tot * 100).toFixed(0) + "%" : "—") + "</td>";
+      if (i === rows.length - 1) tr.className = "lead-row";
+      tb.appendChild(tr);
+    }
+    $("ffCapm").textContent = pct(capm, 2);
+    $("ffAlpha").textContent = pct(alpha, 2);
+    $("ffAlpha").className = "sv " + (alpha > 0.005 ? "ok" : alpha < -0.005 ? "bad" : "warn");
+    $("ffExp").textContent = pct(exp, 2);
+    $("ffEaten").textContent = Math.round((capm - alpha) * 10000) + " bps";
+    $("ffNote").innerHTML = "<b>" + Math.round((capm - alpha) * 10000) + " bps of the CAPM alpha was " +
+      "size and value.</b> The fund's CAPM alpha is " + pct(capm, 2) + "; once SMB and HML are priced at " +
+      "the premia you set, what is left for the manager is " + pct(alpha, 2) + ". " +
+      (Math.abs(alpha) < 0.01
+        ? "At that level the honest recommendation is a factor ETF, not a fee."
+        : "That is a claim worth testing — go to Part 3 and ask how many years it would take to establish it.");
+  }
+  function labels() {
+    $("ffTotalV").textContent = (st.total / 10).toFixed(1) + "%";
+    $("ffBmV").textContent = (st.bm / 100).toFixed(2);
+    $("ffBsV").textContent = (st.bs / 100).toFixed(2);
+    $("ffBvV").textContent = (st.bv / 100).toFixed(2);
+    $("ffPmV").textContent = (st.pm / 10).toFixed(1) + "%";
+    $("ffPsV").textContent = (st.ps / 10).toFixed(1) + "%";
+    $("ffPvV").textContent = (st.pv / 10).toFixed(1) + "%";
+    $("ffRfV").textContent = (st.rf / 10).toFixed(1) + "%";
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("ffTotal", "total"); bind("ffBm", "bm"); bind("ffBs", "bs"); bind("ffBv", "bv");
+  bind("ffPm", "pm"); bind("ffPs", "ps"); bind("ffPv", "pv"); bind("ffRf", "rf");
+  $("ffPreset").addEventListener("change", function () {
+    var p = PRE[this.value];
+    st.total = p.total; st.bm = p.bm; st.bs = p.bs; st.bv = p.bv;
+    $("ffTotal").value = p.total; $("ffBm").value = p.bm; $("ffBs").value = p.bs; $("ffBv").value = p.bv;
+    labels(); render();
+  });
+  labels(); render();
+})();
+
+/* ════ 4. t-STAT vs SAMPLE LENGTH ════════════════════════════ */
+(function () {
+  var st = { al: 200, te: 8, yrs: 5, n: 1 };
+  function render() {
+    var ir = (st.al / 10000) / (st.te / 100);
+    var tNow = ir * Math.sqrt(st.yrs);
+    var crit = 2.0;
+    var critN = st.n > 1 ? ppf(1 - 0.025 / st.n) : crit;
+    var need = Math.pow(crit / Math.max(1e-6, ir), 2);
+    var needN = Math.pow(critN / Math.max(1e-6, ir), 2);
+
+    var svg = $("tsSvg"); clear(svg);
+    var W = 660, H = 300, pad = { l: 46, r: 16, t: 18, b: 30 }, i;
+    var XMAX = 60;
+    var hi = Math.max(4, ir * Math.sqrt(XMAX) * 1.1, critN * 1.25);
+    axes(svg, W, H, pad, 0, hi, function (v) { return v.toFixed(1); }, 5);
+    var curve = [], cx = [];
+    for (i = 0; i <= XMAX; i++) { curve.push(ir * Math.sqrt(i)); cx.push(i); }
+    polyline(svg, curve, W, H, pad, 0, XMAX, 0, hi, "#fda4af", 2.2, "", cx);
+    function PY(v) { return H - pad.b - v / hi * (H - pad.t - pad.b); }
+    function PX(v) { return pad.l + v / XMAX * (W - pad.l - pad.r); }
+    svg.appendChild(mk("line", { x1: pad.l, y1: PY(crit), x2: W - pad.r, y2: PY(crit), stroke: "#3fb950",
+      "stroke-width": 1.5, "stroke-dasharray": "5 4" }));
+    svg.appendChild(txt(pad.l + 4, PY(crit) - 5, "t = 2.0", 9.5, "#3fb950"));
+    if (st.n > 1) {
+      svg.appendChild(mk("line", { x1: pad.l, y1: PY(critN), x2: W - pad.r, y2: PY(critN), stroke: "#d29922",
+        "stroke-width": 1.5, "stroke-dasharray": "5 4" }));
+      svg.appendChild(txt(pad.l + 4, PY(critN) - 5, "Bonferroni for N=" + st.n + ": t = " + critN.toFixed(2),
+        9.5, "#d29922"));
+    }
+    svg.appendChild(mk("line", { x1: PX(st.yrs), y1: pad.t, x2: PX(st.yrs), y2: H - pad.b, stroke: "#6cb6ff",
+      "stroke-width": 1, "stroke-dasharray": "3 3" }));
+    svg.appendChild(mk("circle", { cx: PX(st.yrs), cy: PY(Math.min(hi, tNow)), r: 4.5, fill: "#fda4af",
+      stroke: "#0f1115", "stroke-width": 1.6 }));
+    svg.appendChild(txt(Math.min(PX(st.yrs) + 7, W - 130), PY(Math.min(hi, tNow)) - 8,
+      "your sample: t = " + tNow.toFixed(2), 10, "#fda4af", null, "700"));
+    svg.appendChild(txt(pad.l, H - 9, "0 yr", 9, "#5f6673"));
+    svg.appendChild(txt(W - pad.r, H - 9, XMAX + " yr of track record", 9, "#5f6673", "end"));
+
+    $("tsIr").textContent = ir.toFixed(2);
+    $("tsT").textContent = tNow.toFixed(2);
+    $("tsT").className = "sv " + (tNow >= critN ? "ok" : tNow >= crit ? "warn" : "bad");
+    $("tsYr2").textContent = need > 999 ? "999+" : need.toFixed(0) + " yr";
+    $("tsYrN").textContent = needN > 999 ? "999+" : needN.toFixed(0) + " yr";
+    $("tsNote").innerHTML = "<b>IR " + ir.toFixed(2) + " → " +
+      (need > 999 ? "more than 999" : need.toFixed(0)) + " years for t = 2</b>" +
+      (st.n > 1 ? ", and " + (needN > 999 ? "more than 999" : needN.toFixed(0)) +
+        " years once you admit to " + st.n + " attempts" : "") +
+      ". You have " + st.yrs + ", which buys you t = " + tNow.toFixed(2) + ". " +
+      (tNow >= critN
+        ? "That clears the bar — which is unusual, and usually means the tracking error is small rather than the alpha large."
+        : "That does not clear the bar. The correct sentence for the tearsheet is not \"the alpha is zero\" — it is \"this sample cannot distinguish this alpha from zero\", which is a different and more useful claim.");
+  }
+  function labels() {
+    $("tsAlV").textContent = st.al + " bps";
+    $("tsTeV").textContent = st.te + "%";
+    $("tsYrsV").textContent = st.yrs + " yr";
+    $("tsNV").textContent = st.n;
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("tsAl", "al"); bind("tsTe", "te"); bind("tsYrs", "yrs"); bind("tsN", "n");
+  labels(); render();
+})();
+
+/* ════ 5. THE MULTIPLE-TESTING TRAP ══════════════════════════ */
+(function () {
+  var st = { n: 100, yrs: 5, real: 0, ir: 40, seed: 8080 };
+  function render() {
+    var rnd = lcg(st.seed), i;
+    var T = st.yrs;
+    var real = Math.min(st.real, st.n);
+    var arr = [];
+    for (i = 0; i < st.n; i++) {
+      var isReal = i < real;
+      var tTrue = isReal ? (st.ir / 100) * Math.sqrt(T) : 0;
+      var t = tTrue + gauss(rnd);
+      arr.push({ t: t, real: isReal, sharpe: t / Math.sqrt(T), id: i });
+    }
+    var crit = 1.96, critB = ppf(1 - 0.025 / st.n);
+    var sig = 0, fals = 0;
+    for (i = 0; i < arr.length; i++) if (Math.abs(arr[i].t) > crit) { sig++; if (!arr[i].real) fals++; }
+    var bonf = 0;
+    for (i = 0; i < arr.length; i++) if (Math.abs(arr[i].t) > critB) bonf++;
+    /* Benjamini-Hochberg at 5% on two-sided p-values */
+    var ps = [];
+    for (i = 0; i < arr.length; i++) ps.push({ p: 2 * (1 - normCdf(Math.abs(arr[i].t))), real: arr[i].real });
+    ps.sort(function (a, b) { return a.p - b.p; });
+    var bh = 0;
+    for (i = ps.length - 1; i >= 0; i--) { if (ps[i].p <= 0.05 * (i + 1) / ps.length) { bh = i + 1; break; } }
+
+    var sorted = arr.slice().sort(function (a, b) { return b.t - a.t; });
+    $("mtSig").textContent = sig + " of " + st.n;
+    $("mtFalse").textContent = fals + (sig ? " (" + Math.round(fals / sig * 100) + "%)" : "");
+    $("mtBest").textContent = sorted[0].t.toFixed(2);
+    $("mtBestS").textContent = sorted[0].sharpe.toFixed(2);
+    $("mtBonf").textContent = bonf + " (t > " + critB.toFixed(2) + ")";
+    $("mtBh").textContent = bh + " of " + st.n;
+    $("mtExp").textContent = ppf(1 - 1 / (st.n + 1)).toFixed(2);
+    $("mtNeed").textContent = (critB / Math.sqrt(T)).toFixed(2);
+
+    /* histogram */
+    var svg = $("mtSvg"); clear(svg);
+    var W = 660, H = 280, pad = { l: 46, r: 16, t: 20, b: 32 };
+    var LO = -4.5, HI = 5.5, NB = 40;
+    var binsN = [], binsR = [], b;
+    for (b = 0; b < NB; b++) { binsN.push(0); binsR.push(0); }
+    for (i = 0; i < arr.length; i++) {
+      var bi = Math.max(0, Math.min(NB - 1, Math.floor((arr[i].t - LO) / (HI - LO) * NB)));
+      if (arr[i].real) binsR[bi]++; else binsN[bi]++;
+    }
+    var mx = 1;
+    for (b = 0; b < NB; b++) mx = Math.max(mx, binsN[b] + binsR[b]);
+    axes(svg, W, H, pad, 0, mx * 1.15, function (v) { return v.toFixed(0); }, 4);
+    var bw = (W - pad.l - pad.r) / NB;
+    function PY(v) { return H - pad.b - v / (mx * 1.15) * (H - pad.t - pad.b); }
+    for (b = 0; b < NB; b++) {
+      var hN = PY(0) - PY(binsN[b]);
+      if (hN > 0) svg.appendChild(mk("rect", { x: pad.l + b * bw + 0.5, y: PY(binsN[b]),
+        width: Math.max(1, bw - 1), height: hN, fill: "rgba(95,102,115,.75)" }));
+      if (binsR[b] > 0) svg.appendChild(mk("rect", { x: pad.l + b * bw + 0.5, y: PY(binsN[b] + binsR[b]),
+        width: Math.max(1, bw - 1), height: PY(binsN[b]) - PY(binsN[b] + binsR[b]), fill: "rgba(63,185,80,.7)" }));
+    }
+    function PX(t) { return pad.l + (t - LO) / (HI - LO) * (W - pad.l - pad.r); }
+    var m2;
+    for (m2 = 0; m2 < 2; m2++) {
+      var tv = m2 ? crit : -crit;
+      svg.appendChild(mk("line", { x1: PX(tv), y1: pad.t, x2: PX(tv), y2: H - pad.b, stroke: "#f85149", "stroke-width": 1.4 }));
+    }
+    svg.appendChild(txt(PX(crit) + 4, pad.t + 11, "±1.96", 9.5, "#f85149"));
+    if (critB < HI) {
+      svg.appendChild(mk("line", { x1: PX(critB), y1: pad.t, x2: PX(critB), y2: H - pad.b, stroke: "#d29922",
+        "stroke-width": 1.4, "stroke-dasharray": "4 3" }));
+      svg.appendChild(txt(PX(critB) + 4, pad.t + 25, "Bonferroni " + critB.toFixed(2), 9.5, "#d29922"));
+    }
+    svg.appendChild(txt(pad.l, H - 10, "t = " + LO, 9, "#5f6673"));
+    svg.appendChild(txt(W - pad.r, H - 10, "t = " + HI + " · " + st.n + " strategies, " + st.yrs + " years each",
+      9, "#5f6673", "end"));
+
+    var tb = $("mtTable"); clear(tb);
+    for (i = 0; i < Math.min(6, sorted.length); i++) {
+      var s = sorted[i];
+      var tr = document.createElement("tr");
+      var passes = Math.abs(s.t) > crit, passesB = Math.abs(s.t) > critB;
+      tr.innerHTML = "<td class=\"n\">#" + (i + 1) + "</td><td>strat_" + (100 + s.id) + "</td><td class=\"" +
+        (s.real ? "ok" : "bad") + "\">" + (s.real ? "yes" : "no") + "</td><td>" + s.sharpe.toFixed(2) +
+        "</td><td>" + s.t.toFixed(2) + "</td><td class=\"" + (passes && !s.real ? "bad" : passes ? "ok" : "") +
+        "\">" + (passes ? "yes" : "no") + "</td><td class=\"" + (passesB ? "ok" : "") + "\">" +
+        (passesB ? "yes" : "no") + "</td>";
+      if (passes && !s.real) tr.className = "lead-row";
+      tb.appendChild(tr);
+    }
+
+    $("mtNote").innerHTML = "<b>" + sig + " of " + st.n + " came back significant, and " + fals +
+      " of those have no edge at all.</b> The best of the batch has t = " + sorted[0].t.toFixed(2) +
+      ", i.e. a Sharpe of " + sorted[0].sharpe.toFixed(2) + " over " + st.yrs + " years — a perfectly " +
+      "presentable pitch deck built on nothing" +
+      (real > 0 ? ", while " + real + " genuinely skilled strategies are somewhere in that same pile" : "") +
+      ". Bonferroni keeps " + bonf + "; Benjamini-Hochberg keeps " + bh +
+      ". This is the reason week 7 deflates the Sharpe and week 8 purges the folds.";
+  }
+  function normCdf(z) {
+    /* Abramowitz-Stegun 7.1.26 on the error function */
+    var s = z < 0 ? -1 : 1, x = Math.abs(z) / Math.sqrt(2);
+    var t = 1 / (1 + 0.3275911 * x);
+    var y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+    return 0.5 * (1 + s * y);
+  }
+  function labels() {
+    $("mtNV").textContent = st.n;
+    $("mtYrsV").textContent = st.yrs + " yr";
+    $("mtRealV").textContent = st.real;
+    $("mtIrV").textContent = (st.ir / 100).toFixed(2);
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("mtN", "n"); bind("mtYrs", "yrs"); bind("mtReal", "real"); bind("mtIr", "ir");
+  $("mtRun").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  labels(); render();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>

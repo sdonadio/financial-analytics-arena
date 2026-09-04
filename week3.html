@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 3 · Portfolio Analytics &amp; Optimisation — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week2.html">← Week 2</a> · <b>Week 3 · Portfolio Analytics &amp; Optimisation</b> · <a href="week4.html">Week 4 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 3</div>
+  <h1>Portfolio Analytics &amp; Optimisation</h1>
+  <p class="promise">Markowitz gives you the exact answer to a question nobody can ask, because it needs
+  the true means and the true covariance and you have neither. This week is about what to do instead —
+  shrink the estimate, throw away the means, or refuse to optimise at all — and about why
+  <em class="hi">1/N</em> is not a joke benchmark.</p>
+  <ul class="you">
+    <li>Build a mean-variance frontier from a real return panel, and then <strong>resample it</strong> and watch it move by more than the effect you were trying to exploit.</li>
+    <li>Apply <strong>Ledoit-Wolf shrinkage</strong> to a covariance matrix and say, in one sentence, what the shrinkage intensity is buying you.</li>
+    <li>Race four portfolios — MVO, shrunk MVO, risk parity, 1/N — <em class="hi">out of sample</em>, with turnover counted and costs charged.</li>
+    <li>Impose the constraints a real mandate has (long-only, position caps) and report what they cost, in Sharpe and in effective breadth.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: optimise the week-1 panel four ways with <code>scipy.optimize</code></span>
+    <span class="pill">HW3: four-portfolio bake-off with an out-of-sample verdict</span>
+    <span class="pill warn">Phase 1 opens: universe + data contract</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? Two inputs, one quadratic program, and a lot of estimation error</h2>
+  <p class="lead">Mean-variance optimisation is a one-line problem: minimise <code>w'Σw</code> subject to
+  <code>w'μ = m</code> and <code>1'w = 1</code>. It is also, in practice, an <strong>error-maximising
+  machine</strong> — because the optimiser cannot tell a genuinely high expected return from an
+  overestimated one, and it will happily put 40% of your book in whichever asset got lucky in your
+  sample.</p>
+
+  <div class="grid3" style="margin-top:16px">
+    <div class="panel"><h4>What you need</h4><p class="sub">A vector of expected returns
+    <code>μ</code> (n numbers) and a covariance matrix <code>Σ</code> (n(n+1)/2 numbers). For 30 names
+    that is <em class="hi">495 parameters</em> estimated from, if you are lucky, 120 monthly
+    observations.</p></div>
+    <div class="panel"><h4>Which is harder</h4><p class="sub">The means, by a wide margin. Estimating an
+    annual mean to ±1% needs decades; estimating a covariance to a usable tolerance needs a few years.
+    That asymmetry is why <em class="hi">min-variance</em> and <em class="hi">risk parity</em> — which
+    never touch μ — are so competitive.</p></div>
+    <div class="panel"><h4>What goes wrong</h4><p class="sub">Σ from n names and T &lt; n periods is
+    <em class="hi">singular</em>: the optimiser finds a portfolio with apparently zero variance and
+    levers into it. Even with T &gt; n, the smallest eigenvalues are the noisiest, and
+    <code>Σ⁻¹</code> multiplies exactly those.</p></div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · the frontier, and the frontier you actually got</h3>
+  <p class="sub" style="margin-bottom:12px">The thick green line is the <b>true</b> frontier, computed
+  from the population moments you would need a time machine to know. Each thin line is a frontier
+  estimated from one finite sample of the same world. Switch to <b>as realised</b> to plot those same
+  estimated portfolios at their <em class="hi">true</em> risk and return — which is what you would
+  actually have earned.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="efSvg" viewBox="0 0 660 400" role="img" aria-label="Efficient frontier from population moments with many sample-estimated frontiers around it"></svg>
+      </div>
+      <div class="row">
+        <div class="sw" id="efSw" role="group" aria-label="Choose whether to plot estimated or realised risk and return">
+          <button type="button" data-v="est" aria-pressed="true">As estimated</button>
+          <button type="button" data-v="real" aria-pressed="false">As realised</button>
+        </div>
+        <button class="btn" type="button" id="efSeed">New samples →</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:#3fb950"></i>true frontier</span>
+        <span><i style="background:rgba(253,164,175,.5)"></i>one sample's frontier</span>
+        <span><i style="background:#6cb6ff"></i>1/N</span>
+        <span><i style="background:#d29922"></i>true tangency portfolio</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>The world, and your sample of it</h3>
+        <div class="ctl"><label for="efN">Assets <b id="efNV">8</b></label>
+          <input type="range" id="efN" min="4" max="12" value="8" aria-label="Number of assets in the universe"/></div>
+        <div class="ctl"><label for="efT">Sample length <b id="efTV">60 months</b></label>
+          <input type="range" id="efT" min="18" max="240" step="6" value="60" aria-label="Sample length in months"/></div>
+        <div class="ctl"><label for="efK">Samples drawn <b id="efKV">18</b></label>
+          <input type="range" id="efK" min="2" max="40" value="18" aria-label="Number of independent samples drawn"/></div>
+        <div class="ctl"><label for="efDisp">Dispersion of true means <b id="efDispV">3.0%</b></label>
+          <input type="range" id="efDisp" min="0" max="80" step="1" value="30" aria-label="Cross-sectional dispersion of true expected returns, in tenths of a percent"/></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">True tangency Sharpe</div><div class="sv ok" id="efSt">—</div></div>
+        <div class="stat"><div class="sl">Realised, median sample</div><div class="sv bad" id="efSr">—</div></div>
+        <div class="stat"><div class="sl">1/N Sharpe</div><div class="sv acc" id="efSn">—</div></div>
+        <div class="stat"><div class="sl">Spread of est. tangency vol</div><div class="sv warn" id="efSp">—</div></div>
+      </div>
+      <div class="note" id="efNote"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · shrinkage, on the matrix itself</h3>
+  <p class="sub" style="margin-bottom:12px">Left is the <b>sample</b> correlation matrix from your finite
+  panel; right is what it looks like after shrinking toward a constant-correlation target. Watch the
+  condition number and the smallest eigenvalue, because those are the two numbers that decide whether
+  <code>Σ⁻¹</code> is a calculation or a random-number generator.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="grid2">
+        <div class="svgwrap">
+          <svg id="hmA" viewBox="0 0 320 340" role="img" aria-label="Heatmap of the sample correlation matrix"></svg>
+        </div>
+        <div class="svgwrap">
+          <svg id="hmB" viewBox="0 0 320 340" role="img" aria-label="Heatmap of the shrunk correlation matrix"></svg>
+        </div>
+      </div>
+      <div class="svgwrap">
+        <svg id="hmEig" viewBox="0 0 660 170" role="img" aria-label="Eigenvalue spectrum of the sample and shrunk covariance matrices against the population spectrum"></svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:#f85149"></i>correlation +1</span>
+        <span><i style="background:#181b22"></i>0</span>
+        <span><i style="background:#6cb6ff"></i>−1</span>
+        <span><i style="background:#fda4af"></i>sample eigenvalues</span>
+        <span><i style="background:#3fb950"></i>population</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>Controls</h3>
+        <div class="ctl"><label for="shD">Shrinkage intensity δ <b id="shDV">0.00</b></label>
+          <input type="range" id="shD" min="0" max="100" value="0" aria-label="Shrinkage intensity from zero to one, in percent"/></div>
+        <div class="ctl"><label for="shN">Assets <b id="shNV">10</b></label>
+          <input type="range" id="shN" min="4" max="16" value="10" aria-label="Number of assets"/></div>
+        <div class="ctl"><label for="shT">Observations <b id="shTV">36 months</b></label>
+          <input type="range" id="shT" min="12" max="240" step="6" value="36" aria-label="Number of monthly observations"/></div>
+        <div class="row">
+          <button class="btn primary" type="button" id="shLw">Use Ledoit-Wolf δ</button>
+          <button class="btn" type="button" id="shSeed">New sample →</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Condition number</div><div class="sv bad" id="shCond">—</div></div>
+        <div class="stat"><div class="sl">Smallest eigenvalue</div><div class="sv warn" id="shMin">—</div></div>
+        <div class="stat"><div class="sl">Ledoit-Wolf δ</div><div class="sv acc" id="shLwV">—</div></div>
+        <div class="stat"><div class="sl">Error vs true Σ</div><div class="sv" id="shErr">—</div></div>
+        <div class="stat"><div class="sl">Obs. per parameter</div><div class="sv" id="shRatio">—</div></div>
+        <div class="stat"><div class="sl">Max weight of MVO</div><div class="sv" id="shMax">—</div></div>
+        <div class="stat"><div class="sl">Largest eigenvalue</div><div class="sv" id="shTop">—</div></div>
+        <div class="stat"><div class="sl">Target correlation ρ̄</div><div class="sv acc" id="shRho">—</div></div>
+      </div>
+      <div class="note" id="shNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How you decide — a bake-off, out of sample, with costs</h2>
+  <p class="lead">Four candidates, one rolling walk-forward, one set of rules: weights are estimated on a
+  trailing window, held until the next rebalance, and every unit of turnover is charged. The in-sample
+  column is there to show you how badly it lies.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="bkSvg" viewBox="0 0 660 300" role="img" aria-label="Out-of-sample equity curves for the four portfolio construction methods, net of costs"></svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:#f85149"></i>MVO</span>
+        <span><i style="background:#fda4af"></i>shrunk MVO</span>
+        <span><i style="background:#6cb6ff"></i>risk parity</span>
+        <span><i style="background:#3fb950"></i>1/N</span>
+      </div>
+      <div class="tablewrap">
+        <table class="t">
+          <thead><tr><th>Method</th><th>In-sample Sharpe</th><th>OOS ann. return</th><th>OOS vol</th><th>OOS Sharpe</th><th>Turnover</th><th>Net Sharpe</th></tr></thead>
+          <tbody id="bkTable"></tbody>
+        </table>
+      </div>
+      <div class="svgwrap">
+        <svg id="bkBars" viewBox="0 0 660 190" role="img" aria-label="Bar chart comparing in-sample Sharpe, out-of-sample Sharpe and out-of-sample Sharpe net of costs for each method"></svg>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>The experiment</h3>
+        <div class="ctl"><label for="bkN">Assets <b id="bkNV">10</b></label>
+          <input type="range" id="bkN" min="4" max="16" value="10" aria-label="Number of assets"/></div>
+        <div class="ctl"><label for="bkWin">Estimation window <b id="bkWinV">36 months</b></label>
+          <input type="range" id="bkWin" min="12" max="120" step="6" value="36" aria-label="Trailing estimation window in months"/></div>
+        <div class="ctl"><label for="bkYears">Out-of-sample length <b id="bkYearsV">12 yr</b></label>
+          <input type="range" id="bkYears" min="3" max="25" value="12" aria-label="Out-of-sample length in years"/></div>
+        <div class="ctl"><label for="bkReb">Rebalance every <b id="bkRebV">3 months</b></label>
+          <input type="range" id="bkReb" min="1" max="12" value="3" aria-label="Rebalance interval in months"/></div>
+        <div class="ctl"><label for="bkCost">Cost per unit traded <b id="bkCostV">20 bps</b></label>
+          <input type="range" id="bkCost" min="0" max="100" step="1" value="20" aria-label="One-way trading cost in basis points of notional traded"/></div>
+        <div class="ctl"><label for="bkDelta">Shrinkage for the shrunk MVO <b id="bkDeltaV">0.40</b></label>
+          <input type="range" id="bkDelta" min="0" max="100" value="40" aria-label="Shrinkage intensity used by the shrunk mean-variance portfolio"/></div>
+        <div class="row">
+          <button class="btn" type="button" id="bkLo" aria-pressed="true">Long-only</button>
+          <button class="btn" type="button" id="bkSeed">New world →</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Winner, gross</div><div class="sv acc" id="bkWinG">—</div></div>
+        <div class="stat"><div class="sl">Winner, net of costs</div><div class="sv ok" id="bkWinN">—</div></div>
+        <div class="stat"><div class="sl">Winner net, minus 1/N</div><div class="sv" id="bkVsN">—</div></div>
+        <div class="stat"><div class="sl">Rebalances</div><div class="sv" id="bkRebs">—</div></div>
+      </div>
+      <div class="note" id="bkNote"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · what the constraints cost</h3>
+  <p class="sub" style="margin-bottom:12px">Real mandates are not unconstrained. Long-only, a 10% single-name
+  cap and a minimum position size are typical, and each one moves the portfolio away from the optimum —
+  which, given how noisy the optimum is, is often an <em class="hi">improvement</em>. Read the effective
+  breadth: <code>1/Σw²</code>, the number of positions you really have.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel">
+        <h3>Mandate</h3>
+        <div class="ctl"><label for="cnMethod">Construction</label>
+          <select id="cnMethod" aria-label="Choose the construction method">
+            <option value="mvo" selected="selected">Mean-variance (tangency)</option>
+            <option value="shrunk">Shrunk mean-variance</option>
+            <option value="minvar">Minimum variance</option>
+            <option value="erc">Risk parity (equal risk contribution)</option>
+            <option value="eq">1/N</option>
+          </select></div>
+        <div class="ctl"><label for="cnCap">Single-name cap <b id="cnCapV">25%</b></label>
+          <input type="range" id="cnCap" min="8" max="100" step="1" value="25" aria-label="Maximum weight per name, in percent; 100 means no cap"/></div>
+        <div class="ctl"><label for="cnT">Estimation window <b id="cnTV">36 months</b></label>
+          <input type="range" id="cnT" min="12" max="180" step="6" value="36" aria-label="Estimation window in months"/></div>
+        <div class="ctl"><label for="cnDisp">True dispersion of expected returns <b id="cnDispV">0.4%</b></label>
+          <input type="range" id="cnDisp" min="0" max="80" step="1" value="4" aria-label="Cross-sectional dispersion of the true expected returns, in tenths of a percent"/></div>
+        <div class="row">
+          <button class="btn" type="button" id="cnLong" aria-pressed="false">Long-only</button>
+          <button class="btn" type="button" id="cnSeed">New sample →</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Gross exposure</div><div class="sv" id="cnGross">—</div></div>
+        <div class="stat"><div class="sl">Largest position</div><div class="sv warn" id="cnMax">—</div></div>
+        <div class="stat"><div class="sl">Short exposure</div><div class="sv bad" id="cnShort">—</div></div>
+        <div class="stat"><div class="sl">Effective breadth</div><div class="sv acc" id="cnEff">—</div></div>
+        <div class="stat"><div class="sl">True Sharpe of these weights</div><div class="sv ok" id="cnSharpe">—</div></div>
+        <div class="stat"><div class="sl">vs the same weights unconstrained</div><div class="sv" id="cnDelta">—</div></div>
+        <div class="stat"><div class="sl">Mandate helped, 200 samples</div><div class="sv acc" id="cnWin">—</div></div>
+        <div class="stat"><div class="sl">Median change in Sharpe</div><div class="sv" id="cnMed">—</div></div>
+      </div>
+      <div class="note" id="cnNote"></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="cnSvg" viewBox="0 0 660 320" role="img" aria-label="Bar chart of the portfolio weights per asset, with the cap and the zero line marked"></svg>
+      </div>
+      <pre class="code" id="cnCode"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: the weight is the decision</h2>
+  <p class="lead">Every earlier week produces an estimate; this is the week the estimate becomes an
+  <em class="hi">action</em>. A number in a table is free to be wrong. A weight is not: it is capital, it
+  has a cost to acquire, and it is the thing your risk report in week 4 is about to stress.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h4>Why 1/N is the benchmark, not the joke</h4>
+      <p class="sub">1/N has no parameters, so it has no estimation error, so it cannot be wrong in the
+      way MVO is wrong. DeMiguel, Garlappi and Uppal's result — that across many datasets 1/N beats
+      sample-based mean-variance out of sample — is not a claim that optimisation is useless. It is a
+      claim that <em class="hi">the error in the inputs dominates the gain from optimising</em> unless you
+      do something about the error.</p>
+      <p class="sub">So the honest ranking of effort is: fix the inputs (shrinkage, factor models,
+      constraints), then optimise. Optimising harder on bad inputs makes things worse, precisely and
+      measurably.</p>
+    </div>
+    <div class="panel">
+      <h4>What a constraint really is</h4>
+      <p class="sub">A 10% position cap looks like a compliance nuisance. Statistically it is a
+      <em class="hi">prior</em>: it says "I do not believe any single estimate enough to bet more than 10%
+      on it". Jagannathan and Ma showed that a long-only constraint on min-variance is equivalent to
+      shrinking the covariance matrix — the constraint <em class="hi">is</em> the regularisation.</p>
+      <p class="sub">Which is why the constraint widget above reports how often the mandate
+      <em class="hi">raises</em> the true Sharpe across 200 fresh samples, rather than asserting that it
+      does: the answer depends on how noisy your inputs are relative to the real dispersion in expected
+      returns. Shorten the estimation window and the constraint wins more often. If binding your
+      optimiser makes the out-of-sample result better, your inputs were the problem — not the
+      optimiser.</p>
+    </div>
+    <div class="panel">
+      <h4>The number your tearsheet has to carry</h4>
+      <p class="sub">Not the optimal Sharpe. The <b>out-of-sample Sharpe net of costs, against 1/N, with
+      turnover stated</b>. Phase 1 asks for exactly that comparison, and a portfolio that loses to 1/N
+      after costs is a finding — a publishable, defensible one — provided you say so.</p>
+    </div>
+    <div class="panel">
+      <h4>What week 4 does with it</h4>
+      <p class="sub">Takes these weights and asks how badly they can behave: the return distribution's
+      left tail, VaR and Expected Shortfall, the drawdown, and whether the covariance matrix you shrank
+      here is still the right one in a crisis. Correlations go to one exactly when your diversification
+      was the argument for the weights.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px">Interactive · optimiser hygiene</h3>
+  <p class="sub" style="margin-bottom:12px">Eight things a defensible optimisation pipeline does. Tick
+  the ones yours does; the lamp goes green when a reviewer could reproduce your weights and would believe
+  them.</p>
+
+  <div class="split">
+    <div>
+      <div class="chk" id="opList">
+        <label class="item"><input type="checkbox" data-i="0" aria-label="Covariance is regularised"/>
+          <span class="txt"><span class="t">1 · The covariance is regularised, and δ is reported</span>
+          <span class="c">LedoitWolf().fit(X).covariance_   # print shrinkage_</span></span></label>
+        <label class="item"><input type="checkbox" data-i="1" aria-label="Means are shrunk or not used"/>
+          <span class="txt"><span class="t">2 · The means are shrunk, modelled, or not used at all</span>
+          <span class="c">mu = 0.5 * mu_sample + 0.5 * mu_prior   # or drop mu entirely</span></span></label>
+        <label class="item"><input type="checkbox" data-i="2" aria-label="Weights are estimated on a trailing window only"/>
+          <span class="txt"><span class="t">3 · Weights use a trailing window only, never the full sample</span>
+          <span class="c">w_t = optimise(X.loc[t - window : t - 1])</span></span></label>
+        <label class="item"><input type="checkbox" data-i="3" aria-label="Turnover is measured"/>
+          <span class="txt"><span class="t">4 · Turnover is measured and charged</span>
+          <span class="c">turnover = (w_new - w_old).abs().sum() / 2</span></span></label>
+        <label class="item"><input type="checkbox" data-i="4" aria-label="Benchmarked against one over N"/>
+          <span class="txt"><span class="t">5 · Every result is quoted against 1/N</span>
+          <span class="c">assert report.index.isin(["1/N"]).any()</span></span></label>
+        <label class="item"><input type="checkbox" data-i="5" aria-label="Optimiser convergence is checked"/>
+          <span class="txt"><span class="t">6 · The optimiser's exit status is checked, every time</span>
+          <span class="c">res = minimize(...); assert res.success, res.message</span></span></label>
+        <label class="item"><input type="checkbox" data-i="6" aria-label="Condition number is monitored"/>
+          <span class="txt"><span class="t">7 · The condition number of Σ is logged at each rebalance</span>
+          <span class="c">np.linalg.cond(Sigma)   # &gt; 1e4 is a red flag</span></span></label>
+        <label class="item"><input type="checkbox" data-i="7" aria-label="Weights sum and bounds are asserted"/>
+          <span class="txt"><span class="t">8 · Weights are asserted, not assumed</span>
+          <span class="c">assert abs(w.sum() - 1) &lt; 1e-8 and w.max() &lt;= cap + 1e-9</span></span></label>
+      </div>
+      <div class="bar"><i id="opBar"></i></div>
+      <div class="smoke" id="opBadge"><span class="lamp"></span><span id="opTxt">Pipeline trust: RED · 0 of 8</span></div>
+      <p class="sub" style="margin-top:12px">Items 3, 4 and 5 are the three that decide whether the
+      bake-off in HW3 means anything: a trailing window, a turnover number, and the 1/N row.</p>
+    </div>
+    <div class="stack">
+      <div class="panel tight"><h3>What the lab actually asks</h3>
+        <ul class="plain">
+          <li>Take the week-1 panel, pick 30 names, and build four portfolios: unconstrained MVO, MVO on a
+          <code>LedoitWolf</code> covariance, equal-risk-contribution risk parity, and 1/N.</li>
+          <li>Walk them forward on a 36-month trailing window, rebalancing quarterly, and record the
+          weights at every rebalance — not just the returns.</li>
+          <li>Count turnover, charge 20&#8239;bps per unit traded, and report gross and net Sharpe side by
+          side with the in-sample number.</li>
+          <li>Then impose long-only and a 10% cap, re-run, and explain why three of the four got
+          <em class="hi">better</em>.</li>
+        </ul>
+      </div>
+      <div class="note"><b>Phase 1 opens this week.</b> Choose your investable universe — 30+ names or an
+      ETF sleeve — and freeze a data contract: the tickers, the date range, the source, the adjustment
+      rule and the cache path. Weeks 4 and 6 build the risk section and the tearsheet on top of exactly
+      that contract, so a universe you change later costs you both.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Every one of these produces a beautiful in-sample number. Open them.</p>
+
+  <details class="pit"><summary>Optimising on the same sample you evaluate on</summary>
+    <div class="body">
+      <p>Fit μ and Σ on 2015–2024, optimise, then report the Sharpe of that portfolio over 2015–2024.
+      The result is not a backtest, it is the definition of the tangency portfolio: it is
+      <em class="hi">guaranteed</em> to have the highest Sharpe in that sample, by construction, whatever
+      the data was.</p>
+      <p>This is the single most common error in submitted bake-offs, and it is invisible because the
+      number is plausible — a Sharpe of 1.3 rather than 6.</p>
+      <p class="fix">Fix: weights from a trailing window, returns from the period after it, always. If a
+      method has no out-of-sample column, it has no column.</p>
+    </div></details>
+
+  <details class="pit"><summary>A singular covariance matrix, and an optimiser that does not complain</summary>
+    <div class="body">
+      <p>With 50 names and 36 monthly observations, the sample covariance has rank 36 and is singular.
+      <code>np.linalg.inv</code> will still return something — an enormous, arbitrary something — and the
+      optimiser will find a "zero-variance" portfolio built entirely out of the null space.</p>
+      <p>The tell is weights of ±800%, a reported portfolio vol of 0.4%, and an in-sample Sharpe in the
+      double digits.</p>
+      <p class="fix">Fix: shrink, or use a factor covariance, or use fewer names. And log
+      <code>np.linalg.cond(Sigma)</code> at every rebalance — above about 1e4 you are inverting
+      noise. Prefer <code>solve</code> to <code>inv</code>, and never <code>pinv</code> silently.</p>
+    </div></details>
+
+  <details class="pit"><summary>Turnover that nobody counted</summary>
+    <div class="body">
+      <p>Unconstrained MVO on a 36-month window typically turns over 200–400% a year, because the
+      estimated means move and the optimiser chases them. At 20&#8239;bps per unit traded that is
+      40–80&#8239;bps a year of pure cost, which is most of whatever edge the optimisation found.</p>
+      <p>Risk parity turns over a fraction of that, and 1/N turns over almost nothing — which is a real,
+      economic advantage, not an accounting technicality.</p>
+      <p class="fix">Fix: report turnover as a first-class metric next to Sharpe, charge it, and consider
+      a no-trade band: rebalance only when a weight has drifted more than a threshold. Costs belong in
+      the objective, not in a footnote.</p>
+    </div></details>
+
+  <details class="pit"><summary>Annualising by the wrong number, or mixing frequencies</summary>
+    <div class="body">
+      <p>Monthly covariance times 252. Daily means times 12. A vol of 5.2% that should be 18%. Every one
+      of these has appeared in a submitted notebook, and each produces a self-consistent, entirely wrong
+      set of weights — because the optimiser only cares about the <em class="hi">ratio</em> of μ to Σ,
+      and mixing frequencies breaks exactly that ratio.</p>
+      <p class="fix">Fix: annualise once, at the boundary, in one function; assert that portfolio vol
+      lands between 3% and 60% before you use the weights; and keep the frequency in the variable name
+      (<code>mu_ann</code>, <code>cov_m</code>).</p>
+    </div></details>
+
+  <details class="pit"><summary>Treating the constraint as the enemy</summary>
+    <div class="body">
+      <p>"My optimiser wants 180% in one name and the cap won't let it." The optimiser does not want
+      anything; it is reporting that your estimated mean for that name is enormous relative to its
+      estimated risk, and that estimate is almost certainly noise.</p>
+      <p>Students often respond by loosening the cap until the "optimal" solution is allowed. The result
+      reliably gets worse out of sample.</p>
+      <p class="fix">Fix: read a binding constraint as a diagnostic. If long-only or a 10% cap changes
+      your portfolio materially, your inputs are too noisy to justify the unconstrained answer — so
+      shrink harder, use a factor covariance, or drop the means. And report the constrained result as the
+      headline, because it is the one you could actually run.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="1" data-exp="<b>The means.</b> Estimation error in μ dominates: the optimiser's weights are roughly proportional to Σ⁻¹μ, and a 1% error in an expected return moves a weight far more than a comparable error in a covariance. That asymmetry is exactly why minimum-variance and risk parity — which never touch μ — are so competitive out of sample, and why the standard fixes (shrink μ toward the grand mean, or drop μ and target risk instead) work. Σ is not innocent: a singular or ill-conditioned Σ can produce nonsense too. But given a fixed data budget, the means are where the damage is.">
+    <p class="q"><span>Q1</span>You have 120 monthly observations on 30 names. Which input's estimation error hurts a mean-variance portfolio more?</p>
+    <div class="opts">
+      <button class="opt" type="button">The covariance matrix, because it has 465 parameters and μ has only 30</button>
+      <button class="opt" type="button">The expected returns, because the optimiser's weights are far more sensitive to them</button>
+      <button class="opt" type="button">Neither — with 120 observations both are estimated precisely enough</button>
+      <button class="opt" type="button">It depends only on the number of names, not on which input</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="2" data-exp="<b>Charge the costs, and quote the net number against 1/N.</b> 380% annual turnover at 20 bps per unit traded is about 76 bps a year, which is most of a 0.2 Sharpe advantage on a 12%-vol portfolio — so the honest comparison may well reverse. Nothing here says throw the method away; it says the reported number is gross, and a gross number is not a decision. Loosening the rebalance schedule or adding a no-trade band are legitimate NEXT steps, but only after the cost is measured, and reducing the estimation window would make the turnover worse, not better.">
+    <p class="q"><span>Q2</span>Your shrunk-MVO portfolio has an out-of-sample Sharpe of 0.82 against 0.61 for 1/N, and turns over 380% a year. What do you do first?</p>
+    <div class="opts">
+      <button class="opt" type="button">Report the 0.82 — it is out of sample, so it is already honest</button>
+      <button class="opt" type="button">Shorten the estimation window so the weights are more responsive</button>
+      <button class="opt" type="button">Charge the turnover at a realistic cost and re-run the comparison against 1/N</button>
+      <button class="opt" type="button">Increase the shrinkage until the Sharpe advantage disappears</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>It is equivalent to shrinking the covariance matrix.</b> Jagannathan and Ma (2003) showed that a long-only constraint on minimum-variance is exactly a modification of Σ — the binding constraints act like a shrinkage of the covariances of the constrained assets — which is why the constraint so often improves out-of-sample performance rather than degrading it. That reframes the whole conversation: a position cap is not a compliance tax on your alpha, it is a statement of how much you believe your own estimates. It does reduce the in-sample optimum by definition, but that is not the interesting part.">
+    <p class="q"><span>Q3</span>Adding a long-only constraint to a minimum-variance portfolio usually improves its out-of-sample Sharpe. Why?</p>
+    <div class="opts">
+      <button class="opt" type="button">Because short positions have unlimited downside, which raises realised vol</button>
+      <button class="opt" type="button">Because long-only portfolios have lower turnover, so they pay less in costs</button>
+      <button class="opt" type="button">They do not — the constraint always reduces the achievable Sharpe</button>
+      <button class="opt" type="button">Because the binding constraints act as a shrinkage of the covariance matrix</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Optimise the week-1 panel four ways — MVO, shrunk MVO, ERC risk parity, 1/N — with
+      <code>scipy.optimize</code> and <code>sklearn.covariance.LedoitWolf</code>.</li>
+      <li>Walk forward on a 36-month window, rebalance quarterly, store the weight matrix, and count
+      turnover.</li>
+      <li>Report in-sample and out-of-sample Sharpe side by side, gross and net of 20&#8239;bps.</li>
+      <li>Impose long-only and a 10% cap; explain, with the condition number in hand, why it helps.</li>
+    </ul></div>
+    <div class="panel"><h4>Homework 3 · the bake-off</h4><ul class="plain">
+      <li>The four-portfolio table, with turnover and net Sharpe, on your own universe.</li>
+      <li>A one-paragraph out-of-sample verdict that names a winner and says by how much, with the 1/N row
+      present.</li>
+      <li>The reported shrinkage intensity and condition number at each rebalance.</li>
+      <li>One-line <code>AI-USE</code> note on the deliverable.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course's own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/assets.html"><div class="nl">See also</div>
+      <div class="nt">Financial Markets Arena · Asset Classes</div><div class="nd">What is actually in the universe you are weighting — and why the correlations between those things are not stable.</div></a>
+    <a class="nextcard" href="week2.html"><div class="nl">Previous</div>
+      <div class="nt">← Week 2 · Factor Models</div><div class="nd">The exposures these weights are made of, and the reason a factor covariance beats a sample one.</div></a>
+    <a class="nextcard" href="week4.html"><div class="nl">Next</div>
+      <div class="nt">Week 4 · Risk Analytics →</div><div class="nd">Now stress these weights: the left tail, VaR and Expected Shortfall, and a backtest of the risk model itself.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 3 — Portfolio Analytics & Optimisation
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("efSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "") + (x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i;
+  for (i = 0; i < ys.length; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7, "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+
+/* ════ LINEAR ALGEBRA (small n, so plain Gauss-Jordan is fine) ══ */
+function zeroM(n, m) { var A = [], i, j; for (i = 0; i < n; i++) { A.push([]); for (j = 0; j < m; j++) A[i].push(0); } return A; }
+function matInv(M) {
+  var n = M.length, A = [], i, j, k;
+  for (i = 0; i < n; i++) { A.push(M[i].slice()); for (j = 0; j < n; j++) A[i].push(i === j ? 1 : 0); }
+  for (i = 0; i < n; i++) {
+    var piv = i;
+    for (k = i + 1; k < n; k++) if (Math.abs(A[k][i]) > Math.abs(A[piv][i])) piv = k;
+    var tmp = A[i]; A[i] = A[piv]; A[piv] = tmp;
+    var d = A[i][i];
+    if (Math.abs(d) < 1e-14) d = d >= 0 ? 1e-14 : -1e-14;        /* keep it finite, flag via cond */
+    for (j = 0; j < 2 * n; j++) A[i][j] /= d;
+    for (k = 0; k < n; k++) {
+      if (k === i) continue;
+      var f = A[k][i];
+      if (f === 0) continue;
+      for (j = 0; j < 2 * n; j++) A[k][j] -= f * A[i][j];
+    }
+  }
+  var R = [];
+  for (i = 0; i < n; i++) R.push(A[i].slice(n));
+  return R;
+}
+function mv(A, x) { var n = A.length, o = [], i, j, s; for (i = 0; i < n; i++) { s = 0; for (j = 0; j < x.length; j++) s += A[i][j] * x[j]; o.push(s); } return o; }
+function vdot(a, b) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+function quad(A, x) { return vdot(x, mv(A, x)); }
+/* Jacobi eigenvalues of a symmetric matrix, descending */
+function eigvals(M) {
+  var n = M.length, A = [], i, j, s;
+  for (i = 0; i < n; i++) A.push(M[i].slice());
+  for (s = 0; s < 80; s++) {
+    var off = 0, p = 0, q = 1;
+    for (i = 0; i < n; i++) for (j = i + 1; j < n; j++) {
+      off += A[i][j] * A[i][j];
+      if (Math.abs(A[i][j]) > Math.abs(A[p][q])) { p = i; q = j; }
+    }
+    if (off < 1e-18 || n < 2) break;
+    var theta = 0.5 * Math.atan2(2 * A[p][q], A[q][q] - A[p][p]);
+    var c = Math.cos(theta), sn = Math.sin(theta), k;
+    var rowP = [], rowQ = [];
+    for (k = 0; k < n; k++) { rowP.push(c * A[p][k] - sn * A[q][k]); rowQ.push(sn * A[p][k] + c * A[q][k]); }
+    for (k = 0; k < n; k++) { A[p][k] = rowP[k]; A[q][k] = rowQ[k]; }
+    for (k = 0; k < n; k++) {
+      var cp = c * A[k][p] - sn * A[k][q], cq = sn * A[k][p] + c * A[k][q];
+      A[k][p] = cp; A[k][q] = cq;
+    }
+  }
+  var ev = [];
+  for (i = 0; i < n; i++) ev.push(A[i][i]);
+  ev.sort(function (a, b) { return b - a; });
+  return ev;
+}
+
+/* ════ THE WORLD: one factor, n assets, annualised moments ════ */
+function makeWorld(n, seed, disp) {
+  var rnd = lcg(seed), i, j;
+  var beta = [], sec = [], gam = [], ivol = [], mu = [];
+  var MKT_VOL = 0.16, SEC_VOL = 0.11, MKT_PREM = 0.055, RF = 0.02, NSEC = 3;
+  for (i = 0; i < n; i++) {
+    beta.push(0.55 + 1.0 * rnd());
+    sec.push(i % NSEC);                       /* three sectors, so Sigma has blocks */
+    gam.push(0.5 + 0.9 * rnd());
+    ivol.push(0.10 + 0.26 * rnd());
+    mu.push(RF + beta[i] * MKT_PREM + (disp / 100) * (rnd() - 0.5) * 2);
+  }
+  var S = zeroM(n, n);
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+    S[i][j] = beta[i] * beta[j] * MKT_VOL * MKT_VOL +
+      (sec[i] === sec[j] ? gam[i] * gam[j] * SEC_VOL * SEC_VOL : 0) +
+      (i === j ? ivol[i] * ivol[i] : 0);
+  }
+  return { n: n, mu: mu, S: S, beta: beta, sec: sec, gam: gam, ivol: ivol,
+           rf: RF, mktVol: MKT_VOL, secVol: SEC_VOL, nsec: NSEC };
+}
+/* T monthly draws from the world */
+function drawSample(w, T, rnd) {
+  var R = [], t, i, k;
+  for (t = 0; t < T; t++) {
+    var f = w.mktVol / Math.sqrt(12) * gauss(rnd);
+    var sf = [];
+    for (k = 0; k < w.nsec; k++) sf.push(w.secVol / Math.sqrt(12) * gauss(rnd));
+    var row = [];
+    for (i = 0; i < w.n; i++) {
+      row.push(w.mu[i] / 12 + w.beta[i] * f + w.gam[i] * sf[w.sec[i]] +
+               w.ivol[i] / Math.sqrt(12) * gauss(rnd));
+    }
+    R.push(row);
+  }
+  return R;
+}
+function moments(R) {
+  var T = R.length, n = R[0].length, i, j, t;
+  var m = [];
+  for (i = 0; i < n; i++) { var s = 0; for (t = 0; t < T; t++) s += R[t][i]; m.push(s / T); }
+  var C = zeroM(n, n);
+  for (i = 0; i < n; i++) for (j = i; j < n; j++) {
+    var c = 0;
+    for (t = 0; t < T; t++) c += (R[t][i] - m[i]) * (R[t][j] - m[j]);
+    c /= Math.max(1, T - 1);
+    C[i][j] = c; C[j][i] = c;
+  }
+  var mu = [], S = zeroM(n, n);
+  for (i = 0; i < n; i++) { mu.push(m[i] * 12); for (j = 0; j < n; j++) S[i][j] = C[i][j] * 12; }
+  return { mu: mu, S: S };
+}
+/* constant-correlation shrinkage target, then blend */
+function shrink(S, delta) {
+  var n = S.length, i, j, rsum = 0, cnt = 0;
+  for (i = 0; i < n; i++) for (j = i + 1; j < n; j++) {
+    var den = Math.sqrt(Math.max(1e-12, S[i][i] * S[j][j]));
+    rsum += S[i][j] / den; cnt++;
+  }
+  var rbar = cnt ? rsum / cnt : 0;
+  var F = zeroM(n, n);
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+    F[i][j] = i === j ? S[i][i] : rbar * Math.sqrt(Math.max(1e-12, S[i][i] * S[j][j]));
+  }
+  var O = zeroM(n, n);
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++) O[i][j] = (1 - delta) * S[i][j] + delta * F[i][j];
+  return O;
+}
+/* Ledoit-Wolf shrinkage intensity toward the constant-correlation target:
+   delta = ((pi_hat - rho_hat) / gamma_hat) / T, clipped to [0, 1].
+   pi_hat is the sampling variance of the sample covariances, rho_hat its
+   diagonal part (which the target reproduces exactly), gamma_hat the squared
+   distance from the sample matrix to the target. All in monthly units. */
+function lwDelta(R, S) {
+  var T = R.length, n = S.length, i, j, t;
+  var m = [];
+  for (i = 0; i < n; i++) { var mi = 0; for (t = 0; t < T; t++) mi += R[t][i]; m.push(mi / T); }
+  var pi = 0, rho = 0;
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+    var v = 0;
+    for (t = 0; t < T; t++) {
+      var d = (R[t][i] - m[i]) * (R[t][j] - m[j]) - S[i][j] / 12;
+      v += d * d;
+    }
+    v /= T;
+    pi += v;
+    if (i === j) rho += v;
+  }
+  var Ft = shrink(S, 1), gamma = 0;
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+    var g = (Ft[i][j] - S[i][j]) / 12;
+    gamma += g * g;
+  }
+  if (gamma <= 0) return 1;
+  return Math.max(0, Math.min(1, ((pi - rho) / gamma) / T));
+}
+/* portfolio constructors — all return weights summing to 1 */
+function wTangency(mu, S, rf) {
+  var n = mu.length, ex = [], i;
+  for (i = 0; i < n; i++) ex.push(mu[i] - rf);
+  var w = mv(matInv(S), ex), s = 0;
+  for (i = 0; i < n; i++) s += w[i];
+  if (Math.abs(s) < 1e-12) s = 1e-12;
+  for (i = 0; i < n; i++) w[i] /= s;
+  return w;
+}
+function wMinVar(S) {
+  var n = S.length, one = [], i;
+  for (i = 0; i < n; i++) one.push(1);
+  var w = mv(matInv(S), one), s = 0;
+  for (i = 0; i < n; i++) s += w[i];
+  if (Math.abs(s) < 1e-12) s = 1e-12;
+  for (i = 0; i < n; i++) w[i] /= s;
+  return w;
+}
+/* equal risk contribution: fixed point of w_i <- sqrt(w_i / (Sigma w)_i),
+   whose solution satisfies w_i (Sigma w)_i = const for every i */
+function wERC(S) {
+  var n = S.length, w = [], i, it;
+  for (i = 0; i < n; i++) w.push(1 / n);
+  for (it = 0; it < 300; it++) {
+    var Sw = mv(S, w), s = 0;
+    for (i = 0; i < n; i++) w[i] = Math.sqrt(Math.max(1e-16, w[i] / Math.max(1e-16, Sw[i])));
+    for (i = 0; i < n; i++) s += w[i];
+    for (i = 0; i < n; i++) w[i] /= s;
+  }
+  return w;
+}
+function wEqual(n) { var w = [], i; for (i = 0; i < n; i++) w.push(1 / n); return w; }
+function constrain(w, longOnly, cap) {
+  var n = w.length, o = w.slice(), i, it, s;
+  for (it = 0; it < 60; it++) {
+    if (longOnly) for (i = 0; i < n; i++) if (o[i] < 0) o[i] = 0;
+    s = 0; for (i = 0; i < n; i++) s += o[i];
+    if (Math.abs(s) < 1e-12) { o = wEqual(n); s = 1; }
+    for (i = 0; i < n; i++) o[i] /= s;
+    var over = false;
+    for (i = 0; i < n; i++) if (o[i] > cap + 1e-12) { o[i] = cap; over = true; }
+    if (!over && !(longOnly && Math.min.apply(null, o) < -1e-12)) break;
+  }
+  s = 0; for (i = 0; i < n; i++) s += o[i];
+  if (Math.abs(s) > 1e-12) for (i = 0; i < n; i++) o[i] /= s;
+  return o;
+}
+function trueSharpe(w, world) {
+  var m = vdot(w, world.mu) - world.rf;
+  var v = Math.sqrt(Math.max(1e-14, quad(world.S, w)));
+  return { sharpe: m / v, ret: vdot(w, world.mu), vol: v };
+}
+
+/* ════ 1. THE FRONTIER, ESTIMATED AND REALISED ═══════════════ */
+(function () {
+  var st = { n: 8, T: 60, K: 18, disp: 30, view: "est", seed: 4242 };
+
+  /* closed-form frontier: sigma(m) from A, B, C */
+  function frontier(mu, S, mLo, mHi, pts) {
+    var Si = matInv(S), n = mu.length, one = [], i;
+    for (i = 0; i < n; i++) one.push(1);
+    var A = vdot(one, mv(Si, one)), B = vdot(one, mv(Si, mu)), C = vdot(mu, mv(Si, mu));
+    var D = A * C - B * B;
+    var out = [];
+    for (i = 0; i < pts; i++) {
+      var m = mLo + (mHi - mLo) * i / (pts - 1);
+      var v2 = D !== 0 ? (A * m * m - 2 * B * m + C) / D : 0;
+      out.push({ m: m, v: Math.sqrt(Math.max(0, v2)) });
+    }
+    return { pts: out, A: A, B: B, C: C, D: D, Si: Si };
+  }
+  function wForReturn(mu, fr, m) {
+    var n = mu.length, one = [], i;
+    for (i = 0; i < n; i++) one.push(1);
+    var lam = (fr.C - fr.B * m) / fr.D, gam = (fr.A * m - fr.B) / fr.D;
+    var v = [];
+    for (i = 0; i < n; i++) v.push(lam * one[i] + gam * mu[i]);
+    return mv(fr.Si, v);
+  }
+
+  function render() {
+    var world = makeWorld(st.n, st.seed, st.disp);
+    var rnd = lcg(st.seed ^ 0x5bf03635);
+    var tTrue = wTangency(world.mu, world.S, world.rf);
+    var trueTan = trueSharpe(tTrue, world);
+    var eqS = trueSharpe(wEqual(st.n), world);
+    var mLo = Math.min.apply(null, world.mu) * 0.75, mHi = Math.max.apply(null, world.mu) * 1.25;
+    var trueFr = frontier(world.mu, world.S, mLo, mHi, 40);
+
+    var svg = $("efSvg"); clear(svg);
+    var W = 660, H = 400, pad = { l: 54, r: 16, t: 18, b: 34 }, i, k;
+    var vMax = 0.05, mMin = mLo, mMax = mHi;
+    for (i = 0; i < trueFr.pts.length; i++) vMax = Math.max(vMax, trueFr.pts[i].v);
+    vMax *= 1.35; mMax *= 1.2; mMin = Math.min(0, mMin);
+    axes(svg, W, H, pad, mMin, mMax, function (v) { return (v * 100).toFixed(0) + "%"; }, 5);
+    function PX(v) { return pad.l + v / vMax * (W - pad.l - pad.r); }
+    function PY(m) { return H - pad.b - (m - mMin) / (mMax - mMin) * (H - pad.t - pad.b); }
+    function drawFr(pts, color, width, dash) {
+      var d = "";
+      for (i = 0; i < pts.length; i++) d += (i ? " L" : "M") + PX(pts[i].v).toFixed(1) + " " + PY(pts[i].m).toFixed(1);
+      var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width });
+      if (dash) p.setAttribute("stroke-dasharray", dash);
+      svg.appendChild(p);
+    }
+
+    /* the sample frontiers */
+    var tanVols = [], realS = [];
+    for (k = 0; k < st.K; k++) {
+      var R = drawSample(world, st.T, rnd);
+      var mo = moments(R);
+      var fr = frontier(mo.mu, mo.S, mLo, mHi, 26);
+      if (st.view === "est") {
+        drawFr(fr.pts, "rgba(253,164,175,.42)", 1.1);
+      } else {
+        var real = [];
+        for (i = 0; i < fr.pts.length; i++) {
+          var w = wForReturn(mo.mu, fr, fr.pts[i].m);
+          var s = 0, j;
+          for (j = 0; j < w.length; j++) s += w[j];
+          if (Math.abs(s) > 1e-12) for (j = 0; j < w.length; j++) w[j] /= s;
+          real.push({ m: vdot(w, world.mu), v: Math.sqrt(Math.max(0, quad(world.S, w))) });
+        }
+        drawFr(real, "rgba(253,164,175,.42)", 1.1);
+      }
+      var wt = wTangency(mo.mu, mo.S, world.rf);
+      var ts = trueSharpe(wt, world);
+      tanVols.push(Math.sqrt(Math.max(0, quad(mo.S, wt))));
+      realS.push(ts.sharpe);
+      svg.appendChild(mk("circle", { cx: PX(Math.min(vMax, st.view === "est" ? tanVols[k] : ts.vol)).toFixed(1),
+        cy: PY(Math.max(mMin, Math.min(mMax, st.view === "est" ? vdot(wt, mo.mu) : ts.ret))).toFixed(1),
+        r: 2.6, fill: "rgba(248,81,73,.7)" }));
+    }
+    drawFr(trueFr.pts, "#3fb950", 2.6);
+    /* the individual assets */
+    for (i = 0; i < st.n; i++) {
+      svg.appendChild(mk("circle", { cx: PX(Math.sqrt(world.S[i][i])).toFixed(1), cy: PY(world.mu[i]).toFixed(1),
+        r: 3, fill: "none", stroke: "#5f6673", "stroke-width": 1.2 }));
+    }
+    svg.appendChild(mk("circle", { cx: PX(Math.min(vMax, trueTan.vol)).toFixed(1), cy: PY(trueTan.ret).toFixed(1),
+      r: 6, fill: "#d29922", stroke: "#0f1115", "stroke-width": 1.8 }));
+    svg.appendChild(mk("circle", { cx: PX(Math.min(vMax, eqS.vol)).toFixed(1), cy: PY(eqS.ret).toFixed(1),
+      r: 5, fill: "#6cb6ff", stroke: "#0f1115", "stroke-width": 1.6 }));
+    svg.appendChild(txt(W - pad.r - 4, H - 9, "annualised volatility", 9.5, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l + 4, pad.t + 12,
+      st.view === "est" ? "each thin line: what one 5-year sample thought the frontier was"
+                        : "each thin line: where those same portfolios really sat", 9.5, "#fda4af"));
+    svg.appendChild(txt(pad.l + 4, pad.t + 26, "thick green: the frontier you cannot know", 9.5, "#3fb950"));
+
+    realS.sort(function (a, b) { return a - b; });
+    var med = realS[Math.floor(realS.length / 2)];
+    $("efSt").textContent = trueTan.sharpe.toFixed(2);
+    $("efSr").textContent = med.toFixed(2);
+    $("efSn").textContent = eqS.sharpe.toFixed(2);
+    $("efSp").textContent = ((Math.max.apply(null, tanVols) - Math.min.apply(null, tanVols)) * 100).toFixed(0) + " pp";
+    $("efNote").innerHTML = "<b>The true tangency Sharpe is " + trueTan.sharpe.toFixed(2) +
+      "; the median sample's tangency portfolio actually delivered " + med.toFixed(2) +
+      ", and plain 1/N delivered " + eqS.sharpe.toFixed(2) + ".</b> With " + st.T + " months on " +
+      st.n + " assets, optimisation " + (med > eqS.sharpe ? "still wins here, but by less than the picture suggests"
+        : "loses to doing nothing at all") + ". Shorten the sample and watch the thin lines fan out — that " +
+      "fan is estimation error, and it is bigger than the effect you are trying to capture.";
+  }
+  function labels() {
+    $("efNV").textContent = st.n;
+    $("efTV").textContent = st.T + " months";
+    $("efKV").textContent = st.K;
+    $("efDispV").textContent = (st.disp / 10).toFixed(1) + "%";
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("efN", "n"); bind("efT", "T"); bind("efK", "K"); bind("efDisp", "disp");
+  var sw = $("efSw").querySelectorAll("button");
+  for (var si = 0; si < sw.length; si++) {
+    sw[si].addEventListener("click", function () {
+      st.view = this.getAttribute("data-v");
+      for (var k = 0; k < sw.length; k++) sw[k].setAttribute("aria-pressed", sw[k] === this ? "true" : "false");
+      render();
+    });
+  }
+  $("efSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  labels(); render();
+})();
+
+/* ════ 2. SHRINKAGE ON THE MATRIX ════════════════════════════ */
+(function () {
+  var st = { d: 0, n: 10, T: 36, seed: 71717 };
+  function corrOf(S) {
+    var n = S.length, C = zeroM(n, n), i, j;
+    for (i = 0; i < n; i++) for (j = 0; j < n; j++)
+      C[i][j] = S[i][j] / Math.sqrt(Math.max(1e-14, S[i][i] * S[j][j]));
+    return C;
+  }
+  function heat(svgId, C, title, sub) {
+    var svg = $(svgId); clear(svg);
+    var W = 320, H = 340, n = C.length, pad = { l: 22, r: 12, t: 34, b: 26 }, i, j;
+    var cell = Math.min((W - pad.l - pad.r) / n, (H - pad.t - pad.b) / n);
+    var x0 = pad.l + ((W - pad.l - pad.r) - cell * n) / 2;
+    for (i = 0; i < n; i++) for (j = 0; j < n; j++) {
+      var v = Math.max(-1, Math.min(1, C[i][j]));
+      var fill = v >= 0
+        ? "rgba(248,81,73," + (0.08 + 0.82 * v).toFixed(3) + ")"
+        : "rgba(108,182,255," + (0.08 + 0.82 * -v).toFixed(3) + ")";
+      svg.appendChild(mk("rect", { x: (x0 + j * cell).toFixed(1), y: (pad.t + i * cell).toFixed(1),
+        width: (cell - 0.7).toFixed(1), height: (cell - 0.7).toFixed(1), fill: fill }));
+    }
+    svg.appendChild(txt(x0, pad.t - 16, title, 10.5, "#fda4af", null, "700"));
+    svg.appendChild(txt(x0, pad.t - 4, sub, 9, "#9aa0a6"));
+    svg.appendChild(txt(x0, pad.t + cell * n + 14, n + " × " + n + " correlations", 9, "#5f6673"));
+  }
+  function render() {
+    var world = makeWorld(st.n, st.seed, 30);
+    var rnd = lcg(st.seed ^ 0x2545f491);
+    var R = drawSample(world, st.T, rnd);
+    var mo = moments(R);
+    var Sh = shrink(mo.S, st.d / 100);
+    var lw = lwDelta(R, mo.S);
+    var evS = eigvals(mo.S), evH = eigvals(Sh), evT = eigvals(world.S);
+    var cond = evH[0] / Math.max(1e-16, evH[evH.length - 1]);
+
+    heat("hmA", corrOf(mo.S), "Sample", st.T + " months, " + st.n + " assets");
+    heat("hmB", corrOf(Sh), "Shrunk, δ = " + (st.d / 100).toFixed(2),
+      st.d === 0 ? "identical to the sample" : "pulled toward constant correlation");
+
+    /* eigenvalue spectrum */
+    var svg = $("hmEig"); clear(svg);
+    var W = 660, H = 170, pad = { l: 48, r: 14, t: 20, b: 26 }, i;
+    var hiE = Math.max(evS[0], evT[0]) * 1.12;
+    axes(svg, W, H, pad, 0, hiE, function (v) { return v.toFixed(2); }, 3);
+    var bw = (W - pad.l - pad.r) / st.n;
+    for (i = 0; i < st.n; i++) {
+      var hS = evS[i] / hiE * (H - pad.t - pad.b), hH = evH[i] / hiE * (H - pad.t - pad.b);
+      svg.appendChild(mk("rect", { x: pad.l + i * bw + bw * 0.12, y: H - pad.b - hS,
+        width: bw * 0.36, height: Math.max(0.6, hS), fill: "rgba(253,164,175,.55)" }));
+      svg.appendChild(mk("rect", { x: pad.l + i * bw + bw * 0.52, y: H - pad.b - hH,
+        width: bw * 0.36, height: Math.max(0.6, hH), fill: "rgba(63,185,80,.42)" }));
+      var yT = H - pad.b - evT[i] / hiE * (H - pad.t - pad.b);
+      svg.appendChild(mk("line", { x1: pad.l + i * bw + bw * 0.08, y1: yT, x2: pad.l + i * bw + bw * 0.92, y2: yT,
+        stroke: "#3fb950", "stroke-width": 1.6 }));
+    }
+    svg.appendChild(txt(pad.l + 3, pad.t + 10, "eigenvalues: pink = sample, green bar = shrunk, green line = population",
+      9.5, "#9aa0a6"));
+    svg.appendChild(txt(W - pad.r, H - 8, "largest → smallest", 9, "#5f6673", "end"));
+
+    /* Frobenius error against the truth */
+    var errS = 0, errH = 0, j;
+    for (i = 0; i < st.n; i++) for (j = 0; j < st.n; j++) {
+      errS += Math.pow(mo.S[i][j] - world.S[i][j], 2);
+      errH += Math.pow(Sh[i][j] - world.S[i][j], 2);
+    }
+    var wm = wTangency(mo.mu, Sh, world.rf), mxw = 0;
+    for (i = 0; i < st.n; i++) mxw = Math.max(mxw, Math.abs(wm[i]));
+
+    $("shCond").textContent = cond > 9999 ? cond.toExponential(1) : cond.toFixed(0);
+    $("shCond").className = "sv " + (cond > 1e4 ? "bad" : cond > 1e3 ? "warn" : "ok");
+    $("shMin").textContent = evH[evH.length - 1].toExponential(2);
+    $("shLwV").textContent = lw.toFixed(2);
+    $("shErr").textContent = Math.sqrt(errH).toFixed(3) + " (sample " + Math.sqrt(errS).toFixed(3) + ")";
+    $("shRatio").textContent = (st.T / (st.n * (st.n + 1) / 2)).toFixed(2);
+    $("shMax").textContent = pct(mxw, 0);
+    $("shTop").textContent = evH[0].toFixed(3);
+    (function () {
+      var rs = 0, c2 = 0, a, b2;
+      for (a = 0; a < st.n; a++) for (b2 = a + 1; b2 < st.n; b2++) {
+        rs += mo.S[a][b2] / Math.sqrt(Math.max(1e-14, mo.S[a][a] * mo.S[b2][b2])); c2++;
+      }
+      $("shRho").textContent = (c2 ? rs / c2 : 0).toFixed(2);
+    })();
+    $("shNote").innerHTML = "<b>" + st.T + " observations for " + (st.n * (st.n + 1) / 2) +
+      " covariance parameters — " + (st.T / (st.n * (st.n + 1) / 2)).toFixed(2) +
+      " observations per parameter.</b> The condition number is " +
+      (cond > 9999 ? cond.toExponential(1) : cond.toFixed(0)) + ", and inverting a matrix at that " +
+      "conditioning is how a tangency portfolio ends up with a " + pct(mxw, 0) + " position. " +
+      "Ledoit-Wolf would pick δ = " + lw.toFixed(2) + " here" +
+      (Math.sqrt(errH) < Math.sqrt(errS)
+        ? ", and your current δ already gets you closer to the true Σ than the raw sample."
+        : ", and at δ = " + (st.d / 100).toFixed(2) + " you are not yet closer to the true Σ than the raw sample is.");
+  }
+  function labels() {
+    $("shDV").textContent = (st.d / 100).toFixed(2);
+    $("shNV").textContent = st.n;
+    $("shTV").textContent = st.T + " months";
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("shD", "d"); bind("shN", "n"); bind("shT", "T");
+  $("shLw").addEventListener("click", function () {
+    var world = makeWorld(st.n, st.seed, 30);
+    var R = drawSample(world, st.T, lcg(st.seed ^ 0x2545f491));
+    var mo = moments(R);
+    st.d = Math.round(lwDelta(R, mo.S) * 100);
+    $("shD").value = st.d; labels(); render();
+  });
+  $("shSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  labels(); render();
+})();
+
+/* ════ 3. THE FOUR-PORTFOLIO BAKE-OFF ════════════════════════ */
+(function () {
+  var st = { n: 10, win: 36, years: 12, reb: 3, cost: 20, delta: 40, lo: 1, seed: 606060 };
+  var METH = [
+    { k: "mvo", name: "MVO", color: "#f85149" },
+    { k: "shr", name: "Shrunk MVO", color: "#fda4af" },
+    { k: "erc", name: "Risk parity", color: "#6cb6ff" },
+    { k: "eq", name: "1/N", color: "#3fb950" }
+  ];
+
+  function weightsFor(k, mo, n) {
+    if (k === "mvo") return wTangency(mo.mu, mo.S, 0.02);
+    if (k === "shr") return wTangency(mo.mu, shrink(mo.S, st.delta / 100), 0.02);
+    if (k === "erc") return wERC(mo.S);
+    return wEqual(n);
+  }
+
+  function render() {
+    var world = makeWorld(st.n, st.seed, 30);
+    var rnd = lcg(st.seed ^ 0x68bc21eb);
+    var TOT = st.win + st.years * 12;
+    var R = drawSample(world, TOT, rnd);
+    var i, k, t, m;
+    var res = {};
+    for (k = 0; k < METH.length; k++) {
+      res[METH[k].k] = { r: [], gross: [], turn: 0, nreb: 0, eq: [1], eqNet: [1], wPrev: null };
+    }
+    var cost = st.cost / 10000;
+    var wCur = {};
+    for (t = st.win; t < TOT; t++) {
+      if ((t - st.win) % st.reb === 0) {
+        var win = R.slice(t - st.win, t);
+        var mo = moments(win);
+        for (k = 0; k < METH.length; k++) {
+          var w = weightsFor(METH[k].k, mo, st.n);
+          w = constrain(w, !!st.lo, 1e9);
+          var o = res[METH[k].k];
+          if (o.wPrev) {
+            var tu = 0;
+            for (i = 0; i < st.n; i++) tu += Math.abs(w[i] - o.wPrev[i]);
+            o.turn += tu / 2; o.nreb++;
+            o.pendingCost = (tu / 2) * 2 * cost;   /* both sides of the trade */
+          } else { o.pendingCost = 0; o.nreb++; }
+          o.wPrev = w.slice();
+          wCur[METH[k].k] = w;
+        }
+      }
+      for (k = 0; k < METH.length; k++) {
+        var o2 = res[METH[k].k], rr = 0;
+        for (i = 0; i < st.n; i++) rr += wCur[METH[k].k][i] * R[t][i];
+        var net = rr - (o2.pendingCost || 0);
+        o2.pendingCost = 0;
+        o2.gross.push(rr); o2.r.push(net);
+        o2.eq.push(o2.eq[o2.eq.length - 1] * (1 + rr));
+        o2.eqNet.push(o2.eqNet[o2.eqNet.length - 1] * (1 + net));
+      }
+    }
+    /* in-sample: fit on the first window, evaluate on the same window */
+    var moIS = moments(R.slice(0, st.win));
+    var rows = [];
+    for (k = 0; k < METH.length; k++) {
+      var wIS = constrain(weightsFor(METH[k].k, moIS, st.n), !!st.lo, 1e9);
+      var isS = (vdot(wIS, moIS.mu) - 0.02) / Math.sqrt(Math.max(1e-14, quad(moIS.S, wIS)));
+      var o3 = res[METH[k].k];
+      var g = o3.gross, nr = o3.r;
+      var annG = mean(g) * 12, volG = sd(g) * Math.sqrt(12);
+      var shG = volG > 0 ? (annG - 0.02) / volG : 0;
+      var annN = mean(nr) * 12, volN = sd(nr) * Math.sqrt(12);
+      var shN = volN > 0 ? (annN - 0.02) / volN : 0;
+      var turnAnn = o3.nreb > 1 ? o3.turn / (o3.nreb - 1) * (12 / st.reb) : 0;
+      rows.push({ name: METH[k].name, color: METH[k].color, k: METH[k].k, isS: isS,
+                  ann: annG, vol: volG, sh: shG, turn: turnAnn, shN: shN, eq: o3.eqNet });
+    }
+
+    /* equity curves */
+    var svg = $("bkSvg"); clear(svg);
+    var W = 660, H = 300, pad = { l: 50, r: 14, t: 18, b: 28 };
+    var lo = 1, hi = 1;
+    for (k = 0; k < rows.length; k++) {
+      lo = Math.min(lo, Math.min.apply(null, rows[k].eq));
+      hi = Math.max(hi, Math.max.apply(null, rows[k].eq));
+    }
+    var llo = Math.log(Math.max(0.05, lo * 0.94)), lhi = Math.log(hi * 1.08);
+    axes(svg, W, H, pad, llo, lhi, function (v) { return Math.exp(v).toFixed(1) + "×"; }, 4);
+    var nT = rows[0].eq.length - 1;
+    for (k = 0; k < rows.length; k++) {
+      var ln = [], xs = [], step = Math.max(1, Math.round(nT / 420));
+      for (t = 0; t <= nT; t += step) { ln.push(Math.log(Math.max(0.05, rows[k].eq[t]))); xs.push(t); }
+      polyline(svg, ln, W, H, pad, 0, nT, llo, lhi, rows[k].color, 1.9, "", xs);
+    }
+    svg.appendChild(txt(pad.l, H - 8, "start of out-of-sample", 9, "#5f6673"));
+    svg.appendChild(txt(W - pad.r, H - 8, st.years + " years later · net of costs, log scale", 9, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l + 4, pad.t + 11, "weights re-estimated every " + st.reb +
+      " month" + (st.reb > 1 ? "s" : "") + " on a " + st.win + "-month trailing window", 9.5, "#fda4af"));
+
+    /* table */
+    var tb = $("bkTable"); clear(tb);
+    var bestG = rows[0], bestN = rows[0];
+    for (k = 0; k < rows.length; k++) {
+      if (rows[k].sh > bestG.sh) bestG = rows[k];
+      if (rows[k].shN > bestN.shN) bestN = rows[k];
+    }
+    for (k = 0; k < rows.length; k++) {
+      var r = rows[k], tr = document.createElement("tr");
+      tr.innerHTML = "<td class=\"n\">" + r.name + "</td><td>" + r.isS.toFixed(2) + "</td><td>" +
+        pct(r.ann, 1) + "</td><td>" + (r.vol * 100).toFixed(1) + "%</td><td class=\"" +
+        (r === bestG ? "ok" : "") + "\">" + r.sh.toFixed(2) + "</td><td class=\"" +
+        (r.turn > 1.5 ? "bad" : "") + "\">" + Math.round(r.turn * 100) + "%/yr</td><td class=\"" +
+        (r === bestN ? "ok" : "") + "\">" + r.shN.toFixed(2) + "</td>";
+      if (r === bestN) tr.className = "lead-row";
+      tb.appendChild(tr);
+    }
+
+    /* grouped bars */
+    svg = $("bkBars"); clear(svg);
+    W = 660; H = 190; pad = { l: 50, r: 14, t: 22, b: 32 };
+    var mxS = 0.5;
+    for (k = 0; k < rows.length; k++) mxS = Math.max(mxS, rows[k].isS, rows[k].sh, rows[k].shN);
+    var mnS = 0;
+    for (k = 0; k < rows.length; k++) mnS = Math.min(mnS, rows[k].shN, rows[k].sh);
+    mxS *= 1.15; mnS = Math.min(0, mnS * 1.2);
+    axes(svg, W, H, pad, mnS, mxS, function (v) { return v.toFixed(1); }, 4);
+    var gw = (W - pad.l - pad.r) / rows.length;
+    function PY(v) { return H - pad.b - (v - mnS) / (mxS - mnS) * (H - pad.t - pad.b); }
+    for (k = 0; k < rows.length; k++) {
+      var trio = [{ v: rows[k].isS, c: "rgba(95,102,115,.8)" },
+                  { v: rows[k].sh, c: rows[k].color },
+                  { v: rows[k].shN, c: rows[k].color }];
+      var j2;
+      for (j2 = 0; j2 < 3; j2++) {
+        var x = pad.l + k * gw + gw * (0.12 + j2 * 0.26);
+        var y0 = PY(0), y1 = PY(trio[j2].v);
+        svg.appendChild(mk("rect", { x: x.toFixed(1), y: Math.min(y0, y1).toFixed(1),
+          width: (gw * 0.22).toFixed(1), height: Math.max(1, Math.abs(y1 - y0)).toFixed(1),
+          rx: 2, fill: trio[j2].c, opacity: j2 === 2 ? 0.5 : 0.85 }));
+      }
+      svg.appendChild(txt(pad.l + k * gw + gw * 0.5, H - pad.b + 14, rows[k].name, 9.5, "#9aa0a6", "middle"));
+    }
+    svg.appendChild(txt(pad.l + 3, pad.t + 10, "Sharpe: grey = in-sample · solid = out of sample · pale = net of costs",
+      9.5, "#9aa0a6"));
+
+    var eqRow = rows[3];
+    $("bkWinG").textContent = bestG.name;
+    $("bkWinN").textContent = bestN.name;
+    $("bkVsN").textContent = (bestN.shN - eqRow.shN >= 0 ? "+" : "") + (bestN.shN - eqRow.shN).toFixed(2) + " Sharpe";
+    $("bkRebs").textContent = res.mvo.nreb;
+    $("bkNote").innerHTML = "<b>" + bestG.name + " wins gross; " + bestN.name + " wins net.</b> " +
+      "MVO's in-sample Sharpe of " + rows[0].isS.toFixed(2) + " is not a result — it is the definition " +
+      "of the tangency portfolio on the sample it was fitted to. Out of sample it earns " +
+      rows[0].sh.toFixed(2) + " gross and " + rows[0].shN.toFixed(2) + " after paying for " +
+      Math.round(rows[0].turn * 100) + "%/yr of turnover, against 1/N's " + eqRow.shN.toFixed(2) +
+      " on essentially no turnover at all. That last comparison is the one HW3 asks for.";
+  }
+  function labels() {
+    $("bkNV").textContent = st.n;
+    $("bkWinV").textContent = st.win + " months";
+    $("bkYearsV").textContent = st.years + " yr";
+    $("bkRebV").textContent = st.reb + " month" + (st.reb > 1 ? "s" : "");
+    $("bkCostV").textContent = st.cost + " bps";
+    $("bkDeltaV").textContent = (st.delta / 100).toFixed(2);
+  }
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("bkN", "n"); bind("bkWin", "win"); bind("bkYears", "years");
+  bind("bkReb", "reb"); bind("bkCost", "cost"); bind("bkDelta", "delta");
+  $("bkLo").addEventListener("click", function () {
+    st.lo = st.lo ? 0 : 1;
+    this.setAttribute("aria-pressed", st.lo ? "true" : "false");
+    this.classList.toggle("on", !st.lo);
+    render();
+  });
+  $("bkSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  labels(); render();
+})();
+
+/* ════ 4. WHAT THE CONSTRAINTS COST ══════════════════════════ */
+(function () {
+  var st = { method: "mvo", cap: 25, T: 36, lo: 0, seed: 909090, n: 12, disp: 4 };
+  function build() {
+    var world = makeWorld(st.n, st.seed, st.disp);
+    var R = drawSample(world, st.T, lcg(st.seed ^ 0x1f123bb5));
+    var mo = moments(R);
+    var raw;
+    if (st.method === "mvo") raw = wTangency(mo.mu, mo.S, world.rf);
+    else if (st.method === "shrunk") raw = wTangency(mo.mu, shrink(mo.S, 0.4), world.rf);
+    else if (st.method === "minvar") raw = wMinVar(mo.S);
+    else if (st.method === "erc") raw = wERC(mo.S);
+    else raw = wEqual(st.n);
+    var con = constrain(raw, !!st.lo, st.cap >= 100 ? 1e9 : st.cap / 100);
+    return { world: world, raw: raw, con: con };
+  }
+  /* the single sample is one draw; this is the same experiment 200 times */
+  function sweep() {
+    var world = makeWorld(st.n, st.seed, st.disp);
+    var wins = 0, gains = [], k;
+    for (k = 0; k < 200; k++) {
+      var R = drawSample(world, st.T, lcg((st.seed + 7919 * (k + 1)) >>> 0));
+      var mo = moments(R), raw;
+      if (st.method === "mvo") raw = wTangency(mo.mu, mo.S, world.rf);
+      else if (st.method === "shrunk") raw = wTangency(mo.mu, shrink(mo.S, 0.4), world.rf);
+      else if (st.method === "minvar") raw = wMinVar(mo.S);
+      else if (st.method === "erc") raw = wERC(mo.S);
+      else raw = wEqual(st.n);
+      var con = constrain(raw, !!st.lo, st.cap >= 100 ? 1e9 : st.cap / 100);
+      var g = trueSharpe(con, world).sharpe - trueSharpe(raw, world).sharpe;
+      gains.push(g);
+      if (g > 0) wins++;
+    }
+    gains.sort(function (a, b) { return a - b; });
+    return { wins: wins, med: gains[Math.floor(gains.length / 2)] };
+  }
+
+  function render() {
+    var d = build(), i;
+    var gross = 0, shortE = 0, mx = 0, ss = 0;
+    for (i = 0; i < st.n; i++) {
+      gross += Math.abs(d.con[i]);
+      if (d.con[i] < 0) shortE += -d.con[i];
+      mx = Math.max(mx, d.con[i]);
+      ss += d.con[i] * d.con[i];
+    }
+    var sCon = trueSharpe(d.con, d.world), sRaw = trueSharpe(d.raw, d.world);
+
+    var svg = $("cnSvg"); clear(svg);
+    var W = 660, H = 320, pad = { l: 50, r: 16, t: 22, b: 40 };
+    var lo = 0, hi = 0;
+    for (i = 0; i < st.n; i++) {
+      lo = Math.min(lo, d.con[i], d.raw[i]); hi = Math.max(hi, d.con[i], d.raw[i]);
+    }
+    var m = Math.max(0.05, (hi - lo) * 0.14); lo -= m; hi += m;
+    axes(svg, W, H, pad, lo, hi, function (v) { return (v * 100).toFixed(0) + "%"; }, 5);
+    function PY(v) { return H - pad.b - (v - lo) / (hi - lo) * (H - pad.t - pad.b); }
+    var bw = (W - pad.l - pad.r) / st.n;
+    for (i = 0; i < st.n; i++) {
+      var xr = pad.l + i * bw + bw * 0.10, xc = pad.l + i * bw + bw * 0.50;
+      svg.appendChild(mk("rect", { x: xr.toFixed(1), y: Math.min(PY(0), PY(d.raw[i])).toFixed(1),
+        width: (bw * 0.36).toFixed(1), height: Math.max(1, Math.abs(PY(d.raw[i]) - PY(0))).toFixed(1),
+        rx: 2, fill: "rgba(95,102,115,.75)" }));
+      svg.appendChild(mk("rect", { x: xc.toFixed(1), y: Math.min(PY(0), PY(d.con[i])).toFixed(1),
+        width: (bw * 0.36).toFixed(1), height: Math.max(1, Math.abs(PY(d.con[i]) - PY(0))).toFixed(1),
+        rx: 2, fill: d.con[i] >= 0 ? "rgba(253,164,175,.8)" : "rgba(248,81,73,.8)" }));
+      svg.appendChild(txt(pad.l + i * bw + bw * 0.5, H - pad.b + 14, "A" + (i + 1), 8.5, "#5f6673", "middle"));
+    }
+    svg.appendChild(mk("line", { x1: pad.l, y1: PY(0), x2: W - pad.r, y2: PY(0), stroke: "#333a47", "stroke-width": 1.2 }));
+    if (st.cap < 100 && st.cap / 100 < hi) {
+      svg.appendChild(mk("line", { x1: pad.l, y1: PY(st.cap / 100), x2: W - pad.r, y2: PY(st.cap / 100),
+        stroke: "#d29922", "stroke-width": 1.4, "stroke-dasharray": "5 4" }));
+      svg.appendChild(txt(W - pad.r - 3, PY(st.cap / 100) - 5, "cap " + st.cap + "%", 9, "#d29922", "end"));
+    }
+    svg.appendChild(txt(pad.l + 3, pad.t + 10, "grey = unconstrained · pink = after the mandate", 9.5, "#9aa0a6"));
+    svg.appendChild(txt(W - pad.r, H - 8, st.n + " assets", 9, "#5f6673", "end"));
+
+    $("cnGross").textContent = pct(gross, 0);
+    $("cnMax").textContent = pct(mx, 1);
+    $("cnShort").textContent = pct(shortE, 1);
+    $("cnEff").textContent = (1 / Math.max(1e-9, ss)).toFixed(1) + " names";
+    $("cnSharpe").textContent = sCon.sharpe.toFixed(2);
+    $("cnDelta").textContent = (sCon.sharpe - sRaw.sharpe >= 0 ? "+" : "") + (sCon.sharpe - sRaw.sharpe).toFixed(2);
+    $("cnDelta").className = "sv " + (sCon.sharpe >= sRaw.sharpe ? "ok" : "bad");
+    $("cnCode").textContent =
+      "bounds = [(" + (st.lo ? "0" : "None") + ", " + (st.cap / 100).toFixed(2) + ")] * n\n" +
+      "cons   = [{\"type\": \"eq\", \"fun\": lambda w: w.sum() - 1}]\n" +
+      "res    = minimize(neg_sharpe, w0, bounds=bounds, constraints=cons)\n" +
+      "assert res.success, res.message      # never skip this line";
+    var sw = sweep();
+    $("cnWin").textContent = sw.wins + " of 200";
+    $("cnWin").className = "sv " + (sw.wins > 100 ? "ok" : "warn");
+    $("cnMed").textContent = (sw.med >= 0 ? "+" : "") + sw.med.toFixed(2);
+    $("cnMed").className = "sv " + (sw.med >= 0 ? "ok" : "bad");
+    var same = Math.abs(sCon.sharpe - sRaw.sharpe) < 1e-9;
+    $("cnNote").innerHTML = same
+      ? "<b>Nothing is binding yet.</b> With no cap and shorting allowed, the mandate is not " +
+        "constraining anything, so these are the raw estimated weights: largest position " +
+        pct(Math.max.apply(null, d.raw), 0) + ", true Sharpe " + sCon.sharpe.toFixed(2) +
+        ". Pull the cap down or switch on long-only and watch what happens."
+      : "<b>" + (sCon.sharpe >= sRaw.sharpe
+      ? "The mandate made the portfolio better." : "The mandate cost " +
+        (sRaw.sharpe - sCon.sharpe).toFixed(2) + " of true Sharpe.") + "</b> The unconstrained solution " +
+      "has a largest position of " + pct(Math.max.apply(null, d.raw), 0) + " and gross exposure of " +
+      pct((function () { var g = 0, i2; for (i2 = 0; i2 < st.n; i2++) g += Math.abs(d.raw[i2]); return g; })(), 0) +
+      "; the constrained one holds " + (1 / Math.max(1e-9, ss)).toFixed(1) + " effective names. " +
+      "Across 200 fresh samples of the same world the mandate helped in <b>" + sw.wins +
+      "</b> of them, with a median change of " + (sw.med >= 0 ? "+" : "") + sw.med.toFixed(2) +
+      " Sharpe. " + (sw.wins > 100
+        ? "That is Jagannathan-Ma in one picture: the binding constraint is doing the job shrinkage would have done."
+        : "Where it does not help, the reason is on the slider above: this world's true expected " +
+          "returns really are " + (st.disp / 10).toFixed(1) + "% apart, so shorting genuinely earns " +
+          "something and the cap genuinely costs. Pull the dispersion down toward zero — the regime " +
+          "equity markets actually live in — and the constraint starts winning.");
+  }
+  function labels() {
+    $("cnCapV").textContent = st.cap >= 100 ? "no cap" : st.cap + "%";
+    $("cnTV").textContent = st.T + " months";
+    $("cnDispV").textContent = (st.disp / 10).toFixed(1) + "%";
+  }
+  $("cnMethod").addEventListener("change", function () { st.method = this.value; render(); });
+  function bind(id, key) { $(id).addEventListener("input", function () { st[key] = parseInt(this.value, 10); labels(); render(); }); }
+  bind("cnCap", "cap"); bind("cnT", "T"); bind("cnDisp", "disp");
+  $("cnLong").addEventListener("click", function () {
+    st.lo = st.lo ? 0 : 1;
+    this.setAttribute("aria-pressed", st.lo ? "true" : "false");
+    this.classList.toggle("on", !!st.lo);
+    render();
+  });
+  $("cnSeed").addEventListener("click", function () { st.seed = (st.seed * 1103515245 + 12345) >>> 0; render(); });
+  labels(); render();
+})();
+
+/* ════ 5. OPTIMISER-HYGIENE CHECKLIST ════════════════════════ */
+(function () {
+  var boxes = $("opList").querySelectorAll("input[type=checkbox]");
+  var CRITICAL = [2, 3, 4];
+  function upd() {
+    var n = 0, crit = 0, i;
+    for (i = 0; i < boxes.length; i++) {
+      var item = boxes[i].parentNode;
+      if (boxes[i].checked) { n++; item.classList.add("done"); } else item.classList.remove("done");
+    }
+    for (i = 0; i < CRITICAL.length; i++) if (boxes[CRITICAL[i]].checked) crit++;
+    $("opBar").style.width = (n / boxes.length * 100) + "%";
+    var b = $("opBadge");
+    b.classList.remove("green"); b.classList.remove("amber");
+    if (n === boxes.length) { b.classList.add("green"); $("opTxt").textContent = "Pipeline trust: GREEN · reproducible weights a reviewer would believe"; }
+    else if (crit === CRITICAL.length) { b.classList.add("amber"); $("opTxt").textContent = "Pipeline trust: AMBER · the bake-off is valid, " + n + " of 8 overall"; }
+    else { $("opTxt").textContent = "Pipeline trust: RED · " + n + " of 8, " + crit + " of 3 critical"; }
+  }
+  for (var i = 0; i < boxes.length; i++) boxes[i].addEventListener("change", upd);
+  upd();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>
