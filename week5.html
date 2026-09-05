@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 5 · Rates, Inflation &amp; the Macro Panel — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week4.html">← Week 4</a> · <b>Week 5 · Rates, Inflation &amp; the Macro Panel</b> · <a href="week6.html">Week 6 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 5</div>
+  <h1>Rates, Inflation &amp; the Macro Panel</h1>
+  <p class="promise">Every price in this course is a discounted cash flow, and the discount comes from one
+  object: the curve. This week you build it from free FRED data, take it apart into the three components
+  that explain 98% of every move it has ever made, and read the two things it is quietly telling you —
+  what the market expects inflation to be, and what it thinks the odds of default are.</p>
+  <ul class="you">
+    <li>Bootstrap <strong>discount factors and zero rates</strong> from quoted par yields, and know why the
+    zero curve is above the par curve when the curve slopes up.</li>
+    <li>Compute <em class="hi">duration and convexity</em> and measure exactly where the linear
+    approximation stops being good enough to hedge with.</li>
+    <li>Turn a nominal and a real yield into a <strong>TIPS breakeven</strong>, then argue about how much of
+    it is expected inflation and how much is premium.</li>
+    <li>PCA the curve into <strong>level, slope and curvature</strong>, reconstruct a real curve move from
+    three numbers, and see what that buys a hedger.</li>
+    <li>Read a <strong>credit spread</strong> as an implied default probability under a recovery assumption
+    — and see how much of it is not compensation for default at all.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: FRED curve · bootstrap · duration · 5-year breakevens · curve PCA</span>
+    <span class="pill">HW5: curve &amp; breakeven notebook</span>
+    <span class="pill warn">No API key needed — FRED is free</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? Four representations of exactly one thing</h2>
+  <p class="lead">"The yield curve" is a single object with four faces, and every mistake in this week's
+  homework comes from using one where another was meant. The <strong>par curve</strong> is what gets
+  quoted. The <strong>discount-factor curve</strong> is what you actually multiply cash flows by. The
+  <strong>zero curve</strong> is the same information expressed as a rate. The <strong>forward curve</strong>
+  is what those rates imply about the future — and it is not a forecast.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel"><h4>Par yield <code>y(t)</code></h4><p class="sub">The coupon that makes a bond of
+    that maturity price at 100. It is a single number standing in for a whole schedule of cash flows, so it
+    is a <em class="hi">weighted average</em> of the zero rates along the way — which is why it lies below
+    the zero curve on an upward-sloping curve.</p></div>
+    <div class="panel"><h4>Discount factor <code>DF(t)</code></h4><p class="sub">The present value of $1 at
+    <code>t</code>. Model-free, always positive, always decreasing in a positive-rate world. This is the
+    object you should store and interpolate: no compounding convention, no day count, nothing to get
+    wrong.</p></div>
+    <div class="panel"><h4>Zero rate <code>z(t)</code></h4><p class="sub"><code>DF(t) =
+    (1+z(t))<sup>&#8722;t</sup></code>. The yield on a bond with one cash flow. Every valuation in the
+    course discounts with these, not with par yields — discounting a ten-year bond's five-year coupon at
+    the ten-year par yield is simply wrong.</p></div>
+    <div class="panel"><h4>Forward rate <code>f(t&#8321;,t&#8322;)</code></h4><p class="sub">The rate you can
+    lock in today for a future period: <code>DF(t&#8321;)/DF(t&#8322;) &#8722; 1</code>. It is an
+    <em class="hi">arbitrage</em> relationship, not an expectation. A steep forward curve means carry, not
+    a prediction that rates will rise.</p></div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · the curve shape builder, with the bootstrap</h3>
+  <p class="sub" style="margin-bottom:12px">Par yields are generated by a Nelson-Siegel form whose three
+  parameters are exactly <b>level</b>, <b>slope</b> and <b>curvature</b> — the same three that come out of
+  the PCA in Part 3. Pick a shape or drag the sliders; the table on the right is the bootstrap, computed
+  the way the lab computes it, one tenor at a time.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="ycSvg" viewBox="0 0 660 290" role="img" aria-label="Par yield curve, bootstrapped zero curve and implied one-year forward curve across ten tenors"></svg>
+      </div>
+      <div class="row">
+        <div class="sw" role="group" aria-label="Curve shape presets">
+          <button type="button" id="ycNormal" aria-pressed="true">Normal</button>
+          <button type="button" id="ycFlat" aria-pressed="false">Flat</button>
+          <button type="button" id="ycInv" aria-pressed="false">Inverted</button>
+          <button type="button" id="ycHump" aria-pressed="false">Humped</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i> par yield</span>
+        <span><i style="background:#6cb6ff"></i> zero (bootstrapped)</span>
+        <span><i style="background:var(--warn)"></i> 1-year forward</span>
+      </div>
+      <div class="panel tight"><p class="sub" id="ycNote"></p></div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="ycL">Level &#946;&#8320; <b id="ycLV">4.40%</b></label>
+          <input type="range" id="ycL" min="50" max="800" value="440" step="10" aria-label="Nelson-Siegel level parameter in basis points" /></div>
+        <div class="ctl"><label for="ycS">Slope &#946;&#8321; <b id="ycSV">&#8722;2.00%</b></label>
+          <input type="range" id="ycS" min="-300" max="300" value="-200" step="10" aria-label="Nelson-Siegel slope parameter in basis points" /></div>
+        <div class="ctl"><label for="ycC">Curvature &#946;&#8322; <b id="ycCV">&#8722;0.50%</b></label>
+          <input type="range" id="ycC" min="-300" max="300" value="-50" step="10" aria-label="Nelson-Siegel curvature parameter in basis points" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">2s10s slope</div><div class="sv acc" id="ycSlope">&#8212;</div></div>
+        <div class="stat"><div class="sl">10-year DF</div><div class="sv" id="ycDf10">&#8212;</div></div>
+        <div class="stat"><div class="sl">PV of $1m in 10y</div><div class="sv" id="ycPv">&#8212;</div></div>
+        <div class="stat"><div class="sl">Shape</div><div class="sv" id="ycShape">&#8212;</div></div>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="Bootstrapped discount factors, zero rates and forward rates by tenor">
+        <thead><tr><th>t</th><th>par %</th><th>DF(t)</th><th>zero %</th><th>fwd %</th></tr></thead>
+        <tbody id="ycTbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How you build it — bootstrap, differentiate, then subtract</h2>
+  <p class="lead">Three computations carry this week. The <strong>bootstrap</strong> turns quotes into
+  discount factors. <strong>Duration and convexity</strong> are the first and second derivatives of price
+  with respect to yield, and they are what a risk system actually stores instead of a full revaluation.
+  The <strong>breakeven</strong> is a subtraction between two curves that you can pull from FRED in two
+  lines.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h4>FRED to a curve, and the bootstrap</h4>
+      <pre class="code"><span class="k">import</span> pandas_datareader.data <span class="k">as</span> web
+
+<span class="c"># nominal Treasury constant-maturity yields</span>
+ids = [<span class="s">"DGS1"</span>, <span class="s">"DGS2"</span>, <span class="s">"DGS3"</span>, <span class="s">"DGS5"</span>,
+       <span class="s">"DGS7"</span>, <span class="s">"DGS10"</span>, <span class="s">"DGS20"</span>, <span class="s">"DGS30"</span>]
+y = web.DataReader(ids, <span class="s">"fred"</span>,
+                   <span class="s">"2003-01-01"</span>) / <span class="n">100</span>
+
+<span class="c"># bootstrap annual-coupon par yields -&gt; discount factors</span>
+df, acc = [], <span class="n">0.0</span>
+<span class="k">for</span> n, yn <span class="k">in</span> enumerate(par, start=<span class="n">1</span>):
+    d = (<span class="n">1</span> - yn * acc) / (<span class="n">1</span> + yn)
+    df.append(d); acc += d
+z = [d ** (-<span class="n">1</span> / (i + <span class="n">1</span>)) - <span class="n">1</span>
+     <span class="k">for</span> i, d <span class="k">in</span> enumerate(df)]</pre>
+      <p class="sub" style="margin-top:9px">Two FRED series ids are the whole macro panel:
+      <code>DGS*</code> for nominal, <code>DFII*</code> for real (TIPS). No key, no scraping, and
+      <code>T10YIE</code> even publishes the breakeven so you can check your own subtraction.</p>
+    </div>
+    <div class="panel">
+      <h4>Duration, convexity, and what they are for</h4>
+      <pre class="code">t  = np.arange(<span class="n">1</span>, T + <span class="n">1</span>)
+cf = np.full(T, c * <span class="n">100</span>); cf[-<span class="n">1</span>] += <span class="n">100</span>
+d  = (<span class="n">1</span> + y) ** -t
+P  = cf @ d
+
+D  = (t * cf * d).sum() / P        <span class="c"># Macaulay</span>
+MD = D / (<span class="n">1</span> + y)                  <span class="c"># modified</span>
+C  = (t * (t + <span class="n">1</span>) * cf * d).sum() / (
+     P * (<span class="n">1</span> + y) ** <span class="n">2</span>)            <span class="c"># convexity</span>
+
+dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</span></pre>
+      <p class="sub" style="margin-top:9px">Modified duration is the percentage price move per 1% yield
+      move; <code>DV01 = MD &#215; P / 10000</code> is the same thing in dollars per basis point, and it is
+      the unit every rates desk speaks in. Convexity is the correction that makes a 200&#8239;bp move
+      hedgeable.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · duration, convexity and the error you can measure</h3>
+  <p class="sub" style="margin-bottom:12px">One annual-coupon bond, revalued exactly, against the two
+  Taylor approximations a risk system might use. Drag the parallel shift out to &#177;200&#8239;bp and watch
+  the <b>duration-only</b> estimate fall away while <b>duration + convexity</b> tracks. The error column is
+  in cents per $100 face — small enough to ignore on a 10&#8239;bp move, and the reason for a
+  convexity hedge on a 200&#8239;bp one.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="dcT">Maturity <b id="dcTV">10 y</b></label>
+          <input type="range" id="dcT" min="1" max="30" value="10" step="1" aria-label="Bond maturity in years" /></div>
+        <div class="ctl"><label for="dcC">Coupon <b id="dcCV">4.00%</b></label>
+          <input type="range" id="dcC" min="0" max="900" value="400" step="25" aria-label="Annual coupon in basis points" /></div>
+        <div class="ctl"><label for="dcY">Starting yield <b id="dcYV">4.00%</b></label>
+          <input type="range" id="dcY" min="25" max="900" value="400" step="25" aria-label="Starting yield in basis points" /></div>
+        <div class="ctl"><label for="dcS">Parallel shift <b id="dcSV">+100 bp</b></label>
+          <input type="range" id="dcS" min="-200" max="200" value="100" step="5" aria-label="Parallel yield shift in basis points" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Price now</div><div class="sv" id="dcP0">&#8212;</div></div>
+        <div class="stat"><div class="sl">Macaulay D</div><div class="sv" id="dcD">&#8212;</div></div>
+        <div class="stat"><div class="sl">Modified D</div><div class="sv acc" id="dcMd">&#8212;</div></div>
+        <div class="stat"><div class="sl">Convexity</div><div class="sv" id="dcCx">&#8212;</div></div>
+        <div class="stat"><div class="sl">DV01 per $100</div><div class="sv" id="dcDv">&#8212;</div></div>
+        <div class="stat"><div class="sl">DV01 on $10m</div><div class="sv acc" id="dcDvm">&#8212;</div></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="dcSvg" viewBox="0 0 660 290" role="img" aria-label="Bond price against yield, with the duration-only tangent and the duration plus convexity parabola"></svg>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="Exact revaluation against duration and convexity approximations">
+        <thead><tr><th>Method</th><th>New price</th><th>&#916;P per $100</th><th>Error</th></tr></thead>
+        <tbody id="dcTbody"></tbody>
+      </table></div>
+      <div class="panel tight"><p class="sub" id="dcNote"></p></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · the TIPS breakeven, and what is actually in it</h3>
+  <p class="sub" style="margin-bottom:12px">The breakeven is the inflation rate at which a nominal
+  Treasury and a TIPS of the same maturity return the same thing. It is a <em class="hi">subtraction</em>,
+  which makes it easy to compute and easy to over-interpret: it is expected inflation
+  <b>plus</b> an inflation-risk premium <b>minus</b> a TIPS liquidity premium, and in March 2020 the last
+  term did most of the moving.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="beSvg" viewBox="0 0 660 250" role="img" aria-label="Synthetic history of the five-year breakeven inflation rate with the current setting marked"></svg>
+      </div>
+      <div class="svgwrap">
+        <svg id="beBar" viewBox="0 0 660 120" role="img" aria-label="Decomposition of the nominal yield into a real yield, expected inflation and premia"></svg>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="beN">Nominal yield (DGS5) <b id="beNV">4.20%</b></label>
+          <input type="range" id="beN" min="0" max="700" value="420" step="5" aria-label="Nominal yield in basis points" /></div>
+        <div class="ctl"><label for="beR">Real yield (DFII5) <b id="beRV">1.85%</b></label>
+          <input type="range" id="beR" min="-200" max="400" value="185" step="5" aria-label="Real TIPS yield in basis points" /></div>
+        <div class="ctl"><label for="beI">Inflation-risk premium <b id="beIV">25 bp</b></label>
+          <input type="range" id="beI" min="0" max="80" value="25" step="5" aria-label="Inflation risk premium in basis points" /></div>
+        <div class="ctl"><label for="beQ">TIPS liquidity premium <b id="beQV">15 bp</b></label>
+          <input type="range" id="beQ" min="0" max="120" value="15" step="5" aria-label="TIPS liquidity premium in basis points" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Breakeven (exact)</div><div class="sv acc" id="beBe">&#8212;</div></div>
+        <div class="stat"><div class="sl">Naive n &#8722; r</div><div class="sv" id="beNaive">&#8212;</div></div>
+        <div class="stat"><div class="sl">Fisher correction</div><div class="sv" id="beGap">&#8212;</div></div>
+        <div class="stat"><div class="sl">Expected inflation</div><div class="sv" id="beExp">&#8212;</div></div>
+      </div>
+      <div class="row">
+        <button class="btn" type="button" id="beMar20">Set to 2020-03-19</button>
+        <button class="btn" type="button" id="beJun22">Set to 2022-06</button>
+        <button class="btn" type="button" id="beNow">Set to a normal day</button>
+      </div>
+      <div class="panel tight"><p class="sub" id="beNote"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: three numbers hedge a curve, and a spread is a bet</h2>
+  <p class="lead">A curve has eight to thirty quoted points, and hedging each one separately is neither
+  possible nor necessary — because they do not move independently. Three principal components explain
+  around <em class="hi">98%</em> of the daily variation in every developed-market curve ever studied, and
+  they have the same interpretation every time: <strong>level</strong>, <strong>slope</strong>,
+  <strong>curvature</strong>. That is the single most useful empirical fact in fixed income, and it is a
+  two-line <code>sklearn</code> call on the panel you built in the lab.</p>
+
+  <h3 style="margin-top:26px">Interactive · curve PCA — reconstruct a real move from three numbers</h3>
+  <p class="sub" style="margin-bottom:12px">The loadings on the left are the ones the lab recovers from
+  ten years of daily FRED changes. Drag the three scores to rebuild the <b>target</b> curve move (dashed)
+  and watch the residual shrink. <b>Fit</b> solves for the least-squares scores; note how close three
+  numbers get you on an eight-point curve.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="pcLoad" viewBox="0 0 660 190" role="img" aria-label="The first three principal component loadings of the yield curve across tenors"></svg>
+      </div>
+      <div class="svgwrap">
+        <svg id="pcRec" viewBox="0 0 660 220" role="img" aria-label="Target curve change against the three-component reconstruction, with the residual"></svg>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i> PC1 level</span>
+        <span><i style="background:#6cb6ff"></i> PC2 slope</span>
+        <span><i style="background:var(--warn)"></i> PC3 curvature</span>
+        <span><i style="background:var(--ok)"></i> reconstruction</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="pcTarget">Target move</label>
+          <select id="pcTarget" aria-label="Which historical curve move to reconstruct">
+            <option value="hike">2022 · parallel repricing, +250 bp</option>
+            <option value="invert">2023 · bear flattening to inversion</option>
+            <option value="cut">2024 · bull steepening on cuts</option>
+            <option value="twist">A pure curvature twist</option>
+          </select></div>
+        <div class="ctl"><label for="pc1">PC1 score · level <b id="pc1V">+240 bp</b></label>
+          <input type="range" id="pc1" min="-300" max="300" value="240" step="5" aria-label="Score on principal component one, level" /></div>
+        <div class="ctl"><label for="pc2">PC2 score · slope <b id="pc2V">+0 bp</b></label>
+          <input type="range" id="pc2" min="-200" max="200" value="0" step="5" aria-label="Score on principal component two, slope" /></div>
+        <div class="ctl"><label for="pc3">PC3 score · curvature <b id="pc3V">+0 bp</b></label>
+          <input type="range" id="pc3" min="-120" max="120" value="0" step="5" aria-label="Score on principal component three, curvature" /></div>
+        <div class="row"><button class="btn primary" type="button" id="pcFit">Fit least squares</button>
+          <button class="btn" type="button" id="pcZero">Zero the scores</button></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">RMS residual</div><div class="sv" id="pcRms">&#8212;</div></div>
+        <div class="stat"><div class="sl">Variance explained</div><div class="sv acc" id="pcVar">98.0%</div></div>
+        <div class="stat"><div class="sl">Worst tenor miss</div><div class="sv" id="pcWorst">&#8212;</div></div>
+        <div class="stat"><div class="sl">P&amp;L on a $10m 10y</div><div class="sv" id="pcPnl">&#8212;</div></div>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="Variance explained by each principal component">
+        <thead><tr><th>PC</th><th>Meaning</th><th>Var %</th><th>Cum %</th></tr></thead>
+        <tbody id="pcTbody"></tbody>
+      </table></div>
+      <div class="panel tight"><p class="sub" id="pcNote"></p></div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:20px"><b>What the hedger buys with this.</b> If three factors explain
+  98% of curve variance, a book with zero PC1, PC2 and PC3 exposure has almost no curve risk — so you hedge
+  three numbers instead of thirty, using three liquid instruments. The residual 2% is basis risk, and you
+  size it rather than ignore it. Week 4's discipline applies unchanged: report the residual, do not assume
+  it away.</div>
+
+  <h3 style="margin-top:32px">Interactive · a credit spread as an implied default probability</h3>
+  <p class="sub" style="margin-bottom:12px">The credit triangle: <code>spread &#8776; PD &#215;
+  (1&#8722;recovery)</code>. Invert it and a quoted spread becomes an implied annual default probability —
+  under an assumption about recovery that nobody can observe until it is too late. Compare the implied
+  number to the realised historical default rate for that rating and the gap is the risk premium you are
+  being paid, which for investment grade is most of the spread.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="crRating">Rating</label>
+          <select id="crRating" aria-label="Credit rating">
+            <option value="AAA">AAA &#183; 45 bp</option>
+            <option value="AA">AA &#183; 60 bp</option>
+            <option value="A">A &#183; 90 bp</option>
+            <option value="BBB" selected="selected">BBB &#183; 145 bp</option>
+            <option value="BB">BB &#183; 290 bp</option>
+            <option value="B">B &#183; 460 bp</option>
+            <option value="CCC">CCC &#183; 900 bp</option>
+          </select></div>
+        <div class="ctl"><label for="crSpread">Spread override <b id="crSpreadV">145 bp</b></label>
+          <input type="range" id="crSpread" min="10" max="1200" value="145" step="5" aria-label="Credit spread in basis points" /></div>
+        <div class="ctl"><label for="crRec">Recovery assumption <b id="crRecV">40%</b></label>
+          <input type="range" id="crRec" min="0" max="80" value="40" step="5" aria-label="Recovery rate assumption in percent" /></div>
+        <div class="ctl"><label for="crH">Horizon <b id="crHV">5 y</b></label>
+          <input type="range" id="crH" min="1" max="10" value="5" step="1" aria-label="Horizon in years" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Implied annual PD</div><div class="sv acc" id="crPd">&#8212;</div></div>
+        <div class="stat"><div class="sl">Cumulative PD</div><div class="sv" id="crCum">&#8212;</div></div>
+        <div class="stat"><div class="sl">Historical 1y rate</div><div class="sv" id="crHist">&#8212;</div></div>
+        <div class="stat"><div class="sl">Implied / realised</div><div class="sv warn" id="crMult">&#8212;</div></div>
+        <div class="stat"><div class="sl">Expected loss</div><div class="sv" id="crEl">&#8212;</div></div>
+        <div class="stat"><div class="sl">Risk premium</div><div class="sv ok" id="crRp">&#8212;</div></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="crSvg" viewBox="0 0 660 260" role="img" aria-label="Spread decomposition into expected loss and risk premium by rating, with the implied default probability curve"></svg>
+      </div>
+      <div class="panel tight"><p class="sub" id="crNote"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">All five have shipped in a submitted curve notebook. Open them.</p>
+
+  <details class="pit"><summary>Discounting with par yields instead of bootstrapped zeros</summary>
+    <div class="body">
+      <p>The ten-year par yield is the internal rate of return of a <em class="hi">particular</em> cash-flow
+      schedule. Using it to discount a five-year coupon prices that coupon off the wrong point of the
+      curve. On a steep curve the error on a long bond is 40–90&#8239;bp of price, which is an order of
+      magnitude larger than any bid-ask you will ever cross.</p>
+      <p>The same error in relative-value form is worse: two bonds with the same maturity and different
+      coupons have different yields on a sloped curve, and a "cheap/rich" screen built on yield differences
+      is measuring the coupon, not value.</p>
+      <p class="fix">Fix: bootstrap once, store <code>DF(t)</code>, and price everything as
+      <code>cf @ DF</code>. Then quote yields as an output, never use them as an input.</p>
+    </div></details>
+
+  <details class="pit"><summary><code>DGS10</code> is not a zero rate, and FRED's <code>NaN</code>s are holidays</summary>
+    <div class="body">
+      <p>FRED's <code>DGS*</code> series are constant-maturity <em class="hi">par</em> yields interpolated
+      by Treasury from the on-the-run curve — semi-annual, bond-equivalent, and not a zero. Treating them as
+      zeros skips the bootstrap altogether and mis-states long discount factors by tens of basis points.</p>
+      <p>And every one of those series has <code>.</code> on market holidays, which
+      <code>pandas-datareader</code> hands back as <code>NaN</code>. A careless <code>ffill</code> across a
+      Friday–Monday gap creates a zero-change day; a careless <code>dropna(how="any")</code> across eight
+      tenors silently deletes any day where a single tenor was not published.</p>
+      <p class="fix">Fix: state the convention in a comment, bootstrap properly, and align tenors with an
+      explicit business-day calendar. Count and report how many days you dropped, and why.</p>
+    </div></details>
+
+  <details class="pit"><summary>Hedging a curve move with duration alone</summary>
+    <div class="body">
+      <p>Duration is the first derivative, so a duration-matched hedge is exact only for an infinitesimal
+      <em class="hi">parallel</em> shift. Two things break it. Convexity: on a 200&#8239;bp move the
+      second-order term is worth 1.5–4 points on a long bond, and it is always in your favour if you are
+      long the convex leg and against you if you are short it.</p>
+      <p>And curve risk: a portfolio long the 2-year and short the 10-year can be perfectly
+      duration-neutral and still lose money on every flattening, because PC2 exposure is not PC1
+      exposure. A "duration-hedged" barbell is a leveraged bet on curvature.</p>
+      <p class="fix">Fix: report key-rate durations or PC1/PC2/PC3 exposures, not one duration number, and
+      include the convexity term whenever the scenario exceeds about 50&#8239;bp. The widget in Part 2
+      shows you exactly where the linear approximation crosses your tolerance.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reading the breakeven as expected inflation, full stop</summary>
+    <div class="body">
+      <p>The breakeven equals expected inflation plus an inflation-risk premium minus a TIPS liquidity
+      premium. In calm markets the two premia partly offset and the reading is a decent proxy. In a
+      liquidity event they do not: in March 2020 the 5-year breakeven fell from 1.7% to under 0.2% in three
+      weeks, and most of that was TIPS being dumped by funds that needed cash, not the market forecasting
+      deflation.</p>
+      <p>Its cousin: the naive subtraction. <code>n &#8722; r</code> is a first-order approximation to
+      <code>(1+n)/(1+r) &#8722; 1</code>; at a 4% nominal and 1.8% real the difference is only about
+      4&#8239;bp, but it is a free correction and graders notice.</p>
+      <p class="fix">Fix: use the exact Fisher ratio, and whenever you quote a breakeven, quote it as
+      "breakeven, not expected inflation" and say which way the premia are likely to be pushing. Cross-check
+      against FRED's own <code>T5YIE</code>.</p>
+    </div></details>
+
+  <details class="pit"><summary>Inverting the credit triangle and forgetting that recovery is an assumption</summary>
+    <div class="body">
+      <p><code>PD = s/(1&#8722;R)</code> is exact under a flat-hazard, risk-neutral model, and every term on
+      the right is a choice. Move recovery from 40% to 25% and the implied PD falls by a fifth; the market
+      quote did not change at all. Reporting an implied PD without the recovery assumption next to it is
+      reporting half a number.</p>
+      <p>Second, the implied PD is <em class="hi">risk-neutral</em>. For investment grade it runs 3–8&#215;
+      the realised historical default rate, because the spread also pays for liquidity, ratings-migration
+      risk and the fact that defaults cluster in bad states of the world. Comparing an implied PD to a
+      historical table and concluding "the market is wrong" is the classic first-year error.</p>
+      <p class="fix">Fix: always publish the triple — spread, recovery assumption, implied PD — and show the
+      implied/realised multiple alongside. Then say which part you think is default compensation and which
+      is premium, and size accordingly.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="2" data-exp="<b>Above.</b> A par yield is an internal rate of return over a whole coupon schedule, so it is a weighted average of the zero rates along the way — and on an upward-sloping curve the early, lower zeros drag that average below the final zero rate. Hence z(10) &gt; y(10). Equality holds only where the curve is flat, and the ordering reverses on an inverted curve. Nothing about coupon size or bootstrap order changes the direction; it follows from the averaging.">
+    <p class="q"><span>Q1</span>The par curve slopes upward everywhere. Where does the bootstrapped 10-year <em>zero</em> rate sit relative to the 10-year <em>par</em> yield?</p>
+    <div class="opts">
+      <button class="opt" type="button">Below it — the zero curve is always the lower of the two</button>
+      <button class="opt" type="button">Exactly equal, because both price the same bond at 100</button>
+      <button class="opt" type="button">Above it — the par yield is an average of the lower zeros nearer the front</button>
+      <button class="opt" type="button">It depends on the coupon, which the bootstrap has not fixed yet</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="0" data-exp="<b>PC2 — slope — is unhedged.</b> Duration matching sets net PC1 (level) exposure to roughly zero, and that is all it does. A long-2s / short-10s barbell has large, opposite PC2 loadings that do not cancel, so every flattening or steepening moves the book even though the duration is flat. This is why rates desks report PC or key-rate exposures rather than a single duration. Convexity is a second-order effect and matters at large shifts, but it is not what makes a duration-neutral barbell directional; and a duration-neutral book is very much not risk-free.">
+    <p class="q"><span>Q2</span>You are long the 2-year and short the 10-year, exactly duration-neutral. What risk have you kept?</p>
+    <div class="opts">
+      <button class="opt" type="button">Slope risk — PC2 exposure does not cancel, so any flattening or steepening moves the book</button>
+      <button class="opt" type="button">None worth reporting: duration neutrality removes curve risk by construction</button>
+      <button class="opt" type="button">Only convexity, and only for shifts beyond about 200 bp</button>
+      <button class="opt" type="button">Only credit risk, since both legs are Treasuries and rate risk is hedged</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>TIPS liquidity, not a deflation forecast.</b> In March 2020 the 5-year breakeven collapsed from about 1.7% to under 0.2% in three weeks while forced sellers dumped TIPS into a market with no dealer balance sheet; the real yield in the subtraction spiked for liquidity reasons, and the breakeven fell mechanically. Reading that as the market's inflation expectation — and it was widely reported that way — attributes to expectations what belonged to the plumbing. A rise in the inflation-risk premium would push the breakeven up, not down; and the naive-versus-exact Fisher correction is worth a few basis points, not 150.">
+    <p class="q"><span>Q3</span>The 5-year breakeven falls 150 bp in three weeks during a funding crisis. What is the most likely dominant cause?</p>
+    <div class="opts">
+      <button class="opt" type="button">The market now expects five years of near-zero inflation</button>
+      <button class="opt" type="button">A jump in the inflation-risk premium</button>
+      <button class="opt" type="button">Using n − r instead of the exact Fisher ratio</button>
+      <button class="opt" type="button">A blow-out in the TIPS liquidity premium as forced sellers hit a market with no balance sheet</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Pull <code>DGS1…DGS30</code> and <code>DFII5…DFII30</code> from FRED with
+      <code>pandas-datareader</code>, align on a business-day calendar, and report the drop count.</li>
+      <li>Bootstrap discount factors and zero rates for one date; check that
+      <code>cf @ DF == 100</code> for each par bond to <code>1e-8</code>.</li>
+      <li>Compute duration, modified duration, convexity and DV01 for a 10-year 4% bond; verify the
+      approximation error at &#177;25, &#177;100 and &#177;200&#8239;bp.</li>
+      <li>Plot the 5-year breakeven since 2003 and mark 2008-11, 2020-03 and 2022-06.</li>
+      <li>PCA ten years of daily curve <em class="hi">changes</em>; report the three loadings, the variance
+      explained, and reconstruct the largest single-day move from three scores.</li>
+    </ul></div>
+    <div class="panel"><h4>Homework 5 · curve &amp; breakeven notebook</h4><ul class="plain">
+      <li>A reproducible curve builder: FRED &#8594; par yields &#8594; discount factors &#8594; zeros
+      &#8594; forwards, with the round-trip assertion in a test.</li>
+      <li>Duration and convexity for three bonds, with a table of approximation error against exact
+      revaluation at five shift sizes.</li>
+      <li>The breakeven series with its decomposition discussed in two paragraphs — and an explicit
+      statement of what you cannot separate from the data.</li>
+      <li>The PCA: loadings, scree, and the reconstruction residual by tenor.</li>
+      <li>One-line <code>AI-USE</code> note on the deliverable.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — <code>data/fred/</code> ships a cached curve snapshot so the lab runs offline.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/assets.html"><div class="nl">See also</div>
+      <div class="nt">Financial Markets Arena · Asset Classes</div><div class="nd">What a bond actually is before you discount it: coupons, accrual, the primary/secondary split, and why a Treasury and a corporate are not the same instrument.</div></a>
+    <a class="nextcard" href="week4.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 4 · Risk Analytics</div><div class="nd">VaR, ES, GARCH and the exceedance backtest — the discipline you now apply to a curve instead of an equity book.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">The 10-week map</div><div class="nd">Where week 5 sits, and which later weeks import the macro panel.</div></a>
+    <a class="nextcard" href="week6.html"><div class="nl">Next</div>
+      <div class="nt">Week 6 · Derivatives Analytics &#8594;</div><div class="nd">Now put the discount curve to work: payoffs, Black-Scholes, the Greeks, implied vol, and the smile that says the model is wrong.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 5 — Rates, Inflation & the Macro Panel
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("ycSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function bp(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === undefined ? 0 : d) + " bp"; }
+function money(x) {
+  var a = Math.abs(x), sg = x < 0 ? "−" : "";
+  if (a >= 1e6) return sg + "$" + (a / 1e6).toFixed(2) + "m";
+  if (a >= 1e3) return sg + "$" + Math.round(a / 1e3) + "k";
+  return sg + "$" + Math.round(a);
+}
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7,
+    "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function dots(svg, ys, W, H, pad, x0, x1, y0, y1, color, r, xs) {
+  var i;
+  for (i = 0; i < ys.length; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("circle", { cx: px.toFixed(1), cy: py.toFixed(1), r: r || 2.6, fill: color }));
+  }
+}
+function xlabels(svg, labels, W, H, pad, x0, x1, xs) {
+  var i;
+  for (i = 0; i < labels.length; i++) {
+    var px = pad.l + ((xs ? xs[i] : i) - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    svg.appendChild(txt(px, H - pad.b + 15, labels[i], 9, "#5f6673", "middle"));
+  }
+}
+
+/* ════ 1. CURVE SHAPE BUILDER + BOOTSTRAP ═════════════════════ */
+var TENORS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+function nsCurve(b0, b1, b2) {
+  var tau = 2.5, out = [], i;
+  for (i = 0; i < TENORS.length; i++) {
+    var x = TENORS[i] / tau, e = Math.exp(-x), f1 = (1 - e) / x;
+    out.push((b0 + b1 * f1 + b2 * (f1 - e)) / 100);
+  }
+  return out;
+}
+function bootstrap(par) {
+  var df = [], z = [], fw = [], acc = 0, i;
+  for (i = 0; i < par.length; i++) {
+    var d = (1 - par[i] * acc) / (1 + par[i]);
+    df.push(d); acc += d;
+    z.push(Math.pow(d, -1 / (i + 1)) - 1);
+    fw.push(i === 0 ? par[0] : df[i - 1] / d - 1);
+  }
+  return { df: df, z: z, fw: fw };
+}
+(function () {
+  var st = { b0: 4.40, b1: -2.00, b2: -0.50 };
+  function draw() {
+    var par = nsCurve(st.b0, st.b1, st.b2), bs = bootstrap(par);
+    var svg = $("ycSvg"), W = 660, H = 290, pad = { l: 46, r: 16, t: 16, b: 30 };
+    clear(svg);
+    var all = par.concat(bs.z).concat(bs.fw), y0 = Math.min.apply(null, all), y1 = Math.max.apply(null, all);
+    var padr = Math.max(0.004, (y1 - y0) * 0.18);
+    y0 = Math.max(-0.01, y0 - padr); y1 = y1 + padr;
+    axes(svg, W, H, pad, y0, y1, function (v) { return (v * 100).toFixed(2) + "%"; }, 4);
+    polyline(svg, bs.fw, W, H, pad, 1, 10, y0, y1, "#d29922", 1.6, "4 3", TENORS);
+    polyline(svg, bs.z, W, H, pad, 1, 10, y0, y1, "#6cb6ff", 1.8, null, TENORS);
+    polyline(svg, par, W, H, pad, 1, 10, y0, y1, "#e11d48", 2.1, null, TENORS);
+    dots(svg, par, W, H, pad, 1, 10, y0, y1, "#e11d48", 2.8, TENORS);
+    xlabels(svg, TENORS.map(function (t) { return t + "y"; }), W, H, pad, 1, 10, TENORS);
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "annual-coupon par yields and the curves bootstrapped from them",
+      9.5, "#5f6673"));
+
+    var html = "", i;
+    for (i = 0; i < TENORS.length; i++) {
+      html += "<tr><td class=\"n\">" + TENORS[i] + "y</td><td class=\"acc\">" +
+        (par[i] * 100).toFixed(2) + "</td><td>" + bs.df[i].toFixed(4) + "</td><td>" +
+        (bs.z[i] * 100).toFixed(2) + "</td><td>" + (bs.fw[i] * 100).toFixed(2) + "</td></tr>";
+    }
+    $("ycTbody").innerHTML = html;
+    var sl = (par[9] - par[1]) * 10000;
+    $("ycSlope").textContent = bp(sl);
+    $("ycDf10").textContent = bs.df[9].toFixed(4);
+    $("ycPv").textContent = money(1e6 * bs.df[9]);
+    var mx = 0, mxi = 0;
+    for (i = 0; i < par.length; i++) if (par[i] > par[mxi]) mxi = i;
+    mx = mxi;
+    var shape;
+    if (sl > 40) shape = "upward";
+    else if (sl < -40) shape = "inverted";
+    else if (mx > 0 && mx < 8) shape = "humped";
+    else shape = "flat";
+    $("ycShape").textContent = shape;
+    var gap = (bs.z[9] - par[9]) * 10000;
+    $("ycNote").textContent = "At 10 years the zero rate is " + (bs.z[9] * 100).toFixed(2) +
+      "% against a par yield of " + (par[9] * 100).toFixed(2) + "% — a " + bp(gap) +
+      " wedge, and its sign is the sign of the slope: the par yield is an average of the zeros in front of " +
+      "it. The 1-year forwards peak at " + (Math.max.apply(null, bs.fw) * 100).toFixed(2) +
+      "%, which is carry, not a forecast.";
+  }
+  function set(b0, b1, b2, which) {
+    st.b0 = b0; st.b1 = b1; st.b2 = b2;
+    $("ycL").value = Math.round(b0 * 100); $("ycS").value = Math.round(b1 * 100);
+    $("ycC").value = Math.round(b2 * 100);
+    $("ycLV").textContent = b0.toFixed(2) + "%";
+    $("ycSV").textContent = (b1 < 0 ? "−" : "") + Math.abs(b1).toFixed(2) + "%";
+    $("ycCV").textContent = (b2 < 0 ? "−" : "") + Math.abs(b2).toFixed(2) + "%";
+    ["ycNormal", "ycFlat", "ycInv", "ycHump"].forEach(function (id) {
+      $(id).setAttribute("aria-pressed", id === which ? "true" : "false");
+    });
+    draw();
+  }
+  $("ycL").addEventListener("input", function () {
+    st.b0 = +this.value / 100; $("ycLV").textContent = st.b0.toFixed(2) + "%"; draw();
+  });
+  $("ycS").addEventListener("input", function () {
+    st.b1 = +this.value / 100;
+    $("ycSV").textContent = (st.b1 < 0 ? "−" : "") + Math.abs(st.b1).toFixed(2) + "%"; draw();
+  });
+  $("ycC").addEventListener("input", function () {
+    st.b2 = +this.value / 100;
+    $("ycCV").textContent = (st.b2 < 0 ? "−" : "") + Math.abs(st.b2).toFixed(2) + "%"; draw();
+  });
+  $("ycNormal").addEventListener("click", function () { set(4.40, -2.00, -0.50, "ycNormal"); });
+  $("ycFlat").addEventListener("click", function () { set(4.20, 0.00, 0.00, "ycFlat"); });
+  $("ycInv").addEventListener("click", function () { set(3.60, 1.80, -0.30, "ycInv"); });
+  $("ycHump").addEventListener("click", function () { set(3.50, 0.50, 3.00, "ycHump"); });
+  draw();
+})();
+
+/* ════ 2. DURATION / CONVEXITY ════════════════════════════════ */
+(function () {
+  var st = { T: 10, c: 0.04, y: 0.04, sh: 100 };
+  function price(y, T, c) {
+    var p = 0, i;
+    for (i = 1; i <= T; i++) p += (c * 100 + (i === T ? 100 : 0)) / Math.pow(1 + y, i);
+    return p;
+  }
+  function risk(y, T, c) {
+    var p = price(y, T, c), d = 0, cx = 0, i;
+    for (i = 1; i <= T; i++) {
+      var cf = c * 100 + (i === T ? 100 : 0), pv = cf / Math.pow(1 + y, i);
+      d += i * pv; cx += i * (i + 1) * cf / Math.pow(1 + y, i + 2);
+    }
+    return { p: p, mac: d / p, md: d / p / (1 + y), cx: cx / p };
+  }
+  function draw() {
+    var r = risk(st.y, st.T, st.c), dy = st.sh / 10000;
+    var exact = price(st.y + dy, st.T, st.c);
+    var lin = r.p - r.md * r.p * dy;
+    var quad = lin + 0.5 * r.cx * r.p * dy * dy;
+    $("dcP0").textContent = r.p.toFixed(3);
+    $("dcD").textContent = r.mac.toFixed(2) + " y";
+    $("dcMd").textContent = r.md.toFixed(3);
+    $("dcCx").textContent = r.cx.toFixed(1);
+    var dv01 = r.md * r.p / 10000;
+    $("dcDv").textContent = "$" + dv01.toFixed(4);
+    $("dcDvm").textContent = money(dv01 * 1e5);
+    var rows = [
+      ["Exact revaluation", exact, exact - r.p, 0],
+      ["Duration only", lin, lin - r.p, lin - exact],
+      ["Duration + convexity", quad, quad - r.p, quad - exact]
+    ], html = "", i;
+    for (i = 0; i < rows.length; i++) {
+      var errc = Math.abs(rows[i][3]) < 0.005 ? "ok" : (Math.abs(rows[i][3]) > 0.25 ? "bad" : "acc");
+      html += "<tr><td class=\"n\">" + rows[i][0] + "</td><td>" + rows[i][1].toFixed(3) +
+        "</td><td>" + (rows[i][2] >= 0 ? "+" : "−") + Math.abs(rows[i][2]).toFixed(3) +
+        "</td><td class=\"" + errc + "\">" +
+        (i === 0 ? "—" : (rows[i][3] >= 0 ? "+" : "−") + Math.abs(rows[i][3] * 100).toFixed(1) + "¢") +
+        "</td></tr>";
+    }
+    $("dcTbody").innerHTML = html;
+    var errLin = Math.abs(lin - exact), errQ = Math.abs(quad - exact);
+    $("dcNote").textContent = "At " + bp(st.sh) + " the duration-only estimate is off by " +
+      (errLin * 100).toFixed(1) + "¢ per $100 — " + money(errLin * 1e5) + " on a $10m position — while " +
+      "adding convexity cuts that to " + (errQ * 100).toFixed(1) + "¢. Convexity is worth " +
+      (0.5 * r.cx * r.p * dy * dy * 100).toFixed(1) + "¢ here, and it is on your side for a move in " +
+      "either direction if you are long the bond.";
+
+    var svg = $("dcSvg"), W = 660, H = 290, pad = { l: 50, r: 16, t: 16, b: 30 };
+    clear(svg);
+    var yl = Math.max(0.0005, st.y - 0.03), yh = st.y + 0.03, NP = 61;
+    var ex = [], xs = [], i2;
+    for (i2 = 0; i2 < NP; i2++) {
+      var yy = yl + (yh - yl) * i2 / (NP - 1);
+      ex.push(price(yy, st.T, st.c)); xs.push(yy);
+    }
+    var p0 = Math.min.apply(null, ex), p1 = Math.max.apply(null, ex);
+    var mrg = (p1 - p0) * 0.1; p0 -= mrg; p1 += mrg;
+    axes(svg, W, H, pad, p0, p1, function (v) { return v.toFixed(0); }, 4);
+    var ly = [], qy = [];
+    for (i2 = 0; i2 < NP; i2++) {
+      var d2 = xs[i2] - st.y;
+      ly.push(r.p - r.md * r.p * d2);
+      qy.push(r.p - r.md * r.p * d2 + 0.5 * r.cx * r.p * d2 * d2);
+    }
+    polyline(svg, ly, W, H, pad, yl, yh, p0, p1, "#6cb6ff", 1.5, "5 3", xs);
+    polyline(svg, ex, W, H, pad, yl, yh, p0, p1, "#e11d48", 2.4, null, xs);
+    polyline(svg, qy, W, H, pad, yl, yh, p0, p1, "#3fb950", 1.4, "2 4", xs);
+    dots(svg, [r.p], W, H, pad, yl, yh, p0, p1, "#fda4af", 4, [st.y]);
+    dots(svg, [exact], W, H, pad, yl, yh, p0, p1, "#d29922", 4, [Math.min(yh, Math.max(yl, st.y + dy))]);
+    var i3;
+    for (i3 = 0; i3 <= 6; i3++) {
+      var xv = yl + (yh - yl) * i3 / 6;
+      var px = pad.l + i3 / 6 * (W - pad.l - pad.r);
+      svg.appendChild(txt(px, H - pad.b + 15, (xv * 100).toFixed(1) + "%", 9, "#5f6673", "middle"));
+    }
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "price per $100 vs yield — solid exact, dashed blue " +
+      "duration, dotted green +convexity", 9.5, "#5f6673"));
+  }
+  $("dcT").addEventListener("input", function () {
+    st.T = +this.value; $("dcTV").textContent = st.T + " y"; draw();
+  });
+  $("dcC").addEventListener("input", function () {
+    st.c = +this.value / 10000; $("dcCV").textContent = (st.c * 100).toFixed(2) + "%"; draw();
+  });
+  $("dcY").addEventListener("input", function () {
+    st.y = +this.value / 10000; $("dcYV").textContent = (st.y * 100).toFixed(2) + "%"; draw();
+  });
+  $("dcS").addEventListener("input", function () {
+    st.sh = +this.value; $("dcSV").textContent = bp(st.sh); draw();
+  });
+  draw();
+})();
+
+/* ════ 3. TIPS BREAKEVEN ══════════════════════════════════════ */
+(function () {
+  var st = { n: 4.20, r: 1.85, irp: 25, liq: 15 };
+  /* seeded synthetic 5-year breakeven history, 2019-01 → 2024-12 (1500 sessions) */
+  var HIST = (function () {
+    var rnd = lcg(20190104), n = 1500, key = [
+      [0, 1.72], [230, 1.62], [300, 1.40], [312, 0.15], [340, 1.05], [430, 1.70],
+      [560, 2.45], [700, 2.85], [800, 3.55], [860, 2.95], [1000, 2.55], [1200, 2.25], [1499, 2.32]
+    ], out = [], i, k = 0;
+    for (i = 0; i < n; i++) {
+      while (k < key.length - 2 && i > key[k + 1][0]) k++;
+      var a = key[k], b = key[k + 1];
+      var f = (i - a[0]) / Math.max(1, b[0] - a[0]);
+      out.push(a[1] + (b[1] - a[1]) * Math.min(1, Math.max(0, f)) + gauss(rnd) * 0.035);
+    }
+    return out;
+  })();
+  function draw() {
+    var n = st.n / 100, r = st.r / 100;
+    var be = (1 + n) / (1 + r) - 1, naive = n - r;
+    var exp = be * 100 - st.irp / 100 + st.liq / 100;
+    $("beBe").textContent = (be * 100).toFixed(2) + "%";
+    $("beNaive").textContent = (naive * 100).toFixed(2) + "%";
+    $("beGap").textContent = bp((be - naive) * 10000, 1);
+    $("beExp").textContent = exp.toFixed(2) + "%";
+    var note;
+    if (st.liq >= 60) {
+      note = "A liquidity-driven print. With a " + st.liq + " bp TIPS liquidity premium, the " +
+        (be * 100).toFixed(2) + "% breakeven understates expected inflation by most of that: the market " +
+        "is not forecasting " + (be * 100).toFixed(2) + "% inflation, it is refusing to bid for TIPS. " +
+        "This is the March-2020 configuration.";
+    } else if (st.irp >= 50) {
+      note = "A premium-inflated print: " + st.irp + " bp of inflation-risk premium means the breakeven " +
+        "sits above expected inflation, which lands at " + exp.toFixed(2) + "%. Investors are paying " +
+        "for protection, and the extra is not a forecast.";
+    } else {
+      note = "A calm reading: the two premia roughly offset (" + st.irp + " bp risk premium against " +
+        st.liq + " bp liquidity), so the " + (be * 100).toFixed(2) + "% breakeven is within " +
+        Math.abs(be * 100 - exp).toFixed(2) + " pp of expected inflation. Even here, quote it as a " +
+        "breakeven and not as a forecast.";
+    }
+    $("beNote").textContent = note;
+
+    /* history chart */
+    var svg = $("beSvg"), W = 660, H = 250, pad = { l: 44, r: 16, t: 16, b: 28 };
+    clear(svg);
+    var y0 = 0, y1 = 4.0, i;
+    axes(svg, W, H, pad, y0, y1, function (v) { return v.toFixed(1) + "%"; }, 4);
+    var xs = [];
+    for (i = 0; i < HIST.length; i++) xs.push(i);
+    polyline(svg, HIST, W, H, pad, 0, HIST.length - 1, y0, y1, "#e11d48", 1.5, null, xs);
+    var lvl = be * 100;
+    var ly = H - pad.b - (lvl - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: ly, x2: W - pad.r, y2: ly, stroke: "#fda4af",
+      "stroke-width": 1.4, "stroke-dasharray": "5 3" }));
+    svg.appendChild(txt(W - pad.r - 3, ly - 5, "your setting " + lvl.toFixed(2) + "%", 9.5, "#fda4af", "end", "700"));
+    var marks = [[312, "2020-03"], [800, "2022-06"], [1450, "calm"]];
+    for (i = 0; i < marks.length; i++) {
+      var mx = pad.l + marks[i][0] / (HIST.length - 1) * (W - pad.l - pad.r);
+      svg.appendChild(mk("line", { x1: mx, y1: pad.t, x2: mx, y2: H - pad.b, stroke: "#333a47",
+        "stroke-dasharray": "2 4" }));
+      svg.appendChild(txt(mx, pad.t + 26, marks[i][1], 9, "#6f757f", "middle"));
+    }
+    xlabels(svg, ["2019", "2020", "2021", "2022", "2023", "2024"], W, H, pad, 0, HIST.length - 1,
+      [0, 250, 500, 750, 1000, 1250]);
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "5-year breakeven — synthetic, calibrated to the shape of " +
+      "FRED T5YIE", 9.5, "#5f6673"));
+
+    /* decomposition bar */
+    var b = $("beBar"), BW = 660, BH = 120, bp0 = { l: 12, r: 12, t: 26, b: 26 };
+    clear(b);
+    var total = Math.max(0.5, st.n);
+    var segs = [
+      ["real yield " + st.r.toFixed(2) + "%", st.r, "#6cb6ff"],
+      ["expected inflation " + exp.toFixed(2) + "%", exp, "#e11d48"],
+      ["inflation-risk premium " + (st.irp / 100).toFixed(2) + "%", st.irp / 100, "#d29922"]
+    ];
+    var sum = 0, j;
+    for (j = 0; j < segs.length; j++) sum += segs[j][1];
+    var scale = (BW - bp0.l - bp0.r - 74) / Math.max(sum, 0.5);
+    var x = bp0.l;
+    for (j = 0; j < segs.length; j++) {
+      var w = Math.max(0, segs[j][1]) * scale;
+      b.appendChild(mk("rect", { x: x.toFixed(1), y: bp0.t, width: Math.max(1, w).toFixed(1), height: 34,
+        fill: segs[j][2], opacity: 0.85 }));
+      if (w > 54) b.appendChild(txt(x + w / 2, bp0.t + 21, segs[j][1].toFixed(2) + "%", 10, "#0f1115", "middle", "700"));
+      x += w;
+    }
+    /* the liquidity premium is a subtraction: the bar overshoots nominal by exactly that much */
+    var lw = st.liq / 100 * scale;
+    if (lw > 0.5) {
+      b.appendChild(mk("rect", { x: (x - lw).toFixed(1), y: bp0.t, width: lw.toFixed(1), height: 34,
+        fill: "#3fb950", opacity: 0.5 }));
+    }
+    b.appendChild(mk("line", { x1: (x - lw).toFixed(1), y1: bp0.t - 6, x2: (x - lw).toFixed(1),
+      y2: bp0.t + 40, stroke: "#e8e6e3", "stroke-width": 1.4 }));
+    b.appendChild(txt(x - lw + 6, bp0.t + 52, "nominal " + st.n.toFixed(2) + "%", 10, "#e8e6e3", "start", "700"));
+    segs.push(["− TIPS liquidity " + (st.liq / 100).toFixed(2) + "%", -st.liq / 100, "#3fb950"]);
+    b.appendChild(txt(bp0.l, 16, "nominal = real yield + expected inflation + inflation-risk premium " +
+      "− TIPS liquidity premium", 10, "#9aa0a6"));
+    var lx = bp0.l;
+    for (j = 0; j < segs.length; j++) {
+      b.appendChild(mk("rect", { x: lx, y: BH - 16, width: 9, height: 9, fill: segs[j][2], rx: 2 }));
+      b.appendChild(txt(lx + 13, BH - 8, segs[j][0], 9.5, "#9aa0a6"));
+      lx += 24 + segs[j][0].length * 5.4;
+    }
+  }
+  function set(n, r, irp, liq) {
+    st.n = n; st.r = r; st.irp = irp; st.liq = liq;
+    $("beN").value = Math.round(n * 100); $("beR").value = Math.round(r * 100);
+    $("beI").value = irp; $("beQ").value = liq;
+    $("beNV").textContent = n.toFixed(2) + "%";
+    $("beRV").textContent = (r < 0 ? "−" : "") + Math.abs(r).toFixed(2) + "%";
+    $("beIV").textContent = irp + " bp"; $("beQV").textContent = liq + " bp";
+    draw();
+  }
+  $("beN").addEventListener("input", function () {
+    st.n = +this.value / 100; $("beNV").textContent = st.n.toFixed(2) + "%"; draw();
+  });
+  $("beR").addEventListener("input", function () {
+    st.r = +this.value / 100;
+    $("beRV").textContent = (st.r < 0 ? "−" : "") + Math.abs(st.r).toFixed(2) + "%"; draw();
+  });
+  $("beI").addEventListener("input", function () {
+    st.irp = +this.value; $("beIV").textContent = st.irp + " bp"; draw();
+  });
+  $("beQ").addEventListener("input", function () {
+    st.liq = +this.value; $("beQV").textContent = st.liq + " bp"; draw();
+  });
+  $("beMar20").addEventListener("click", function () { set(0.70, 0.55, 10, 90); });
+  $("beJun22").addEventListener("click", function () { set(3.30, 0.40, 45, 10); });
+  $("beNow").addEventListener("click", function () { set(4.20, 1.85, 25, 15); });
+  draw();
+})();
+
+/* ════ 4. CURVE PCA EXPLORER ══════════════════════════════════ */
+(function () {
+  var TN = [1, 2, 3, 5, 7, 10, 20, 30];
+  var RAW1 = [0.30, 0.34, 0.36, 0.37, 0.37, 0.36, 0.34, 0.32];
+  var RAW2 = [-0.52, -0.40, -0.28, -0.10, 0.05, 0.18, 0.38, 0.45];
+  var RAW3 = [0.45, 0.20, -0.05, -0.35, -0.40, -0.20, 0.30, 0.48];
+  /* rescale so each score reads in basis points of a familiar quantity:
+     PC1 = average level move, PC2 = 30y−1y slope move, PC3 = butterfly */
+  var L1 = RAW1.map(function (v) { return v / mean(RAW1); });
+  var L2 = RAW2.map(function (v) { return v / (RAW2[7] - RAW2[0]); });
+  var b3 = (RAW3[0] + RAW3[7]) / 2 - RAW3[4];
+  var L3 = RAW3.map(function (v) { return v / b3; });
+  var TARGETS = {
+    hike: [280, 300, 290, 270, 260, 250, 235, 225],
+    invert: [120, 95, 70, 30, 5, -15, -45, -60],
+    cut: [-120, -100, -80, -50, -30, -10, 10, 20],
+    twist: [40, 15, -10, -35, -40, -15, 25, 45]
+  };
+  var VAR = [["PC1", "level — the whole curve up or down", 88.6],
+    ["PC2", "slope — front vs back", 8.4],
+    ["PC3", "curvature — belly vs wings", 1.6]];
+  var st = { t: "hike", s: [240, 0, 0] };
+  function recon() {
+    var i, out = [];
+    for (i = 0; i < TN.length; i++) out.push(st.s[0] * L1[i] + st.s[1] * L2[i] + st.s[2] * L3[i]);
+    return out;
+  }
+  function fit() {
+    var B = [L1, L2, L3], y = TARGETS[st.t], G = [], v = [], i, j, k;
+    for (i = 0; i < 3; i++) {
+      G.push([]); var s = 0;
+      for (j = 0; j < 3; j++) {
+        var g = 0;
+        for (k = 0; k < TN.length; k++) g += B[i][k] * B[j][k];
+        G[i].push(g);
+      }
+      for (k = 0; k < TN.length; k++) s += B[i][k] * y[k];
+      v.push(s);
+    }
+    /* 3x3 solve by Cramer's rule */
+    function det3(m) {
+      return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+             m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+             m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    }
+    var D = det3(G), out = [];
+    for (i = 0; i < 3; i++) {
+      var M = [G[0].slice(), G[1].slice(), G[2].slice()];
+      for (j = 0; j < 3; j++) M[j][i] = v[j];
+      out.push(Math.abs(D) < 1e-9 ? 0 : det3(M) / D);
+    }
+    return out;
+  }
+  function draw() {
+    /* loadings chart */
+    var svg = $("pcLoad"), W = 660, H = 190, pad = { l: 44, r: 16, t: 16, b: 26 };
+    clear(svg);
+    var lo = -0.9, hi = 1.5;
+    axes(svg, W, H, pad, lo, hi, function (v) { return v.toFixed(1); }, 4);
+    polyline(svg, L1, W, H, pad, 0, TN.length - 1, lo, hi, "#e11d48", 2, null, null);
+    polyline(svg, L2, W, H, pad, 0, TN.length - 1, lo, hi, "#6cb6ff", 2, null, null);
+    polyline(svg, L3, W, H, pad, 0, TN.length - 1, lo, hi, "#d29922", 2, null, null);
+    dots(svg, L1, W, H, pad, 0, TN.length - 1, lo, hi, "#e11d48", 2.4);
+    dots(svg, L2, W, H, pad, 0, TN.length - 1, lo, hi, "#6cb6ff", 2.4);
+    dots(svg, L3, W, H, pad, 0, TN.length - 1, lo, hi, "#d29922", 2.4);
+    xlabels(svg, TN.map(function (t) { return t + "y"; }), W, H, pad, 0, TN.length - 1);
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "loadings, rescaled so a score reads in bp of level, " +
+      "slope and butterfly", 9.5, "#5f6673"));
+
+    /* reconstruction chart */
+    var s2 = $("pcRec"), W2 = 660, H2 = 220, p2 = { l: 48, r: 16, t: 16, b: 42 };
+    clear(s2);
+    var tgt = TARGETS[st.t], rc = recon(), i, res = [];
+    for (i = 0; i < TN.length; i++) res.push(tgt[i] - rc[i]);
+    var all = tgt.concat(rc), y0 = Math.min.apply(null, all), y1 = Math.max.apply(null, all);
+    var m = Math.max(30, (y1 - y0) * 0.15); y0 -= m; y1 += m;
+    if (y0 > 0) y0 = -20; if (y1 < 0) y1 = 20;
+    axes(s2, W2, H2, p2, y0, y1, function (v) { return v.toFixed(0); }, 4);
+    var zy = H2 - p2.b - (0 - y0) / (y1 - y0) * (H2 - p2.t - p2.b);
+    s2.appendChild(mk("line", { x1: p2.l, y1: zy, x2: W2 - p2.r, y2: zy, stroke: "#333a47" }));
+    var xw = W2 - p2.l - p2.r;
+    for (i = 0; i < TN.length; i++) {
+      var px = p2.l + i / (TN.length - 1) * xw;
+      var ry = H2 - p2.b - (res[i] - y0) / (y1 - y0) * (H2 - p2.t - p2.b);
+      s2.appendChild(mk("rect", { x: (px - 5).toFixed(1), y: Math.min(zy, ry).toFixed(1), width: 10,
+        height: Math.max(1, Math.abs(ry - zy)).toFixed(1), fill: "rgba(248,81,73,.45)" }));
+    }
+    polyline(s2, tgt, W2, H2, p2, 0, TN.length - 1, y0, y1, "#fda4af", 2, "5 3");
+    polyline(s2, rc, W2, H2, p2, 0, TN.length - 1, y0, y1, "#3fb950", 2);
+    dots(s2, tgt, W2, H2, p2, 0, TN.length - 1, y0, y1, "#fda4af", 2.6);
+    xlabels(s2, TN.map(function (t) { return t + "y"; }), W2, H2, p2, 0, TN.length - 1);
+    s2.appendChild(txt(p2.l + 2, p2.t + 10, "curve change in bp — dashed = target, green = 3-component " +
+      "reconstruction, red bars = residual", 9.5, "#5f6673"));
+
+    var ss = 0, wm = 0, wi = 0;
+    for (i = 0; i < res.length; i++) {
+      ss += res[i] * res[i];
+      if (Math.abs(res[i]) > wm) { wm = Math.abs(res[i]); wi = i; }
+    }
+    var rms = Math.sqrt(ss / res.length);
+    $("pcRms").textContent = rms.toFixed(1) + " bp";
+    $("pcRms").className = "sv " + (rms < 6 ? "ok" : rms < 20 ? "warn" : "bad");
+    $("pcWorst").textContent = TN[wi] + "y, " + wm.toFixed(0) + " bp";
+    $("pcPnl").textContent = money(-rc[5] * 8100);
+    var html = "", cum = 0;
+    for (i = 0; i < VAR.length; i++) {
+      cum += VAR[i][2];
+      html += "<tr><td class=\"n\">" + VAR[i][0] + "</td><td>" + VAR[i][1] + "</td><td class=\"acc\">" +
+        VAR[i][2].toFixed(1) + "</td><td>" + cum.toFixed(1) + "</td></tr>";
+    }
+    $("pcTbody").innerHTML = html;
+    $("pcVar").textContent = cum.toFixed(1) + "%";
+    var note;
+    if (rms < 6) {
+      note = "Three numbers, " + rms.toFixed(1) + " bp RMS residual across eight tenors. That is the " +
+        "empirical fact the whole rates business is built on: hedge PC1, PC2 and PC3 with three " +
+        "instruments and you have neutralised almost all of your curve risk.";
+    } else if (st.s[0] === 0 && st.s[1] === 0 && st.s[2] === 0) {
+      note = "All three scores are zero, so the reconstruction is flat and the residual is the whole " +
+        "target move. Press Fit to solve the least-squares problem — or drag PC1 first, since it is " +
+        "worth 88.6% of the variance.";
+    } else {
+      note = "Residual " + rms.toFixed(1) + " bp, worst at the " + TN[wi] + "-year point. Keep going: " +
+        "PC1 sets the level, PC2 the front-to-back tilt, PC3 the belly. What three components cannot " +
+        "reach is basis risk, and you size it rather than assume it away.";
+    }
+    $("pcNote").textContent = note;
+  }
+  function setScores(s) {
+    st.s = s;
+    $("pc1").value = Math.round(Math.max(-300, Math.min(300, s[0])));
+    $("pc2").value = Math.round(Math.max(-200, Math.min(200, s[1])));
+    $("pc3").value = Math.round(Math.max(-120, Math.min(120, s[2])));
+    st.s = [+$("pc1").value, +$("pc2").value, +$("pc3").value];
+    $("pc1V").textContent = bp(st.s[0]); $("pc2V").textContent = bp(st.s[1]);
+    $("pc3V").textContent = bp(st.s[2]);
+    draw();
+  }
+  $("pc1").addEventListener("input", function () {
+    st.s[0] = +this.value; $("pc1V").textContent = bp(st.s[0]); draw();
+  });
+  $("pc2").addEventListener("input", function () {
+    st.s[1] = +this.value; $("pc2V").textContent = bp(st.s[1]); draw();
+  });
+  $("pc3").addEventListener("input", function () {
+    st.s[2] = +this.value; $("pc3V").textContent = bp(st.s[2]); draw();
+  });
+  $("pcTarget").addEventListener("change", function () { st.t = this.value; draw(); });
+  $("pcFit").addEventListener("click", function () { setScores(fit()); });
+  $("pcZero").addEventListener("click", function () { setScores([0, 0, 0]); });
+  draw();
+})();
+
+/* ════ 5. CREDIT-SPREAD PANEL ═════════════════════════════════ */
+(function () {
+  var RATINGS = ["AAA", "AA", "A", "BBB", "BB", "B", "CCC"];
+  var SPREAD = { AAA: 45, AA: 60, A: 90, BBB: 145, BB: 290, B: 460, CCC: 900 };
+  var HISTPD = { AAA: 0.01, AA: 0.02, A: 0.06, BBB: 0.18, BB: 0.90, B: 3.50, CCC: 14.0 };
+  var st = { rating: "BBB", s: 145, rec: 40, h: 5 };
+  function draw() {
+    var rec = st.rec / 100, s = st.s / 10000;
+    var pd = Math.min(0.999, s / Math.max(0.05, 1 - rec));
+    var cum = 1 - Math.pow(1 - pd, st.h);
+    var hp = HISTPD[st.rating] / 100;
+    var el = hp * (1 - rec) * 10000;
+    var rp = st.s - el;
+    $("crPd").textContent = (pd * 100).toFixed(2) + "%";
+    $("crCum").textContent = (cum * 100).toFixed(1) + "% over " + st.h + " y";
+    $("crHist").textContent = HISTPD[st.rating].toFixed(2) + "%";
+    $("crMult").textContent = hp > 0 ? (pd / hp).toFixed(1) + "×" : "n/a";
+    $("crEl").textContent = el.toFixed(0) + " bp";
+    $("crRp").textContent = rp.toFixed(0) + " bp (" + (100 * rp / st.s).toFixed(0) + "% of spread)";
+    var note;
+    if (pd / hp > 6) {
+      note = "The quote implies " + (pd * 100).toFixed(2) + "% a year against a realised " +
+        HISTPD[st.rating].toFixed(2) + "% — " + (pd / hp).toFixed(1) + "× — so only " +
+        el.toFixed(0) + " bp of the " + st.s + " bp is compensation for expected default. The rest is " +
+        "premium: liquidity, migration risk, and the fact that defaults arrive in clusters exactly when " +
+        "your other assets are also falling. That is a feature of the market, not an error in it.";
+    } else if (pd / hp > 2) {
+      note = "Implied " + (pd * 100).toFixed(2) + "% against realised " +
+        HISTPD[st.rating].toFixed(2) + "%: a " + (pd / hp).toFixed(1) + "× risk-neutral wedge, which is " +
+        "the normal state of affairs for this rating. Expected loss is " + el.toFixed(0) +
+        " bp of the " + st.s + " bp quote.";
+    } else {
+      note = "At a " + st.rec + "% recovery assumption the implied and realised default rates are close (" +
+        (pd / hp).toFixed(1) + "×). That is unusual, and it usually means the recovery assumption is " +
+        "doing the work — drag it and watch the implied PD move while the market quote does not.";
+    }
+    $("crNote").textContent = note;
+
+    var svg = $("crSvg"), W = 660, H = 260, pad = { l: 48, r: 46, t: 18, b: 34 };
+    clear(svg);
+    var mxs = 1000, i;
+    axes(svg, W, H, pad, 0, mxs, function (v) { return v.toFixed(0); }, 4);
+    var xw = W - pad.l - pad.r, ph = H - pad.t - pad.b, bwid = xw / RATINGS.length;
+    var pdys = [], pxs = [];
+    for (i = 0; i < RATINGS.length; i++) {
+      var rt = RATINGS[i], sp = rt === st.rating ? st.s : SPREAD[rt];
+      var eli = HISTPD[rt] / 100 * (1 - rec) * 10000;
+      var x = pad.l + i * bwid + bwid * 0.2, bw = bwid * 0.6;
+      var hh = Math.min(ph, sp / mxs * ph), eh = Math.min(hh, eli / mxs * ph);
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: (H - pad.b - hh).toFixed(1), width: bw.toFixed(1),
+        height: hh.toFixed(1), fill: rt === st.rating ? "rgba(225,29,72,.75)" : "rgba(225,29,72,.30)" }));
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: (H - pad.b - eh).toFixed(1), width: bw.toFixed(1),
+        height: Math.max(0.8, eh).toFixed(1), fill: "#d29922", opacity: 0.85 }));
+      svg.appendChild(txt(x + bw / 2, H - pad.b + 14, rt, 9.5,
+        rt === st.rating ? "#fda4af" : "#5f6673", "middle", rt === st.rating ? "700" : null));
+      var pdi = Math.min(0.999, (rt === st.rating ? st.s : SPREAD[rt]) / 10000 / Math.max(0.05, 1 - rec));
+      pdys.push(pdi * 100); pxs.push(i + 0.5);
+    }
+    /* implied PD on a right-hand axis */
+    var pmax = Math.max.apply(null, pdys) * 1.15;
+    var d = "";
+    for (i = 0; i < pdys.length; i++) {
+      var px2 = pad.l + (i + 0.5) * bwid;
+      var py2 = H - pad.b - pdys[i] / pmax * ph;
+      d += (i ? " L" : "M") + px2.toFixed(1) + " " + py2.toFixed(1);
+      svg.appendChild(mk("circle", { cx: px2.toFixed(1), cy: py2.toFixed(1), r: 2.6, fill: "#6cb6ff" }));
+    }
+    svg.appendChild(mk("path", { d: d, fill: "none", stroke: "#6cb6ff", "stroke-width": 1.7 }));
+    for (i = 0; i <= 4; i++) {
+      var vv = pmax * i / 4;
+      var yy = H - pad.b - i / 4 * ph;
+      svg.appendChild(txt(W - pad.r + 5, yy + 3.5, vv.toFixed(0) + "%", 9, "#6cb6ff", "start"));
+    }
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "spread in bp (bars; amber = expected loss at " +
+      st.rec + "% recovery) · implied annual PD (blue, right axis)", 9.5, "#5f6673"));
+  }
+  $("crRating").addEventListener("change", function () {
+    st.rating = this.value; st.s = SPREAD[st.rating];
+    $("crSpread").value = st.s; $("crSpreadV").textContent = st.s + " bp"; draw();
+  });
+  $("crSpread").addEventListener("input", function () {
+    st.s = +this.value; $("crSpreadV").textContent = st.s + " bp"; draw();
+  });
+  $("crRec").addEventListener("input", function () {
+    st.rec = +this.value; $("crRecV").textContent = st.rec + "%"; draw();
+  });
+  $("crH").addEventListener("input", function () {
+    st.h = +this.value; $("crHV").textContent = st.h + " y"; draw();
+  });
+  draw();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>

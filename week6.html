@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 6 · Derivatives Analytics — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week5.html">← Week 5</a> · <b>Week 6 · Derivatives Analytics</b> · <a href="week7.html">Week 7 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 6</div>
+  <h1>Derivatives Analytics</h1>
+  <p class="promise">An option price is one number that contains a whole distribution. This week you build
+  the machine that turns the two into each other — Black-Scholes forward for a price, bisection backward for
+  an implied vol — and then you look at what the market's own prices say about the model: a smile that
+  should be flat, and an arbitrage that is only a stale quote.</p>
+  <ul class="you">
+    <li>Draw the <strong>payoff</strong> of any combination of legs and separate it from the
+    <em class="hi">value</em> of that combination before expiry.</li>
+    <li>Implement <strong>Black-Scholes</strong> and its Greeks, and verify your code against a number you
+    can check: <code>S=100, K=100, r=5%, &#963;=20%, T=1</code> gives a call of <code>10.4506</code>.</li>
+    <li>Invert the formula by <strong>bisection</strong> to get implied vol from a price, and know why you
+    bisect on vega-positive functions rather than trusting Newton.</li>
+    <li>Build the <strong>smile and the surface</strong> from a real option chain, and read the skew as a
+    statement about the left tail rather than a bug.</li>
+    <li>Test <strong>put-call parity</strong>, find an arbitrage, and then explain why it is not one.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: option chain · invert BS · smile &amp; surface · parity test</span>
+    <span class="pill warn">Phase 1 due · Phase 2 opens</span>
+    <span class="pill">No homework this week — the tearsheet is the deliverable</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? A payoff, and then a price for it</h2>
+  <p class="lead">Everything in derivatives analytics separates into two questions. The first is
+  arithmetic: <strong>what does this thing pay at expiry</strong>, as a function of the underlying? That is
+  a piecewise-linear graph you can draw with no model at all. The second is the hard one:
+  <strong>what is it worth now</strong>, before the uncertainty resolves — and that requires a model of how
+  the underlying moves.</p>
+
+  <div class="grid3" style="margin-top:16px">
+    <div class="panel"><h4>Payoff</h4><p class="sub">Model-free. A call pays
+    <code>max(S&#8348;&#8722;K, 0)</code> at expiry and nothing before it. Add legs and the payoff adds:
+    every structure in the widget below is a sum of at most four of these kinks.</p></div>
+    <div class="panel"><h4>Price</h4><p class="sub">Model-dependent. The value today is the discounted
+    expected payoff under a <em class="hi">risk-neutral</em> measure, and Black-Scholes is one particular
+    choice of measure — lognormal, constant vol, continuous trading, no jumps.</p></div>
+    <div class="panel"><h4>Intrinsic and time value</h4><p class="sub">Price minus intrinsic is time value,
+    and it is what you are actually trading. It peaks at the money, decays to zero at expiry, and is where
+    every Greek lives.</p></div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · the payoff builder</h3>
+  <p class="sub" style="margin-bottom:12px">Pick a structure. The <b>solid</b> line is the payoff at
+  expiry, net of premium; the <b>dashed</b> line is the Black-Scholes value today at the vol and time you
+  set. The gap between them is time value — and watching it collapse as you drag <b>T</b> toward zero is the
+  single most useful intuition in this week.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="pfSvg" viewBox="0 0 660 300" role="img" aria-label="Payoff at expiry and current Black-Scholes value of the selected option structure against the underlying price"></svg>
+      </div>
+      <div class="chips" role="group" aria-label="Option structure presets">
+        <button class="chip on" type="button" data-pf="call">Long call</button>
+        <button class="chip" type="button" data-pf="put">Long put</button>
+        <button class="chip" type="button" data-pf="bullcall">Bull call spread</button>
+        <button class="chip" type="button" data-pf="bearput">Bear put spread</button>
+        <button class="chip" type="button" data-pf="straddle">Straddle</button>
+        <button class="chip" type="button" data-pf="strangle">Strangle</button>
+        <button class="chip" type="button" data-pf="fly">Butterfly</button>
+        <button class="chip" type="button" data-pf="covered">Covered call</button>
+        <button class="chip" type="button" data-pf="collar">Collar</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i> payoff at expiry, net of premium</span>
+        <span><i style="background:#6cb6ff"></i> value today (Black-Scholes)</span>
+        <span><i style="background:var(--ok)"></i> breakeven</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="pfVol">Volatility &#963; <b id="pfVolV">20%</b></label>
+          <input type="range" id="pfVol" min="5" max="80" value="20" step="1" aria-label="Volatility in percent" /></div>
+        <div class="ctl"><label for="pfT">Time to expiry <b id="pfTV">0.50 y</b></label>
+          <input type="range" id="pfT" min="1" max="200" value="50" step="1" aria-label="Time to expiry in hundredths of a year" /></div>
+        <div class="ctl"><label for="pfW">Strike width <b id="pfWV">10</b></label>
+          <input type="range" id="pfW" min="2" max="30" value="10" step="1" aria-label="Strike width for spreads and strangles" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Net premium</div><div class="sv acc" id="pfPrem">&#8212;</div></div>
+        <div class="stat"><div class="sl">Max profit</div><div class="sv ok" id="pfMax">&#8212;</div></div>
+        <div class="stat"><div class="sl">Max loss</div><div class="sv bad" id="pfMin">&#8212;</div></div>
+        <div class="stat"><div class="sl">Breakeven(s)</div><div class="sv" id="pfBe">&#8212;</div></div>
+        <div class="stat"><div class="sl">Net delta</div><div class="sv" id="pfDelta">&#8212;</div></div>
+        <div class="stat"><div class="sl">Net vega, per vol pt</div><div class="sv" id="pfVega">&#8212;</div></div>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="Legs of the selected structure">
+        <thead><tr><th>Leg</th><th>Qty</th><th>Strike</th><th>BS value</th></tr></thead>
+        <tbody id="pfTbody"></tbody>
+      </table></div>
+      <div class="panel tight"><p class="sub" id="pfNote"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How you build it — forward for a price, backward for a vol</h2>
+  <p class="lead">Black-Scholes is eight lines of code and one thing to get right: the two
+  <code>d</code> terms. Write it, then check it against a number. <strong>At <code>S=100</code>,
+  <code>K=100</code>, <code>r=5%</code>, <code>&#963;=20%</code>, <code>T=1</code> the European call is
+  worth <code>10.4506</code></strong> and the put is worth <code>5.5735</code>. If your code does not
+  reproduce those to four decimals, stop and fix it before you invert anything.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h4>The formula, and the Greeks that come free</h4>
+      <pre class="code"><span class="k">from</span> scipy.stats <span class="k">import</span> norm
+
+<span class="k">def</span> <span class="b">bs_call</span>(S, K, r, sig, T):
+    sT = sig * np.sqrt(T)
+    d1 = (np.log(S / K) + (r + sig**<span class="n">2</span> / <span class="n">2</span>) * T) / sT
+    d2 = d1 - sT
+    <span class="k">return</span> S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+
+<span class="c"># the same d1, d2 give every Greek</span>
+delta = norm.cdf(d1)
+gamma = norm.pdf(d1) / (S * sT)
+vega  = S * norm.pdf(d1) * np.sqrt(T)      <span class="c"># per 1.00 vol</span>
+theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
+         - r * K * np.exp(-r * T) * norm.cdf(d2))
+
+<span class="k">assert</span> abs(bs_call(<span class="n">100</span>, <span class="n">100</span>, <span class="n">0.05</span>, <span class="n">0.20</span>, <span class="n">1</span>) - <span class="n">10.4506</span>) &lt; <span class="n">1e-4</span></pre>
+      <p class="sub" style="margin-top:9px">That last line is the whole quality-control regime for this
+      week. Put it in a test file; every later widget on this page is checked against it.</p>
+    </div>
+    <div class="panel">
+      <h4>Inverting it: bisection, not Newton</h4>
+      <pre class="code"><span class="k">def</span> <span class="b">iv</span>(price, S, K, r, T, lo=<span class="n">1e-4</span>, hi=<span class="n">5.0</span>):
+    <span class="k">for</span> _ <span class="k">in</span> range(<span class="n">100</span>):
+        mid = (lo + hi) / <span class="n">2</span>
+        <span class="k">if</span> bs_call(S, K, r, mid, T) &gt; price:
+            hi = mid
+        <span class="k">else</span>:
+            lo = mid
+    <span class="k">return</span> (lo + hi) / <span class="n">2</span></pre>
+      <p class="sub" style="margin-top:9px">The call price is strictly increasing in <code>&#963;</code>
+      — vega is positive everywhere — so bisection <em class="hi">cannot</em> fail to converge, and it
+      halves the bracket every step: 40 iterations gets you to
+      <code>5&#215;10<sup>&#8722;13</sup></code>. Newton is faster and diverges on deep out-of-the-money
+      quotes where vega is near zero, which is exactly where a real chain is full of stale prices.</p>
+      <p class="sub">Before you invert, check the no-arbitrage bounds:
+      <code>max(S&#8722;Ke<sup>&#8722;rT</sup>, 0) &#8804; C &#8804; S</code>. A quote outside them has no
+      implied vol at all, and a mid computed from a one-sided book will breach them often.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · Black-Scholes pricer and the Greeks</h3>
+  <p class="sub" style="margin-bottom:12px">Every number here is computed in this page from the formula
+  above, with a double-precision normal CDF. Press <b>Reference case</b> to set
+  <code>S=K=100, r=5%, &#963;=20%, T=1</code> and confirm the call reads <b>10.4506</b> — the same
+  assertion your notebook should carry.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="bsS">Spot S <b id="bsSV">100.00</b></label>
+          <input type="range" id="bsS" min="4000" max="16000" value="10000" step="25" aria-label="Spot price, in hundredths" /></div>
+        <div class="ctl"><label for="bsK">Strike K <b id="bsKV">100.00</b></label>
+          <input type="range" id="bsK" min="4000" max="16000" value="10000" step="25" aria-label="Strike price, in hundredths" /></div>
+        <div class="ctl"><label for="bsR">Rate r <b id="bsRV">5.00%</b></label>
+          <input type="range" id="bsR" min="0" max="900" value="500" step="10" aria-label="Risk free rate in basis points" /></div>
+        <div class="ctl"><label for="bsV">Volatility &#963; <b id="bsVV">20.0%</b></label>
+          <input type="range" id="bsV" min="20" max="900" value="200" step="5" aria-label="Volatility in tenths of a percent" /></div>
+        <div class="ctl"><label for="bsT">Time T <b id="bsTV">1.00 y</b></label>
+          <input type="range" id="bsT" min="2" max="300" value="100" step="1" aria-label="Time to expiry in hundredths of a year" /></div>
+        <div class="row"><button class="btn primary" type="button" id="bsRef">Reference case</button>
+          <button class="btn" type="button" id="bsAtm">ATM, 3 months</button></div>
+      </div>
+      <div class="panel tight"><p class="sub" id="bsCheck"></p></div>
+    </div>
+    <div class="stack">
+      <div class="stats">
+        <div class="stat"><div class="sl">Call</div><div class="sv acc" id="bsCall">&#8212;</div></div>
+        <div class="stat"><div class="sl">Put</div><div class="sv" id="bsPut">&#8212;</div></div>
+        <div class="stat"><div class="sl">d&#8321;</div><div class="sv" id="bsD1">&#8212;</div></div>
+        <div class="stat"><div class="sl">d&#8322;</div><div class="sv" id="bsD2">&#8212;</div></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Delta (call)</div><div class="sv" id="bsDelta">&#8212;</div></div>
+        <div class="stat"><div class="sl">Gamma</div><div class="sv" id="bsGamma">&#8212;</div></div>
+        <div class="stat"><div class="sl">Vega / vol pt</div><div class="sv acc" id="bsVega">&#8212;</div></div>
+        <div class="stat"><div class="sl">Theta / day</div><div class="sv bad" id="bsTheta">&#8212;</div></div>
+        <div class="stat"><div class="sl">Rho / 1% rate</div><div class="sv" id="bsRho">&#8212;</div></div>
+        <div class="stat"><div class="sl">Intrinsic / time</div><div class="sv" id="bsIntr">&#8212;</div></div>
+      </div>
+      <div class="svgwrap">
+        <svg id="bsSvg" viewBox="0 0 660 240" role="img" aria-label="Call price and the selected Greek plotted against spot price"></svg>
+      </div>
+      <div class="sw" role="group" aria-label="Which Greek to plot">
+        <button type="button" id="bsGd" aria-pressed="true">Delta</button>
+        <button type="button" id="bsGg" aria-pressed="false">Gamma</button>
+        <button type="button" id="bsGv" aria-pressed="false">Vega</button>
+        <button type="button" id="bsGt" aria-pressed="false">Theta</button>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · the implied-vol inverter, one bisection step at a time</h3>
+  <p class="sub" style="margin-bottom:12px">Type a market price and watch the bracket close. The log shows
+  every iteration: the midpoint vol, the model price it produces, and the sign of the error that decides
+  which half of the bracket survives. This is the loop the lab runs across a whole option chain.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="ivSvg" viewBox="0 0 660 250" role="img" aria-label="Model call price as a strictly increasing function of volatility, with the bisection bracket shown"></svg>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="button" id="ivStep">Bisect once</button>
+        <button class="btn" type="button" id="ivRun">Run to convergence</button>
+        <button class="btn" type="button" id="ivReset">Reset bracket</button>
+        <span class="pill acc" id="ivIter">iteration 0</span>
+      </div>
+      <div class="log" id="ivLog" aria-live="polite"></div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="ivPrice">Market price of the call <b id="ivPriceV">$10.45</b></label>
+          <input type="range" id="ivPrice" min="10" max="4000" value="1045" step="5" aria-label="Observed market price of the call, in cents" /></div>
+        <div class="ctl"><label for="ivK">Strike <b id="ivKV">100</b></label>
+          <input type="range" id="ivK" min="70" max="140" value="100" step="1" aria-label="Strike price" /></div>
+        <div class="ctl"><label for="ivT">Time to expiry <b id="ivTV">1.00 y</b></label>
+          <input type="range" id="ivT" min="2" max="200" value="100" step="1" aria-label="Time to expiry in hundredths of a year" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Implied vol</div><div class="sv acc" id="ivIv">&#8212;</div></div>
+        <div class="stat"><div class="sl">Bracket width</div><div class="sv" id="ivWidth">&#8212;</div></div>
+        <div class="stat"><div class="sl">Price error</div><div class="sv" id="ivErr">&#8212;</div></div>
+        <div class="stat"><div class="sl">Vega at the root</div><div class="sv" id="ivVega">&#8212;</div></div>
+      </div>
+      <div class="panel tight"><p class="sub" id="ivNote"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: the smile is the model failing in public</h2>
+  <p class="lead">If Black-Scholes were true, every option on the same underlying with the same expiry
+  would imply the <em class="hi">same</em> volatility. They do not. Equity index options have implied vols
+  that fall as the strike rises — the <strong>skew</strong> — and rise again far out of the money, and the
+  whole shape changes with maturity. That surface is not an error in your inversion. It is the market
+  pricing a left tail, a jump risk and a demand for crash protection that a lognormal model has no way to
+  express.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel"><h4>So why keep using the model?</h4><p class="sub">Because implied vol is a
+    <em class="hi">quoting convention</em>. Nobody believes the lognormal assumption; everybody uses
+    Black-Scholes as an invertible map between a dollar price and a number that is comparable across
+    strikes, maturities and underlyings. A trader who says "I bought 22 vol" is quoting a price through a
+    model they know is wrong, on purpose.</p></div>
+    <div class="panel"><h4>What the shape tells you</h4><p class="sub">The <b>level</b> is the price of
+    variance. The <b>skew</b> is the price of the left tail — steeper skew means crash protection is
+    getting expensive. The <b>convexity</b> (the smile's curl) prices the probability of a large move in
+    either direction. Those three numbers are the equity-vol analogue of week 5's level, slope and
+    curvature.</p></div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · the smile and the surface</h3>
+  <p class="sub" style="margin-bottom:12px">The heatmap is an implied-vol surface over moneyness and
+  maturity; the chart below is the smile slice at the tenor you select. Drag <b>skew</b> to zero and the
+  surface goes flat, which is the world Black-Scholes assumes. Drag it to 1.0 and you get something close
+  to a real S&amp;P-500 surface.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="svfSvg" viewBox="0 0 660 250" role="img" aria-label="Implied volatility surface as a heatmap over moneyness and maturity"></svg>
+      </div>
+      <div class="svgwrap">
+        <svg id="smSvg" viewBox="0 0 660 220" role="img" aria-label="Implied volatility smile for the selected maturity across strikes"></svg>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="svAtm">ATM vol, 1 year <b id="svAtmV">20%</b></label>
+          <input type="range" id="svAtm" min="8" max="60" value="20" step="1" aria-label="At the money volatility at one year, in percent" /></div>
+        <div class="ctl"><label for="svSkew">Skew <b id="svSkewV">0.90</b></label>
+          <input type="range" id="svSkew" min="0" max="180" value="90" step="5" aria-label="Skew parameter" /></div>
+        <div class="ctl"><label for="svConv">Smile convexity <b id="svConvV">2.00</b></label>
+          <input type="range" id="svConv" min="0" max="600" value="200" step="10" aria-label="Smile convexity parameter" /></div>
+        <div class="ctl"><label for="svTerm">Term-structure slope <b id="svTermV">+0.06</b></label>
+          <input type="range" id="svTerm" min="-30" max="30" value="6" step="1" aria-label="Term structure slope of at the money volatility" /></div>
+        <div class="ctl"><label for="svTen">Smile slice</label>
+          <select id="svTen" aria-label="Maturity for the smile slice">
+            <option value="0">1 month</option>
+            <option value="1">2 months</option>
+            <option value="2">3 months</option>
+            <option value="3" selected="selected">6 months</option>
+            <option value="4">1 year</option>
+            <option value="5">2 years</option>
+          </select></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">ATM vol, this tenor</div><div class="sv acc" id="svAtmT">&#8212;</div></div>
+        <div class="stat"><div class="sl">90&#8722;110 skew</div><div class="sv" id="svRr">&#8212;</div></div>
+        <div class="stat"><div class="sl">Wing butterfly</div><div class="sv" id="svBf">&#8212;</div></div>
+        <div class="stat"><div class="sl">Vol of the 80% put</div><div class="sv bad" id="svPut80">&#8212;</div></div>
+      </div>
+      <div class="panel tight"><p class="sub" id="svNote"></p></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · put-call parity, and the arbitrage that is not one</h3>
+  <p class="sub" style="margin-bottom:12px">Parity is model-free:
+  <code>C &#8722; P = S &#8722; Ke<sup>&#8722;rT</sup></code>, by a static replication argument that holds
+  whatever the underlying does. So a violation is either free money or bad data — and in a retail option
+  chain it is <em class="hi">always</em> bad data. Turn on <b>stale quotes</b> to see the classic version:
+  the underlying has moved, the option quotes have not, and parity appears to break by 60 cents.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="pcS">Underlying, live <b id="pcSV">100.00</b></label>
+          <input type="range" id="pcS" min="9000" max="11000" value="10000" step="5" aria-label="Live underlying price, in hundredths" /></div>
+        <div class="ctl"><label for="pcK">Strike <b id="pcKV">100</b></label>
+          <input type="range" id="pcK" min="90" max="110" value="100" step="1" aria-label="Strike" /></div>
+        <div class="ctl"><label for="pcSpread">Quoted bid-ask, each leg <b id="pcSpreadV">$0.10</b></label>
+          <input type="range" id="pcSpread" min="2" max="80" value="10" step="2" aria-label="Bid ask spread per leg in cents" /></div>
+        <div class="ctl"><label for="pcLag">Quote staleness <b id="pcLagV">0.00</b></label>
+          <input type="range" id="pcLag" min="0" max="150" value="0" step="5" aria-label="How far the underlying has moved since the option quotes printed, in hundredths" /></div>
+        <div class="row">
+          <button class="btn primary" type="button" id="pcStale" aria-pressed="false">Stale quotes: off</button>
+          <button class="btn" type="button" id="pcRefresh">Refresh the chain</button>
+        </div>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="Put-call parity check on the quoted market">
+        <thead><tr><th>Term</th><th>Value</th><th>Note</th></tr></thead>
+        <tbody id="pcTbody"></tbody>
+      </table></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="pcSvg" viewBox="0 0 660 250" role="img" aria-label="The two sides of put-call parity compared, with the transaction-cost band around them"></svg>
+      </div>
+      <div class="panel tight">
+        <div class="smoke" id="pcLamp"><span class="lamp"></span><span id="pcZone">&#8212;</span></div>
+        <p class="sub" id="pcVerdict" style="margin-top:8px"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:20px"><b>The rule to write in the notebook.</b> Before you report a
+  parity violation, check three things in order: is the underlying quote from the same instant as the option
+  quotes; is the option price a mid of a two-sided book with real size; and does the apparent edge survive
+  two bid-ask spreads plus fees plus the borrow on the short leg. In a free retail chain, one of those three
+  kills it every time.</div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Every one of these has appeared in a submitted option-chain notebook. Open them.</p>
+
+  <details class="pit"><summary>Inverting the mid of a one-sided book — and getting a 300% implied vol</summary>
+    <div class="body">
+      <p>A free option chain contains rows with a bid of 0.00 and an ask of 0.05, rows that last traded
+      three weeks ago, and rows where the "price" is the last trade rather than a mid. Invert those and you
+      get implied vols of 4%, 300%, or nothing at all — and then a single garbage point drags your smile fit
+      into a shape no market ever quoted.</p>
+      <p>The tell is a surface with spikes at the far wings and at the shortest expiry, which is exactly
+      where liquidity dies.</p>
+      <p class="fix">Fix: filter before you invert. Require a two-sided quote, a positive bid, a relative
+      spread under some threshold, non-zero open interest, and a price inside the no-arbitrage bounds
+      <code>max(S&#8722;Ke<sup>&#8722;rT</sup>,0) &#8804; C &#8804; S</code>. Report how many rows you
+      dropped and why — that count is part of the result.</p>
+    </div></details>
+
+  <details class="pit"><summary>Forgetting that American equity options are not European</summary>
+    <div class="body">
+      <p>Every single-name US equity option is American. Black-Scholes prices a European claim. For calls on
+      a non-dividend payer the difference is zero (early exercise is never optimal), which is why the error
+      hides — but for <em class="hi">puts</em>, and for calls across an ex-dividend date, the American
+      option is strictly worth more, and inverting a European formula on it produces an implied vol biased
+      upward.</p>
+      <p>The bias is small for short, near-the-money options and material for deep in-the-money puts, which
+      is where a naive script finds its most exciting "skew".</p>
+      <p class="fix">Fix: state the assumption. Restrict the fit to out-of-the-money options — where early
+      exercise is worth almost nothing and the quotes are liquid — or price with a binomial tree if you need
+      the in-the-money wing. Handle the dividend explicitly with <code>q</code>.</p>
+    </div></details>
+
+  <details class="pit"><summary>Newton-Raphson on the wing, and a divide-by-near-zero</summary>
+    <div class="body">
+      <p>Newton's update is <code>&#963; &#8592; &#963; &#8722; (C(&#963;)&#8722;P)/vega</code>. Deep out of
+      the money, vega is <code>1e-8</code>, so one iteration throws <code>&#963;</code> to 40 or to a
+      negative number, and the next call to <code>log</code> or <code>sqrt</code> returns
+      <code>NaN</code>. The <code>NaN</code> then propagates silently through your surface fit.</p>
+      <p>The same instability is why a vectorised Newton over a whole chain quietly returns a few
+      <code>NaN</code>s that a later <code>.mean()</code> turns into one <code>NaN</code> for the entire
+      tenor.</p>
+      <p class="fix">Fix: bisect. It is monotone, it cannot diverge, and 60 iterations is still
+      microseconds. If you want speed, bracket with bisection first and polish with two Newton steps — and
+      assert on the final price error rather than trusting convergence.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reading the skew as a forecast</summary>
+    <div class="body">
+      <p>A steep put skew says out-of-the-money puts are expensive relative to a lognormal benchmark. It
+      does <em class="hi">not</em> say the market expects a crash. Most of the skew is a risk premium: the
+      people who sell crash protection demand to be paid for it, and index puts have earned a persistently
+      negative return for decades precisely because that premium is real.</p>
+      <p>The mirror error: computing a risk-neutral density from the surface and calling it "the market's
+      probability distribution". It is the risk-neutral distribution, which differs from the real-world one
+      by exactly the risk premium you are trying to measure.</p>
+      <p class="fix">Fix: keep the two measures separate in your writing. Say "risk-neutral" every time you
+      mean it, and if you want to make a claim about real-world probabilities, you need an assumption about
+      the pricing kernel — so state it.</p>
+    </div></details>
+
+  <details class="pit"><summary>Testing parity with prices from three different timestamps</summary>
+    <div class="body">
+      <p>The underlying quote comes from one API call, the call chain from a second, the put chain from a
+      third, and the three arrive up to a few seconds apart. If the underlying has moved 30 cents in
+      between, parity appears violated by roughly the delta-weighted amount of that move — around 30 cents
+      at the money — and it will look like a persistent, tradable edge because the bias has a
+      <em class="hi">sign</em> in a trending market.</p>
+      <p>The second-order version: using an annual rate with the wrong compounding, or a
+      <code>T</code> measured in calendar days when the quotes convention is business days. Both shift the
+      right-hand side by a few cents, which is enough to manufacture an "edge" of the same size as the one
+      you are hunting.</p>
+      <p class="fix">Fix: one snapshot, one timestamp, recorded. Compare the parity residual to two full
+      spreads plus fees before you use the word arbitrage, and plot the residual against moneyness — a real
+      data problem is a smooth function of delta, and free money is not.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="2" data-exp="<b>Bisection, because vega &gt; 0 makes the price strictly monotone in &#963;.</b> That single property guarantees exactly one root in the bracket and guarantees bisection finds it, halving the interval every step regardless of how flat the function is. Newton needs a division by vega, which on a deep out-of-the-money quote is effectively zero — one update throws &#963; to a wild or negative value and the next log or sqrt returns NaN. Bisection is not chosen for speed or accuracy at the root; it is chosen because it cannot fail.">
+    <p class="q"><span>Q1</span>Why does the standard implied-vol routine bisect rather than use Newton-Raphson?</p>
+    <div class="opts">
+      <button class="opt" type="button">Bisection converges faster — quadratically, against Newton's linear rate</button>
+      <button class="opt" type="button">Newton cannot be used because Black-Scholes has no closed-form derivative in &#963;</button>
+      <button class="opt" type="button">The call price is strictly increasing in &#963;, so bisection cannot diverge — while Newton divides by a vega that is near zero on the wings</button>
+      <button class="opt" type="button">Bisection returns the globally lowest implied vol when several roots exist</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="1" data-exp="<b>The quotes are not from the same instant.</b> Parity is a static-replication identity: buy the call, sell the put, short the stock, lend Ke^(−rT) and you hold nothing at expiry whatever happens — so it holds with no model at all, and 40 cents of &quot;violation&quot; in a free chain is a data artefact. The overwhelmingly common cause is a timestamp mismatch between the underlying and the option quotes, and its signature is exactly what is described: it scales with delta and it has a sign in a trending market. Volatility skew cannot break parity — parity involves no volatility. And &quot;the market is inefficient&quot; is the conclusion of last resort, not first.">
+    <p class="q"><span>Q2</span>Your parity test on a free option chain shows <code>C &#8722; P &#8722; S + Ke<sup>&#8722;rT</sup> = +0.40</code> for near-the-money strikes, consistently, all afternoon. What is it?</p>
+    <div class="opts">
+      <button class="opt" type="button">A genuine arbitrage: buy the synthetic, sell the actual, collect 40 cents</button>
+      <button class="opt" type="button">A timestamp mismatch — the underlying moved between the option snapshot and the spot snapshot</button>
+      <button class="opt" type="button">Evidence of volatility skew, which breaks parity for strikes away from the money</button>
+      <button class="opt" type="button">Proof that the market is pricing an early-exercise premium into the call</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>It says out-of-the-money puts are expensive relative to lognormal — mostly a risk premium.</b> A skew is a statement about relative prices under a wrong model, and decades of evidence say index puts are persistently rich because someone must be paid to sell crash insurance. Calling it a forecast confuses the risk-neutral measure with the real-world one; the two differ by precisely the premium in question. It is also not a bug in the inversion — a clean, filtered chain gives the same shape — and a flat smile is what Black-Scholes predicts, not what any equity market has ever quoted.">
+    <p class="q"><span>Q3</span>The 3-month S&amp;P-500 smile shows 27% implied at the 90% strike and 17% at the 110% strike. What does that tell you?</p>
+    <div class="opts">
+      <button class="opt" type="button">The market forecasts a crash within three months</button>
+      <button class="opt" type="button">Your inversion is broken — a correct one returns a flat smile</button>
+      <button class="opt" type="button">Nothing: implied vol is not comparable across strikes</button>
+      <button class="opt" type="button">Downside protection is expensive relative to a lognormal benchmark — and most of that gap is a risk premium, not a probability</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Implement <code>bs_call</code>, <code>bs_put</code> and the four main Greeks, with the
+      <code>10.4506</code> assertion in a test file.</li>
+      <li>Pull one option chain with <code>yfinance.Ticker(...).option_chain(expiry)</code>, snapshot the
+      spot at the same moment, and filter it — then report the drop count by reason.</li>
+      <li>Invert by bisection across the surviving rows; build the smile for three expiries and the surface
+      as a heatmap.</li>
+      <li>Test put-call parity strike by strike, plot the residual against moneyness, and write the
+      paragraph explaining why the largest residual is not an arbitrage.</li>
+    </ul></div>
+    <div class="panel"><h4>Phase 1 is due · Phase 2 opens</h4><ul class="plain">
+      <li><b>Phase 1 (14%):</b> the fund tearsheet — universe and data contract, documented adjustments,
+      factor decomposition, optimised portfolio against 1/N, and the week-4 risk report. It must run
+      end-to-end from <code>make tearsheet</code> on a grader's laptop.</li>
+      <li><b>Phase 2 (21%) opens:</b> pick a track — your own signal, or reproduce a published anomaly —
+      and spec it. Costed walk-forward, purged CV, an explicit overfitting section, two live AlgoArena
+      sessions, and a TCA plus attribution report.</li>
+      <li>No homework this week. The deliverable is the tearsheet, and the reviews start next week.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — a cached option-chain snapshot ships in <code>data/chains/</code> so the lab runs offline.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/derivatives.html"><div class="nl">See also</div>
+      <div class="nt">Financial Markets Arena · Derivatives</div><div class="nd">What a forward, a future, a swap and an option are as contracts — margin, settlement, and who is on the other side — before you put a model on them.</div></a>
+    <a class="nextcard" href="week5.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 5 · Rates, Inflation &amp; the Macro Panel</div><div class="nd">Where the discount factor in <code>Ke<sup>&#8722;rT</sup></code> comes from, and the level/slope/curvature decomposition this week's surface echoes.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">The 10-week map</div><div class="nd">Where week 6 sits — the hinge between the two project phases.</div></a>
+    <a class="nextcard" href="week7.html"><div class="nl">Next</div>
+      <div class="nt">Week 7 · Backtesting &amp; Performance Attribution &#8594;</div><div class="nd">Costs, slippage, walk-forward, deflated Sharpe and Brinson attribution — the week that decides whether any of this was real.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>

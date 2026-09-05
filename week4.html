@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 4 · Risk Analytics — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week3.html">← Week 3</a> · <b>Week 4 · Risk Analytics</b> · <a href="week5.html">Week 5 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 4</div>
+  <h1>Risk Analytics</h1>
+  <p class="promise">A risk number is not a measurement. It is a <em class="hi">forecast</em> — a claim
+  about a distribution you have never seen, made from a sample of the one you have. This week you produce
+  three of those forecasts for the same portfolio, watch them disagree by 40%, and then do the only thing
+  that settles the argument: count how often each one was wrong.</p>
+  <ul class="you">
+    <li>Compute <strong>VaR and Expected Shortfall</strong> three ways — historical, Gaussian, EWMA — on the portfolio you optimised in week 3, and say which assumption each one is really making.</li>
+    <li>Fit a <em class="hi">GARCH(1,1)</em> with <code>arch</code>, read <code>&#945;+&#946;</code> as a persistence half-life, and forecast a vol term structure instead of a single number.</li>
+    <li>Backtest your own risk model with a <strong>Kupiec unconditional-coverage test</strong> and a Basel traffic light — and accept the verdict when it is red.</li>
+    <li>Stress the book on <strong>March 2020</strong>, report max drawdown and time-to-recover, and distinguish a drawdown from a loss.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: VaR/ES three ways · GARCH(1,1) · exceedance backtest · 2020-03 stress</span>
+    <span class="pill">HW4: risk report + exceedance backtest</span>
+    <span class="pill warn">Feeds the Phase-1 tearsheet risk section</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? Four numbers, and only one of them is a fact</h2>
+  <p class="lead">Risk analytics is the business of summarising a return distribution into something a
+  committee can act on. Realised <strong>volatility</strong> is the only one of this week's numbers that is
+  simply a property of the sample you have. <strong>VaR</strong>, <strong>Expected Shortfall</strong> and a
+  <strong>GARCH forecast</strong> are all statements about tomorrow, and each is only as good as the shape
+  it assumes the tail has.</p>
+
+  <div class="grid3" style="margin-top:16px">
+    <div class="panel"><h4>Volatility, realised</h4><p class="sub">The standard deviation of the sample,
+    annualised by <code>&#215;&#8730;252</code>. Backward-looking, model-free, and roughly symmetric — which
+    is exactly why it is a poor description of an equity book, whose left tail is much longer than its
+    right.</p></div>
+    <div class="panel"><h4>VaR<sub>&#945;</sub></h4><p class="sub">The loss you exceed with probability
+    <code>1&#8722;&#945;</code>. A <em class="hi">quantile</em>, so it says nothing about how bad the
+    breach is when it happens. Not sub-additive in general: the VaR of a portfolio can exceed the sum of
+    its parts, which makes it a bad object to allocate limits with.</p></div>
+    <div class="panel"><h4>Expected Shortfall</h4><p class="sub">The mean loss <em class="hi">given</em>
+    that VaR was breached. Coherent, sub-additive, and the Basel standard since FRTB. Harder to backtest,
+    because you are estimating a conditional mean from the handful of observations you have in the
+    tail.</p></div>
+  </div>
+
+  <div class="note" style="margin-top:16px"><b>The pedagogical point of the whole week:</b> two portfolios
+  can have identical volatility and completely different risk. The widget below builds exactly that pair —
+  same 17.5% annualised vol, one Gaussian, one with a fat left tail — and shows you that the 99% VaR moves
+  by more than a third while the vol number never budges.</div>
+
+  <h3 style="margin-top:30px">Interactive · the return-distribution explorer</h3>
+  <p class="sub" style="margin-bottom:12px">2,000 seeded daily returns, rescaled to a constant volatility.
+  Drag <b>skew</b> and <b>tail weight</b> and watch the histogram pull away from the Gaussian overlay
+  (dashed) while &#963; stays fixed. The two rows under the chart are the ones that matter: how many
+  &#8722;3&#963; days the sample actually contains, against the 0.135% a Gaussian promises.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="dxSvg" viewBox="0 0 660 280" role="img" aria-label="Histogram of daily returns with an overlaid Gaussian density of the same volatility"></svg>
+      </div>
+      <div class="row">
+        <div class="sw" role="group" aria-label="Distribution presets">
+          <button type="button" id="dxPreG" aria-pressed="true">Gaussian</button>
+          <button type="button" id="dxPreE" aria-pressed="false">Equity index</button>
+          <button type="button" id="dxPreC" aria-pressed="false">Credit / short-vol</button>
+        </div>
+        <button class="btn" type="button" id="dxLog" aria-pressed="false">Log y-axis</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i> sample histogram</span>
+        <span><i style="background:#6cb6ff"></i> Gaussian, same &#963;</span>
+        <span><i style="background:var(--bad)"></i> 99% VaR quantile</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="dxSkew">Skew &#949; <b id="dxSkewV">0.00</b></label>
+          <input type="range" id="dxSkew" min="-100" max="100" value="0" step="5" aria-label="Skew parameter epsilon" /></div>
+        <div class="ctl"><label for="dxTail">Tail weight &#948; <b id="dxTailV">1.00</b></label>
+          <input type="range" id="dxTail" min="80" max="180" value="100" step="2" aria-label="Tail weight parameter delta" /></div>
+        <div class="ctl"><label for="dxVol">Annualised &#963; <b id="dxVolV">17.5%</b></label>
+          <input type="range" id="dxVol" min="80" max="400" value="175" step="5" aria-label="Target annualised volatility in percent" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Sample &#963; (ann.)</div><div class="sv acc" id="dxSd">17.5%</div></div>
+        <div class="stat"><div class="sl">Skewness</div><div class="sv" id="dxSk">0.00</div></div>
+        <div class="stat"><div class="sl">Excess kurtosis</div><div class="sv" id="dxKu">0.00</div></div>
+        <div class="stat"><div class="sl">Worst day</div><div class="sv bad" id="dxWorst">&#8722;3.2%</div></div>
+        <div class="stat"><div class="sl">P(r &lt; &#8722;3&#963;) observed</div><div class="sv" id="dxT3">0.14%</div></div>
+        <div class="stat"><div class="sl">99% VaR, 1&#8209;day</div><div class="sv bad" id="dxVar">2.56%</div></div>
+      </div>
+      <div class="panel tight"><p class="sub" id="dxVerdict">A Gaussian sample: skew &#8776; 0, excess
+      kurtosis &#8776; 0, and the &#8722;3&#963; frequency lands near the textbook 0.135%.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How you build it — three estimators over one series</h2>
+  <p class="lead">All three VaR estimators consume the same object: the daily P&amp;L series of the week-3
+  portfolio, <code>(w * ret).sum(axis=1)</code>. They differ in one line each, and that line is the whole
+  model. Write all three, always, and report the spread between them as a measure of model risk.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h4>The three lines</h4>
+      <pre class="code">pnl = (ret * w).sum(axis=<span class="n">1</span>)      <span class="c"># week-3 portfolio</span>
+a   = <span class="n">0.99</span>
+
+<span class="c"># 1 · historical — no shape assumption</span>
+var_h = -pnl.quantile(<span class="n">1</span> - a)
+
+<span class="c"># 2 · Gaussian — shape assumed, tail understated</span>
+z     = norm.ppf(<span class="n">1</span> - a)
+var_g = -(pnl.mean() + z * pnl.std())
+
+<span class="c"># 3 · EWMA (RiskMetrics, lam=0.94)</span>
+v     = pnl.pow(<span class="n">2</span>).ewm(alpha=<span class="n">1</span>-<span class="n">0.94</span>).mean()
+var_e = -z * np.sqrt(v.iloc[-<span class="n">1</span>])
+
+<span class="c"># ES: the average of the breaches</span>
+es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
+      <p class="sub" style="margin-top:9px">Three lines, three different answers, and the ordering between
+      them is informative: <code>var_e</code> above the other two means today is a high-vol day and your
+      unconditional estimates are stale.</p>
+    </div>
+    <div class="panel">
+      <h4>What each one is really assuming</h4>
+      <ul class="plain">
+        <li><b>Historical.</b> That the past <code>n</code> days are an i.i.d. draw from tomorrow's
+        distribution. No shape assumption — and no ability to see a loss larger than the worst one in the
+        window. Your 99% VaR from 250 days is the 2.5th-worst day; it is an <em class="hi">order
+        statistic</em>, with the variance of one.</li>
+        <li><b>Gaussian.</b> That the tail is thin. Fast, differentiable, aggregates cleanly across a book
+        — and understates the 99% loss on equities by 20–40% in a typical sample.</li>
+        <li><b>EWMA.</b> That vol is persistent and the shape is Gaussian. It reacts to a regime change in
+        days rather than months, which is why it is the estimator that gets a risk limit cut in time.</li>
+        <li><b>GARCH.</b> EWMA plus mean reversion: the extra parameter <code>&#969;</code> pulls the
+        forecast back to a long-run level, so the term structure has a shape instead of being flat.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · VaR and ES, three ways, one confidence slider</h3>
+  <p class="sub" style="margin-bottom:12px">750 seeded daily P&amp;L observations on a $10&#8239;m book, with
+  two genuine vol regimes in it. Move the confidence level and watch the three estimates diverge — then
+  switch the window to the last 250 days and watch <b>historical</b> jump, because a single order statistic
+  moved.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="vrConf">Confidence level <b id="vrConfV">99.0%</b></label>
+          <input type="range" id="vrConf" min="900" max="999" value="990" step="5" aria-label="VaR confidence level in tenths of a percent" /></div>
+        <div class="ctl"><label for="vrLam">EWMA &#955; <b id="vrLamV">0.94</b></label>
+          <input type="range" id="vrLam" min="88" max="99" value="94" step="1" aria-label="EWMA decay lambda" /></div>
+        <div class="ctl"><label for="vrWin">Estimation window</label>
+          <select id="vrWin" aria-label="Estimation window length">
+            <option value="750">All 750 days</option>
+            <option value="500">Last 500 days</option>
+            <option value="250">Last 250 days</option>
+            <option value="120">Last 120 days</option>
+          </select></div>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="VaR and Expected Shortfall by method">
+        <thead><tr><th>Method</th><th>VaR %</th><th>VaR $</th><th>ES %</th><th>ES $</th></tr></thead>
+        <tbody id="vrTbody"></tbody>
+      </table></div>
+      <div class="panel tight"><p class="sub" id="vrNote"></p></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="vrSvg" viewBox="0 0 660 300" role="img" aria-label="Daily profit and loss series with value at risk thresholds from three estimators"></svg>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Model-risk spread</div><div class="sv warn" id="vrSpread">&#8212;</div></div>
+        <div class="stat"><div class="sl">Breaches of Gaussian VaR</div><div class="sv" id="vrBrG">&#8212;</div></div>
+        <div class="stat"><div class="sl">Expected at this level</div><div class="sv" id="vrExp">&#8212;</div></div>
+        <div class="stat"><div class="sl">ES / VaR ratio (hist.)</div><div class="sv acc" id="vrRatio">&#8212;</div></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent-2)"></i> daily P&amp;L</span>
+        <span><i style="background:#6cb6ff"></i> Gaussian VaR</span>
+        <span><i style="background:var(--ok)"></i> historical VaR</span>
+        <span><i style="background:var(--warn)"></i> EWMA VaR</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · GARCH(1,1) and the anatomy of a vol cluster</h3>
+  <p class="sub" style="margin-bottom:12px"><code>&#963;&#178;&#7511; = &#969; + &#945;r&#178;&#8348;&#8331;&#8321; + &#946;&#963;&#178;&#8348;&#8331;&#8321;</code>.
+  Press <b>Play</b> to walk the process forward one day at a time: the top panel is the return, the bottom
+  is the conditional volatility that generated it. <code>&#945;</code> is how violently vol reacts to
+  yesterday's shock; <code>&#946;</code> is how long it remembers. Their sum is the persistence, and it
+  decides the shape of the forecast on the right of the vol panel.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="ghSvg" viewBox="0 0 660 320" role="img" aria-label="Simulated returns and conditional volatility from a GARCH one one process, with a forward volatility forecast"></svg>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="button" id="ghPlay">&#9654; Play</button>
+        <button class="btn" type="button" id="ghStep">Step +25 &#8594;</button>
+        <button class="btn" type="button" id="ghAll">Show all</button>
+        <button class="btn" type="button" id="ghReset">Reset</button>
+        <span class="pill acc" id="ghPos">day 0 / 500</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="ghA">&#945; &#183; shock reaction <b id="ghAV">0.09</b></label>
+          <input type="range" id="ghA" min="1" max="30" value="9" step="1" aria-label="GARCH alpha, reaction to yesterday's shock" /></div>
+        <div class="ctl"><label for="ghB">&#946; &#183; vol memory <b id="ghBV">0.89</b></label>
+          <input type="range" id="ghB" min="50" max="98" value="89" step="1" aria-label="GARCH beta, persistence of volatility" /></div>
+        <div class="ctl"><label for="ghL">Long-run vol (ann.) <b id="ghLV">18%</b></label>
+          <input type="range" id="ghL" min="8" max="40" value="18" step="1" aria-label="Long run annualised volatility target in percent" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Persistence &#945;+&#946;</div><div class="sv" id="ghPers">0.98</div></div>
+        <div class="stat"><div class="sl">Shock half-life</div><div class="sv acc" id="ghHl">34 d</div></div>
+        <div class="stat"><div class="sl">&#969;</div><div class="sv" id="ghOm">&#8212;</div></div>
+        <div class="stat"><div class="sl">&#963; today (ann.)</div><div class="sv acc" id="ghNow">&#8212;</div></div>
+        <div class="stat"><div class="sl">&#963; forecast, 20&#8209;day avg</div><div class="sv" id="ghF20">&#8212;</div></div>
+        <div class="stat"><div class="sl">Kurtosis of the path</div><div class="sv" id="ghKu">&#8212;</div></div>
+      </div>
+      <div class="panel tight"><p class="sub" id="ghNote"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: a risk model is only as good as its exceedance count</h2>
+  <p class="lead">Anyone can publish a VaR. The question a reviewer, a regulator and this course all ask
+  is the same: <em class="hi">how often was it wrong, and was that the right number of times?</em> A 99%
+  one-day VaR should be breached about 2.5 times a year. Two breaches is fine. Zero is not — a model that
+  never breaches is a model that is over-reserving capital and mispricing every limit downstream.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h4>The Kupiec unconditional-coverage test</h4>
+      <p class="sub">With <code>T</code> tests, <code>x</code> breaches and coverage
+      <code>p = 1&#8722;&#945;</code>, the likelihood-ratio statistic is</p>
+      <pre class="code">LR = -2*log((1-p)**(T-x) * p**x)
+     +2*log((1-x/T)**(T-x) * (x/T)**x)</pre>
+      <p class="sub" style="margin-top:9px">which is <code>&#967;&#178;(1)</code> under the null, so
+      <code>LR &gt; 3.84</code> rejects at 5%. It tests the <em class="hi">number</em> of breaches only.
+      Christoffersen's independence test asks the second question — whether they cluster — and a model can
+      pass Kupiec while failing that badly.</p>
+    </div>
+    <div class="panel">
+      <h4>The Basel traffic light</h4>
+      <p class="sub">Over 250 business days at 99%, the supervisory response is mechanical: <b>green</b> for
+      0–4 breaches, <b>yellow</b> for 5–9 with an escalating capital multiplier, <b>red</b> at 10 or more,
+      which means the model is presumed broken. That is the entire industry's answer to "is your risk model
+      any good", and it is a counting exercise.</p>
+      <p class="sub">The lesson for a tearsheet: report the count, the expectation and the test — never a
+      lone VaR number. <em class="hi">A VaR without a backtest is a decoration.</em></p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:30px">Interactive · exceedance backtest and traffic light</h3>
+  <p class="sub" style="margin-bottom:12px">Each model is re-estimated on a rolling window and tested on
+  the next day, out of sample, over the seeded P&amp;L series. The strip shows every test day; red ticks are
+  breaches. Note what happens when you pick <b>Gaussian</b> at 99%: it fails not because the code is wrong
+  but because the assumption is.</p>
+
+  <div class="split-r">
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="kpModel">Risk model under test</label>
+          <select id="kpModel" aria-label="Risk model under test">
+            <option value="hist">Historical simulation (250&#8209;day window)</option>
+            <option value="gauss">Gaussian, rolling &#963;</option>
+            <option value="ewma">EWMA &#963;, &#955;=0.94, Gaussian quantile</option>
+            <option value="garch">GARCH(1,1)&#8209;style, fat&#8209;tail quantile</option>
+            <option value="flat">Flat 2% VaR (a hand&#8209;tuned favourite)</option>
+          </select></div>
+        <div class="ctl"><label for="kpConf">Coverage</label>
+          <select id="kpConf" aria-label="VaR coverage level">
+            <option value="99">99% &#183; expect 1 breach in 100</option>
+            <option value="97.5">97.5% &#183; FRTB ES level</option>
+            <option value="95">95% &#183; expect 1 in 20</option>
+          </select></div>
+        <div class="ctl"><label for="kpT">Test length <b id="kpTV">500 d</b></label>
+          <input type="range" id="kpT" min="120" max="500" value="500" step="20" aria-label="Number of out of sample test days" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Observed breaches</div><div class="sv" id="kpObs">&#8212;</div></div>
+        <div class="stat"><div class="sl">Expected</div><div class="sv" id="kpExpN">&#8212;</div></div>
+        <div class="stat"><div class="sl">Kupiec LR</div><div class="sv" id="kpLr">&#8212;</div></div>
+        <div class="stat"><div class="sl">p&#8209;value</div><div class="sv" id="kpP">&#8212;</div></div>
+        <div class="stat"><div class="sl">Worst breach</div><div class="sv bad" id="kpWorst">&#8212;</div></div>
+        <div class="stat"><div class="sl">Max run of breaches</div><div class="sv" id="kpRun">&#8212;</div></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="kpSvg" viewBox="0 0 660 250" role="img" aria-label="Out of sample profit and loss against the rolling value at risk threshold, with breaches marked"></svg>
+      </div>
+      <div class="panel tight">
+        <div class="smoke" id="kpLamp"><span class="lamp"></span><span id="kpZone">&#8212;</span></div>
+        <div class="bar" aria-hidden="true"><i id="kpBar"></i></div>
+        <p class="sub" id="kpVerdict" style="margin-top:2px"></p>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Interactive · drawdown and the March-2020 stress</h3>
+  <p class="sub" style="margin-bottom:12px">Volatility is symmetric; a drawdown is not. Inject a
+  2020-03-style crash — <b>&#8722;34% in 16 sessions with vol tripling</b> is the historical S&amp;P
+  calibration — and read off the two numbers a client actually feels: how deep, and how long until it came
+  back. Then use the beta slider to see the same shocks hit <em class="hi">your</em> book.</p>
+
+  <div class="split">
+    <div class="stack">
+      <div class="svgwrap">
+        <svg id="ddSvg" viewBox="0 0 660 320" role="img" aria-label="Portfolio equity curve with the underwater drawdown profile beneath it"></svg>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="button" id="ddShock" aria-pressed="false">Inject 2020&#8209;03 shock</button>
+        <button class="btn" type="button" id="ddHedge" aria-pressed="false">Add put overlay (&#8722;90&#8239;bps/yr)</button>
+        <button class="btn" type="button" id="ddReset">Reset</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--accent-2)"></i> equity, $10&#8239;m start</span>
+        <span><i style="background:var(--bad)"></i> underwater (drawdown)</span>
+        <span><i style="background:var(--ok)"></i> high-water mark</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel tight">
+        <div class="ctl"><label for="ddMag">Crash depth <b id="ddMagV">&#8722;34%</b></label>
+          <input type="range" id="ddMag" min="10" max="45" value="34" step="1" aria-label="Crash depth in percent" /></div>
+        <div class="ctl"><label for="ddBeta">Portfolio beta to the shock <b id="ddBetaV">1.00</b></label>
+          <input type="range" id="ddBeta" min="0" max="180" value="100" step="5" aria-label="Portfolio beta to the shock" /></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Max drawdown</div><div class="sv bad" id="ddMax">&#8212;</div></div>
+        <div class="stat"><div class="sl">Drawdown duration</div><div class="sv" id="ddDur">&#8212;</div></div>
+        <div class="stat"><div class="sl">Time to recover</div><div class="sv" id="ddRec">&#8212;</div></div>
+        <div class="stat"><div class="sl">Vol before / during</div><div class="sv" id="ddVol">&#8212;</div></div>
+        <div class="stat"><div class="sl">99% VaR breaches in crash</div><div class="sv warn" id="ddBr">&#8212;</div></div>
+        <div class="stat"><div class="sl">Final equity</div><div class="sv" id="ddEnd">&#8212;</div></div>
+      </div>
+      <div class="tablewrap"><table class="t" aria-label="Historical stress scenarios applied to the portfolio">
+        <thead><tr><th>Scenario</th><th>Index</th><th>Your P&amp;L</th></tr></thead>
+        <tbody id="ddTbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:18px"><b>The distinction to write down.</b> A loss is realised; a
+  drawdown is a path property, and it is what determines whether an investor is still with you when the
+  recovery happens. Two strategies with the same annual return and the same vol can have max drawdowns of
+  12% and 38% — and only one of them still has clients.</div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Every one of these has appeared in a submitted risk report. Open them.</p>
+
+  <details class="pit"><summary>Scaling a one-day VaR by <code>&#8730;10</code> and calling it a ten-day VaR</summary>
+    <div class="body">
+      <p>The square-root-of-time rule requires i.i.d. returns. Returns are not i.i.d.: volatility is
+      persistent, so the ten-day variance is larger than ten times the one-day variance whenever vol is
+      autocorrelated, and the ten-day <em class="hi">quantile</em> is further out still because the
+      aggregated distribution is skewed.</p>
+      <p>In a GARCH world with <code>&#945;+&#946; = 0.98</code>, scaling from a calm day understates the
+      ten-day 99% VaR by 15–25%. The error is largest exactly when it matters, because that is when the
+      starting point is unrepresentative.</p>
+      <p class="fix">Fix: simulate the horizon. Draw ten-day paths from your fitted GARCH (or block
+      bootstrap ten-day windows from history), then take the quantile of the aggregated P&amp;L. If you must
+      scale, say so and report the bias you measured on your own data.</p>
+    </div></details>
+
+  <details class="pit"><summary>Backtesting the model in sample, on the window it was fitted to</summary>
+    <div class="body">
+      <p>Estimate &#963; over the full sample, compute a 99% VaR from it, then count breaches over the same
+      full sample. You will get close to 1% almost by construction — the quantile was chosen to make that
+      true. It is a tautology dressed as validation.</p>
+      <p>The same error in a subtler form: choosing the EWMA <code>&#955;</code> that minimises the breach
+      count, then reporting that breach count as evidence the model works.</p>
+      <p class="fix">Fix: rolling, strictly out of sample. Estimate on days <code>[t-250, t)</code>, test on
+      day <code>t</code>, advance. If you tuned a parameter, tune it on the first half and test on the
+      second, and say how many values you tried.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reporting Expected Shortfall from four observations</summary>
+    <div class="body">
+      <p>Historical 97.5% ES over 250 days is the mean of the worst six days. Historical 99% ES over 250
+      days is the mean of the worst two or three. The standard error on that mean is enormous — add one new
+      bad day and your ES moves by 20%.</p>
+      <p>Students then compare last quarter's ES to this quarter's, find a 15% change, and write a
+      paragraph explaining it. There is nothing to explain: that is sampling noise.</p>
+      <p class="fix">Fix: either estimate ES parametrically from a fitted tail (Student-t or a
+      generalised-Pareto fit above a threshold), or bootstrap a confidence interval and publish it. An ES
+      of "$412k (95% CI $310–560k)" is an honest number; "$412k" is not.</p>
+    </div></details>
+
+  <details class="pit"><summary>A GARCH fit with <code>&#945;+&#946; &gt; 1</code>, shipped anyway</summary>
+    <div class="body">
+      <p><code>arch</code> will happily return a fit whose persistence exceeds one, usually because the
+      sample contains one structural break (a merger, a redenomination, 2020-03) that the model absorbs by
+      making variance non-stationary. The long-run variance
+      <code>&#969;/(1&#8722;&#945;&#8722;&#946;)</code> is then negative or infinite, and every multi-day
+      forecast diverges to nonsense.</p>
+      <p>Its cousin: <code>&#945;+&#946; = 0.999</code>, which is technically stationary and has a shock
+      half-life of 693 days. That is IGARCH — a random walk in variance — and it means your "long-run vol"
+      is doing no work at all.</p>
+      <p class="fix">Fix: check <code>res.params</code> before you use the fit. Assert
+      <code>alpha+beta &lt; 0.999</code>, look at the half-life
+      <code>ln(0.5)/ln(&#945;+&#946;)</code> and ask whether it is plausible, and refit on a sample split
+      around any suspected break. Report the persistence next to every vol forecast.</p>
+    </div></details>
+
+  <details class="pit"><summary>Confusing volatility with risk — and drawdown with loss</summary>
+    <div class="body">
+      <p>A short-volatility book has low realised vol until the day it does not: measured &#963; is 6% a
+      year for three years and the fourth year takes 40%. Any risk system driven by trailing volatility
+      sizes that position <em class="hi">up</em> right before the event, because low vol is being read as
+      low risk.</p>
+      <p>The mirror error is reporting max drawdown as though it were a loss. A 30% drawdown that recovered
+      cost a buy-and-hold investor nothing and cost a leveraged or redeeming one everything. Which it was
+      depends on the path and the liability, not on the number.</p>
+      <p class="fix">Fix: report vol, skew, kurtosis, VaR, ES <em class="hi">and</em> drawdown together, and
+      add one stress scenario that is not in your sample. For any strategy with option-like payoffs, size on
+      the stress result, not on the trailing volatility.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="1" data-exp="<b>Zero breaches is a failure, not a success.</b> At 99% over 500 test days the expected count is 5; observing 0 gives a Kupiec LR of about 10.0, which rejects the null at 1%. The model is systematically over-stating risk, so every limit set from it is too tight and every unit of capital reserved against it is idle. Over-conservatism is a real, costly model error — it is simply the one nobody gets fired for, which is exactly why the test is two-sided.">
+    <p class="q"><span>Q1</span>Your 99% one-day VaR was breached <b>zero</b> times in 500 out-of-sample test days. What does the Kupiec test say?</p>
+    <div class="opts">
+      <button class="opt" type="button">The model passes — no breaches is the best possible outcome</button>
+      <button class="opt" type="button">The model is rejected: 0 breaches against 5 expected is a significant failure of coverage</button>
+      <button class="opt" type="button">The test is inconclusive, because the statistic is undefined when x = 0</button>
+      <button class="opt" type="button">The model passes Kupiec but fails Christoffersen, since there is no clustering to test</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>Same volatility, different tail.</b> Volatility is the second moment and says nothing about the third and fourth; a fat-tailed, left-skewed sample and a Gaussian one can share a &#963; exactly while their 99% quantiles differ by 30–40%, which is what the distribution explorer at the top of this page demonstrates with the vol slider held fixed. Neither &quot;one of them is wrong&quot; nor a data error is needed to produce the gap. And the Gaussian estimate is the low one, not the high one, because the thin tail is an assumption rather than a measurement.">
+    <p class="q"><span>Q2</span>Historical and Gaussian 99% VaR on the same series differ by 35%, and both are computed correctly on the same window. What is the most likely explanation?</p>
+    <div class="opts">
+      <button class="opt" type="button">A bug — two correct estimators of the same quantity cannot differ by 35%</button>
+      <button class="opt" type="button">The Gaussian estimate is the larger one, because the normal distribution has the fatter tail</button>
+      <button class="opt" type="button">The sample has excess kurtosis and negative skew, so its empirical quantile sits well beyond &#8722;2.33&#963;</button>
+      <button class="opt" type="button">The window is too long, and shortening it will make the two converge</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="0" data-exp="<b>&#945;+&#946; = 0.995 means a shock half-life of about 138 days.</b> From ln(0.5)/ln(0.995) &#8776; 138, a vol spike decays only halfway back to its long-run level after roughly seven months — so the multi-day forecast is nearly flat at today's level, and the long-run variance &#969;/(1&#8722;&#945;&#8722;&#946;) is estimated from almost no mean reversion and is therefore wildly imprecise. That is the IGARCH warning sign. It does not mean the fit is non-stationary (0.995 &lt; 1), it does not make the model better, and a high &#946; is about memory, not about reaction size, which is &#945;.">
+    <p class="q"><span>Q3</span>Your GARCH(1,1) fit returns <code>&#945; = 0.06</code>, <code>&#946; = 0.935</code>. What should you write in the report?</p>
+    <div class="opts">
+      <button class="opt" type="button">Persistence is 0.995 — a ~138-day half-life, so the vol term structure is almost flat and the long-run level is barely identified</button>
+      <button class="opt" type="button">The process is non-stationary and the fit must be discarded</button>
+      <button class="opt" type="button">Volatility reacts very strongly to each new shock, since &#946; is large</button>
+      <button class="opt" type="button">Nothing — these are the textbook values, so the fit needs no comment</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Take the week-3 portfolio weights, build the daily P&amp;L series, and compute VaR and ES three
+      ways at 95% and 99%. Tabulate all twelve numbers.</li>
+      <li>Fit a GARCH(1,1) with <code>arch</code>. Report <code>&#945;</code>, <code>&#946;</code>,
+      persistence and half-life, and plot the 60-day vol forecast against the unconditional level.</li>
+      <li>Rolling out-of-sample exceedance backtest: 250-day estimation window, Kupiec LR, Basel zone.</li>
+      <li>Replay 2020-02-19 &#8594; 2020-03-23 through the book and report max drawdown, duration and
+      time-to-recover.</li>
+    </ul></div>
+    <div class="panel"><h4>Homework 4 · risk report + exceedance backtest</h4><ul class="plain">
+      <li>A one-page risk report for your Phase-1 universe: vol, skew, kurtosis, VaR and ES at two levels,
+      max drawdown, and one stress scenario.</li>
+      <li>The exceedance backtest for at least two models, with the Kupiec statistic, its p-value and the
+      traffic-light zone — and a sentence accepting the verdict.</li>
+      <li>A bootstrapped confidence interval on your headline ES, because a point estimate from four tail
+      observations is not a result.</li>
+      <li>One-line <code>AI-USE</code> note on the deliverable.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — then point <code>risk/</code> at your week-3 weights.</div></a>
+    <a class="nextcard" href="week3.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 3 · Portfolio Analytics &amp; Optimisation</div><div class="nd">Where the weights came from — and why the covariance matrix you stressed this week needed shrinking first.</div></a>
+    <a class="nextcard" href="week7.html"><div class="nl">See also</div>
+      <div class="nt">Week 7 · Backtesting &amp; Attribution</div><div class="nd">The same discipline applied to returns instead of losses: out-of-sample, costed, and counted.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">The 10-week map</div><div class="nd">Where week 4 sits, and the tearsheet section it fills in.</div></a>
+    <a class="nextcard" href="week5.html"><div class="nl">Next</div>
+      <div class="nt">Week 5 · Rates, Inflation &amp; the Macro Panel &#8594;</div><div class="nd">From the equity tail to the discount curve: bootstrapping, duration, breakevens, and the three components every curve move is made of.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 4 — Risk Analytics
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("dxSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+function moments(a) {
+  var m = mean(a), n = a.length, s2 = 0, s3 = 0, s4 = 0, i, d;
+  for (i = 0; i < n; i++) { d = a[i] - m; s2 += d * d; s3 += d * d * d; s4 += d * d * d * d; }
+  var v = s2 / n, s = Math.sqrt(v);
+  return { mean: m, sd: Math.sqrt(s2 / (n - 1)), skew: s3 / n / (s * s * s), kurt: s4 / n / (v * v) - 3 };
+}
+function money(x) {
+  var a = Math.abs(x);
+  if (a >= 1e6) return "$" + (x / 1e6).toFixed(2) + "m";
+  if (a >= 1e3) return "$" + Math.round(x / 1e3) + "k";
+  return "$" + Math.round(x);
+}
+/* standard normal cdf — Hart's double-precision rational approximation */
+function cnd(x) {
+  var a = Math.abs(x), cum;
+  if (a > 37) cum = 0;
+  else {
+    var e = Math.exp(-a * a / 2);
+    if (a < 7.07106781186547) {
+      var b = 0.0352624965998911 * a + 0.700383064443688;
+      b = b * a + 6.37396220353165; b = b * a + 33.912866078383;
+      b = b * a + 112.079291497871; b = b * a + 221.213596169931;
+      b = b * a + 220.206867912376;
+      var c = 0.0883883476483184 * a + 1.75566716318264;
+      c = c * a + 16.064177579207; c = c * a + 86.7807322029461;
+      c = c * a + 296.564248779674; c = c * a + 637.333633378831;
+      c = c * a + 793.826512519948; c = c * a + 440.413735824752;
+      cum = e * b / c;
+    } else {
+      var f = a + 1 / (a + 2 / (a + 3 / (a + 4 / (a + 0.65))));
+      cum = e / (f * 2.506628274631);
+    }
+  }
+  return x > 0 ? 1 - cum : cum;
+}
+function npdf(x) { return Math.exp(-x * x / 2) / 2.5066282746310002; }
+/* inverse standard normal cdf — Acklam */
+function invnorm(p) {
+  var A = [-3.969683028665376e+1, 2.209460984245205e+2, -2.759285104469687e+2,
+    1.383577518672690e+2, -3.066479806614716e+1, 2.506628277459239e+0];
+  var B = [-5.447609879822406e+1, 1.615858368580409e+2, -1.556989798598866e+2,
+    6.680131188771972e+1, -1.328068155288572e+1];
+  var C = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838e+0,
+    -2.549732539343734e+0, 4.374664141464968e+0, 2.938163982698783e+0];
+  var D = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996e+0, 3.754408661907416e+0];
+  var pl = 0.02425, q, r, x;
+  if (p <= 0) return -38; if (p >= 1) return 38;
+  if (p < pl) {
+    q = Math.sqrt(-2 * Math.log(p));
+    x = (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  } else if (p <= 1 - pl) {
+    q = p - 0.5; r = q * q;
+    x = (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q /
+        (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    x = -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  }
+  return x;
+}
+function quantile(sorted, p) {
+  var n = sorted.length; if (!n) return 0;
+  var h = (n - 1) * p, lo = Math.floor(h), hi = Math.min(lo + 1, n - 1);
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
+}
+
+/* ── generic axis + line helpers shared by every chart on the page ── */
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7,
+    "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function hline(svg, v, W, H, pad, y0, y1, color, dash, label, left) {
+  var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+  var l = mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: color, "stroke-width": 1.5 });
+  if (dash) l.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(l);
+  if (label) svg.appendChild(left
+    ? txt(pad.l + 4, yy - 4, label, 9.5, color, "start", "700")
+    : txt(W - pad.r - 3, yy - 4, label, 9.5, color, "end", "700"));
+}
+
+/* ── the shared seeded portfolio P&L series (used by three widgets) ──
+   A GARCH(1,1) path with skewed, fat-tailed innovations: 750 sessions,
+   two genuine volatility regimes, $10m book.                          */
+var BOOK = 1e7;
+var SERIES = (function () {
+  var rnd = lcg(4041972), N = 750, i, raw = [];
+  for (i = 0; i < N; i++) raw.push(Math.sinh(1.20 * Math.asinh(gauss(rnd)) - 0.22));
+  var m = mean(raw), s = sd(raw), e = [];
+  for (i = 0; i < N; i++) e.push((raw[i] - m) / s);      /* unit-variance skewed fat tail */
+  var al = 0.09, be = 0.86, mu = 0.0003;
+  function lrAt(k) { return (k < 250 ? 0.13 : (k < 470 ? 0.24 : 0.16)) / Math.sqrt(252); }
+  var s2 = lrAt(0) * lrAt(0), r = [], vol = [];
+  for (i = 0; i < N; i++) {
+    var lr = lrAt(i), om = (1 - al - be) * lr * lr, sg = Math.sqrt(s2);
+    var ri = mu + sg * e[i];
+    r.push(ri); vol.push(sg);
+    s2 = om + al * (ri - mu) * (ri - mu) + be * s2;
+  }
+  return { r: r, vol: vol, n: N };
+})();
+
+/* ════ 1. RETURN-DISTRIBUTION EXPLORER ════════════════════════ */
+(function () {
+  var st = { eps: 0, del: 1.0, vol: 17.5, log: false };
+  var N = 2000;
+  function sample() {
+    var rnd = lcg(20240404), raw = [], i;
+    for (i = 0; i < N; i++) raw.push(Math.sinh(st.del * Math.asinh(gauss(rnd)) + st.eps));
+    var m = mean(raw), s = sd(raw), tgt = st.vol / 100 / Math.sqrt(252), out = [];
+    for (i = 0; i < N; i++) out.push((raw[i] - m) / s * tgt);
+    return out;
+  }
+  function draw() {
+    var x = sample(), mm = moments(x), svg = $("dxSvg"), W = 660, H = 280,
+      pad = { l: 44, r: 14, t: 14, b: 30 };
+    clear(svg);
+    var s = mm.sd, lim = 5.6 * s, NB = 45, bw = 2 * lim / NB, cnt = new Array(NB), i, b;
+    for (i = 0; i < NB; i++) cnt[i] = 0;
+    for (i = 0; i < N; i++) {
+      b = Math.floor((x[i] + lim) / bw);
+      if (b >= 0 && b < NB) cnt[b]++;
+    }
+    var gaus = [], mx = 0;
+    for (i = 0; i < NB; i++) {
+      var c = -lim + (i + 0.5) * bw;
+      gaus.push(N * bw * npdf(c / s) / s);
+      if (cnt[i] > mx) mx = cnt[i];
+      if (gaus[i] > mx) mx = gaus[i];
+    }
+    var tf = st.log ? function (v) { return Math.log10(1 + v); } : function (v) { return v; };
+    var y1 = tf(mx) * 1.1;
+    axes(svg, W, H, pad, 0, y1, function (v) {
+      return st.log ? Math.round(Math.pow(10, v) - 1) + "" : Math.round(v) + "";
+    }, 4);
+    var xw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    for (i = 0; i < NB; i++) {
+      if (!cnt[i]) continue;
+      var h = tf(cnt[i]) / y1 * ph;
+      svg.appendChild(mk("rect", { x: (pad.l + i / NB * xw).toFixed(1), y: (H - pad.b - h).toFixed(1),
+        width: (xw / NB - 1).toFixed(1), height: Math.max(0.6, h).toFixed(1),
+        fill: "rgba(225,29,72,.72)" }));
+    }
+    var gy = [], gx = [];
+    for (i = 0; i < NB; i++) { gy.push(tf(gaus[i])); gx.push(i + 0.5); }
+    polyline(svg, gy, W, H, pad, 0, NB, 0, y1, "#6cb6ff", 1.8, "5 3", gx);
+    /* x axis ticks in sigma units */
+    for (i = -5; i <= 5; i++) {
+      var px = pad.l + (i * s + lim) / (2 * lim) * xw;
+      svg.appendChild(mk("line", { x1: px, y1: H - pad.b, x2: px, y2: H - pad.b + 4, stroke: "#333a47" }));
+      svg.appendChild(txt(px, H - pad.b + 15, (i === 0 ? "0" : i + "σ"), 9, "#5f6673", "middle"));
+    }
+    var srt = x.slice().sort(function (a, c) { return a - c; });
+    var v99 = quantile(srt, 0.01);
+    var vx = pad.l + (v99 + lim) / (2 * lim) * xw;
+    svg.appendChild(mk("line", { x1: vx, y1: pad.t, x2: vx, y2: H - pad.b, stroke: "#f85149",
+      "stroke-width": 1.6, "stroke-dasharray": "4 3" }));
+    svg.appendChild(txt(vx + 4, pad.t + 11, "99% VaR", 9.5, "#f85149", "start", "700"));
+    svg.appendChild(txt(pad.l, pad.t + 11, "count per bin", 9.5, "#5f6673"));
+
+    var t3 = 0;
+    for (i = 0; i < N; i++) if (x[i] < -3 * s) t3++;
+    $("dxSd").textContent = (mm.sd * Math.sqrt(252) * 100).toFixed(1) + "%";
+    $("dxSk").textContent = mm.skew.toFixed(2);
+    $("dxKu").textContent = mm.kurt.toFixed(2);
+    $("dxWorst").textContent = pct(srt[0], 2);
+    $("dxT3").textContent = (100 * t3 / N).toFixed(2) + "%";
+    $("dxVar").textContent = (Math.abs(v99) * 100).toFixed(2) + "%";
+    var gv = 2.32635 * s;
+    var msg;
+    if (mm.kurt < 0.4 && Math.abs(mm.skew) < 0.2) {
+      msg = "A Gaussian sample: skew ≈ 0, excess kurtosis ≈ 0, and the −3σ frequency " +
+        "lands near the textbook 0.135%. Here — and only here — a Gaussian VaR is honest.";
+    } else {
+      var gap = (Math.abs(v99) / gv - 1) * 100;
+      msg = "Same σ, different risk. Excess kurtosis " + mm.kurt.toFixed(1) + " and skew " +
+        mm.skew.toFixed(2) + " push the empirical 99% quantile " +
+        (gap >= 0 ? gap.toFixed(0) + "% beyond" : Math.abs(gap).toFixed(0) + "% inside") +
+        " the Gaussian −2.33σ, and −3σ days arrive " +
+        (100 * t3 / N).toFixed(2) + "% of the time instead of 0.135%. The vol number never moved.";
+    }
+    $("dxVerdict").textContent = msg;
+  }
+  function preset(e, d, which) {
+    st.eps = e; st.del = d;
+    $("dxSkew").value = Math.round(e * 100); $("dxTail").value = Math.round(d * 100);
+    $("dxSkewV").textContent = e.toFixed(2); $("dxTailV").textContent = d.toFixed(2);
+    ["dxPreG", "dxPreE", "dxPreC"].forEach(function (id) {
+      $(id).setAttribute("aria-pressed", id === which ? "true" : "false");
+    });
+    draw();
+  }
+  $("dxSkew").addEventListener("input", function () {
+    st.eps = +this.value / 100; $("dxSkewV").textContent = st.eps.toFixed(2); draw();
+  });
+  $("dxTail").addEventListener("input", function () {
+    st.del = +this.value / 100; $("dxTailV").textContent = st.del.toFixed(2); draw();
+  });
+  $("dxVol").addEventListener("input", function () {
+    st.vol = +this.value / 10; $("dxVolV").textContent = st.vol.toFixed(1) + "%"; draw();
+  });
+  $("dxLog").addEventListener("click", function () {
+    st.log = !st.log; this.setAttribute("aria-pressed", st.log ? "true" : "false");
+    this.classList.toggle("on", st.log); draw();
+  });
+  $("dxPreG").addEventListener("click", function () { preset(0, 1.0, "dxPreG"); });
+  $("dxPreE").addEventListener("click", function () { preset(-0.35, 1.30, "dxPreE"); });
+  $("dxPreC").addEventListener("click", function () { preset(-0.90, 1.55, "dxPreC"); });
+  draw();
+})();
+
+/* ════ 2. VaR / ES THREE WAYS ═════════════════════════════════ */
+(function () {
+  var st = { conf: 0.99, lam: 0.94, win: 750 };
+  function ewmaSigma(r, lam) {
+    var v = r[0] * r[0], i;
+    for (i = 1; i < r.length; i++) v = lam * v + (1 - lam) * r[i] * r[i];
+    return Math.sqrt(v);
+  }
+  function draw() {
+    var all = SERIES.r, w = all.slice(all.length - st.win), a = st.conf, tail = 1 - a;
+    var srt = w.slice().sort(function (p, q) { return p - q; });
+    var m = mean(w), s = sd(w), z = invnorm(tail);
+    var vh = -quantile(srt, tail);
+    var eh = 0, k = 0, i;
+    for (i = 0; i < w.length; i++) if (w[i] <= -vh) { eh += w[i]; k++; }
+    eh = k ? -eh / k : vh;
+    var vg = -(m + z * s), eg = -m + s * npdf(z) / tail;
+    var se = ewmaSigma(all, st.lam);
+    var ve = -z * se, ee = se * npdf(z) / tail;
+    var rows = [
+      ["Historical", vh, eh, "acc"],
+      ["Gaussian", vg, eg, ""],
+      ["EWMA λ=" + st.lam.toFixed(2), ve, ee, ""]
+    ];
+    var html = "";
+    for (i = 0; i < rows.length; i++) {
+      html += "<tr><td class=\"n\">" + rows[i][0] + "</td><td class=\"" + rows[i][3] + "\">" +
+        (rows[i][1] * 100).toFixed(2) + "%</td><td>" + money(rows[i][1] * BOOK) + "</td><td>" +
+        (rows[i][2] * 100).toFixed(2) + "%</td><td>" + money(rows[i][2] * BOOK) + "</td></tr>";
+    }
+    $("vrTbody").innerHTML = html;
+    var vs = [vh, vg, ve], lo = Math.min(vh, vg, ve), hi = Math.max(vh, vg, ve);
+    $("vrSpread").textContent = money((hi - lo) * BOOK) + " (" + ((hi / lo - 1) * 100).toFixed(0) + "%)";
+    var br = 0;
+    for (i = 0; i < w.length; i++) if (w[i] < -vg) br++;
+    $("vrBrG").textContent = br + " / " + w.length;
+    $("vrExp").textContent = (tail * w.length).toFixed(1) + " days";
+    $("vrRatio").textContent = (eh / vh).toFixed(2) + "×";
+    $("vrNote").textContent = (ve > vh && ve > vg)
+      ? "EWMA is the highest of the three — today sits in a high-volatility regime and your " +
+        "unconditional estimates are stale by " + ((ve / vg - 1) * 100).toFixed(0) + "%. This is the " +
+        "ordering that gets a limit cut in time."
+      : "Historical exceeds Gaussian by " + ((vh / vg - 1) * 100).toFixed(0) + "%, which is the fat left " +
+        "tail showing up as an order statistic. The ES/VaR ratio of " + (eh / vh).toFixed(2) +
+        "× is the number to quote: a Gaussian tail would give about 1.15× at this level.";
+
+    var svg = $("vrSvg"), W = 660, H = 300, pad = { l: 50, r: 16, t: 16, b: 26 };
+    clear(svg);
+    var n = w.length, y1 = 0, y0 = 0;
+    for (i = 0; i < n; i++) { if (w[i] > y1) y1 = w[i]; if (w[i] < y0) y0 = w[i]; }
+    y1 = Math.max(y1, hi) * 1.1; y0 = Math.min(y0, -hi) * 1.12;
+    axes(svg, W, H, pad, y0, y1, function (v) { return (v * 100).toFixed(1) + "%"; }, 5);
+    var xw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    var zy = H - pad.b - (0 - y0) / (y1 - y0) * ph;
+    for (i = 0; i < n; i++) {
+      var px = pad.l + i / (n - 1) * xw;
+      var py = H - pad.b - (w[i] - y0) / (y1 - y0) * ph;
+      svg.appendChild(mk("line", { x1: px.toFixed(1), y1: zy.toFixed(1), x2: px.toFixed(1),
+        y2: py.toFixed(1), stroke: w[i] < -vg ? "#f85149" : "rgba(253,164,175,.62)",
+        "stroke-width": w[i] < -vg ? 1.6 : 1 }));
+    }
+    svg.appendChild(mk("line", { x1: pad.l, y1: zy, x2: W - pad.r, y2: zy, stroke: "#333a47" }));
+    hline(svg, -vg, W, H, pad, y0, y1, "#6cb6ff", "5 3", "Gaussian −" + (vg * 100).toFixed(2) + "%");
+    hline(svg, -vh, W, H, pad, y0, y1, "#3fb950", "3 3", "historical −" + (vh * 100).toFixed(2) + "%");
+    hline(svg, -ve, W, H, pad, y0, y1, "#d29922", "1 3", "EWMA −" + (ve * 100).toFixed(2) + "%", true);
+    svg.appendChild(txt(pad.l, pad.t + 10, "daily P&L, " + n + " sessions, $10m book", 9.5, "#5f6673"));
+  }
+  $("vrConf").addEventListener("input", function () {
+    st.conf = +this.value / 1000; $("vrConfV").textContent = (st.conf * 100).toFixed(1) + "%"; draw();
+  });
+  $("vrLam").addEventListener("input", function () {
+    st.lam = +this.value / 100; $("vrLamV").textContent = st.lam.toFixed(2); draw();
+  });
+  $("vrWin").addEventListener("change", function () { st.win = +this.value; draw(); });
+  draw();
+})();
+
+/* ════ 3. GARCH(1,1) VOL-CLUSTERING ANIMATOR ══════════════════ */
+(function () {
+  var N = 500, FH = 60;
+  var st = { a: 0.09, b: 0.89, lr: 18, pos: 0 };
+  var timer = null, path = null;
+
+  function build() {
+    var rnd = lcg(778899), lrd = st.lr / 100 / Math.sqrt(252);
+    var pers = st.a + st.b, om = Math.max(1e-12, (1 - Math.min(pers, 0.9995)) * lrd * lrd);
+    var s2 = lrd * lrd, r = [], vol = [], i;
+    for (i = 0; i < N; i++) {
+      var s = Math.sqrt(s2), ri = s * gauss(rnd);
+      r.push(ri); vol.push(s);
+      s2 = om + st.a * ri * ri + st.b * s2;
+      if (!isFinite(s2) || s2 > 1) s2 = 1;
+    }
+    var fc = [], sn2 = s2;
+    for (i = 0; i < FH; i++) {
+      fc.push(Math.sqrt(sn2));
+      sn2 = om + (st.a + st.b) * sn2;
+      if (!isFinite(sn2) || sn2 > 1) sn2 = 1;
+    }
+    return { r: r, vol: vol, fc: fc, om: om, lrd: lrd, pers: pers };
+  }
+  function draw() {
+    var svg = $("ghSvg"), W = 660, H = 320, pad = { l: 48, r: 60, t: 14, b: 24 };
+    clear(svg);
+    var n = Math.max(2, st.pos), xw = W - pad.l - pad.r, fw = 54;
+    var pw = xw - fw;
+    /* ── top panel: returns ── */
+    var topH = 128, mx = 0, i;
+    for (i = 0; i < N; i++) mx = Math.max(mx, Math.abs(path.r[i]));
+    mx = Math.max(mx, 1e-4) * 1.06;
+    var zy = pad.t + topH / 2;
+    svg.appendChild(mk("line", { x1: pad.l, y1: zy, x2: pad.l + pw, y2: zy, stroke: "#333a47" }));
+    svg.appendChild(txt(pad.l - 6, pad.t + 8, (mx * 100).toFixed(1) + "%", 9, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l - 6, pad.t + topH + 2, "−" + (mx * 100).toFixed(1) + "%", 9, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "daily return", 9.5, "#5f6673"));
+    for (i = 0; i < n; i++) {
+      var px = pad.l + i / (N - 1) * pw;
+      var py = zy - path.r[i] / mx * (topH / 2);
+      svg.appendChild(mk("line", { x1: px.toFixed(1), y1: zy, x2: px.toFixed(1), y2: py.toFixed(1),
+        stroke: Math.abs(path.r[i]) > 2.5 * path.vol[i] ? "#f85149" : "rgba(253,164,175,.72)",
+        "stroke-width": 1 }));
+    }
+    /* ── bottom panel: conditional vol, annualised ── */
+    var bt = pad.t + topH + 26, bh = H - pad.b - bt;
+    var vmx = 0;
+    for (i = 0; i < N; i++) vmx = Math.max(vmx, path.vol[i]);
+    for (i = 0; i < FH; i++) vmx = Math.max(vmx, path.fc[i]);
+    var v1 = vmx * Math.sqrt(252) * 100 * 1.1, v0 = 0, j;
+    for (j = 0; j <= 3; j++) {
+      var vv = v0 + (v1 - v0) * j / 3;
+      var yy = H - pad.b - (vv - v0) / (v1 - v0) * bh;
+      svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+        stroke: j === 0 ? "#333a47" : "#242932" }));
+      svg.appendChild(txt(pad.l - 6, yy + 3.5, vv.toFixed(0) + "%", 9, "#5f6673", "end"));
+    }
+    var ys = [], xs = [];
+    for (i = 0; i < n; i++) { ys.push(path.vol[i] * Math.sqrt(252) * 100); xs.push(i); }
+    var bpad = { l: pad.l, r: pad.r + fw, t: bt, b: pad.b };
+    polyline(svg, ys, W, H, bpad, 0, N - 1, v0, v1, "#e11d48", 1.7, null, xs);
+    /* long-run level */
+    var lry = H - pad.b - (st.lr - v0) / (v1 - v0) * bh;
+    svg.appendChild(mk("line", { x1: pad.l, y1: lry, x2: W - pad.r, y2: lry, stroke: "#3fb950",
+      "stroke-width": 1.2, "stroke-dasharray": "4 4" }));
+    svg.appendChild(txt(W - pad.r - 2, lry - 4, "long-run " + st.lr + "%", 9, "#3fb950", "end", "700"));
+    /* forecast from the current position */
+    var s2 = path.vol[Math.max(0, n - 1)] * path.vol[Math.max(0, n - 1)], fy = [], fx = [];
+    for (i = 0; i < FH; i++) {
+      fy.push(Math.sqrt(s2) * Math.sqrt(252) * 100); fx.push(i);
+      s2 = path.om + (st.a + st.b) * s2;
+      if (!isFinite(s2) || s2 > 1) s2 = 1;
+    }
+    var d = "", fx0 = pad.l + (n - 1) / (N - 1) * pw;
+    for (i = 0; i < FH; i++) {
+      var fpx = fx0 + i / (FH - 1) * (W - pad.r - fx0);
+      var fpy = H - pad.b - (fy[i] - v0) / (v1 - v0) * bh;
+      d += (i ? " L" : "M") + fpx.toFixed(1) + " " + fpy.toFixed(1);
+    }
+    svg.appendChild(mk("path", { d: d, fill: "none", stroke: "#d29922", "stroke-width": 1.8,
+      "stroke-dasharray": "4 3" }));
+    svg.appendChild(mk("line", { x1: fx0, y1: bt, x2: fx0, y2: H - pad.b, stroke: "#333a47",
+      "stroke-dasharray": "2 3" }));
+    svg.appendChild(txt(pad.l + 2, bt + 10, "conditional σ, annualised — solid = realised, dashed = " +
+      FH + "-day forecast", 9.5, "#5f6673"));
+
+    /* ── stats ── */
+    var pers = st.a + st.b;
+    $("ghPers").textContent = pers.toFixed(3);
+    var hl = pers >= 1 ? "∞" : (Math.log(0.5) / Math.log(pers)).toFixed(0) + " d";
+    $("ghHl").textContent = hl;
+    $("ghOm").textContent = path.om.toExponential(2);
+    $("ghNow").textContent = (path.vol[Math.max(0, n - 1)] * Math.sqrt(252) * 100).toFixed(1) + "%";
+    $("ghF20").textContent = (mean(fy.slice(0, 20))).toFixed(1) + "%";
+    $("ghKu").textContent = moments(path.r.slice(0, Math.max(30, n))).kurt.toFixed(2);
+    $("ghPos").textContent = "day " + n + " / " + N;
+    var note;
+    if (pers >= 0.995) {
+      note = "Persistence " + pers.toFixed(3) + " — an IGARCH regime. The half-life is " + hl +
+        ", the forecast is a flat extrapolation of today, and ω/(1−α−β) is estimated from almost no " +
+        "mean reversion. Flag this in the report rather than shipping the long-run number.";
+    } else if (st.a > 0.16) {
+      note = "A large α (" + st.a.toFixed(2) + ") makes σ jump the day after every shock and fall back " +
+        "fast: spiky, low-memory volatility. Kurtosis of the path is " +
+        moments(path.r).kurt.toFixed(1) + " — the fat tails are generated by the clustering, not " +
+        "assumed in the innovations, which are Gaussian here.";
+    } else {
+      note = "Persistence " + pers.toFixed(3) + " gives a " + hl + " half-life: after a spike, σ decays " +
+        "back toward " + st.lr + "% over about " + hl + ". That decay is the whole content of a " +
+        "multi-day vol forecast, and it is why GARCH beats EWMA at horizons past a week.";
+    }
+    $("ghNote").textContent = note;
+  }
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+    $("ghPlay").innerHTML = "&#9654; Play";
+  }
+  function rebuild() { path = build(); if (st.pos < 2) st.pos = 2; draw(); }
+  $("ghA").addEventListener("input", function () {
+    st.a = +this.value / 100; $("ghAV").textContent = st.a.toFixed(2); rebuild();
+  });
+  $("ghB").addEventListener("input", function () {
+    st.b = +this.value / 100; $("ghBV").textContent = st.b.toFixed(2); rebuild();
+  });
+  $("ghL").addEventListener("input", function () {
+    st.lr = +this.value; $("ghLV").textContent = st.lr + "%"; rebuild();
+  });
+  $("ghPlay").addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    if (st.pos >= N) st.pos = 2;
+    this.innerHTML = "&#10073;&#10073; Pause";
+    timer = setInterval(function () {
+      st.pos += 6;
+      if (st.pos >= N) { st.pos = N; stop(); }
+      draw();
+    }, 55);
+  });
+  $("ghStep").addEventListener("click", function () {
+    stop(); st.pos = Math.min(N, st.pos + 25); draw();
+  });
+  $("ghAll").addEventListener("click", function () { stop(); st.pos = N; draw(); });
+  $("ghReset").addEventListener("click", function () { stop(); st.pos = 2; draw(); });
+  path = build(); st.pos = 150; draw();
+})();
+
+/* ════ 4. EXCEEDANCE BACKTEST · KUPIEC + TRAFFIC LIGHT ════════ */
+(function () {
+  var st = { model: "hist", conf: 99, T: 500 };
+  /* standardised Student-t(5) / normal quantile ratios, for the fat-tail model */
+  var TRATIO = { "99": 1.120, "97.5": 1.016, "95": 0.949 };
+  var WIN = 250;
+  function varPath() {
+    var r = SERIES.r, n = r.length, tail = 1 - st.conf / 100, z = invnorm(tail), i;
+    var out = [];
+    /* EWMA and GARCH recursions, both causal */
+    var lam = 0.94, ev = r[0] * r[0];
+    var s0 = sd(r.slice(0, WIN)), al = 0.09, be = 0.89, om = (1 - al - be) * s0 * s0, gv = s0 * s0;
+    var ew = [], ga = [];
+    for (i = 0; i < n; i++) {
+      ew.push(Math.sqrt(ev)); ga.push(Math.sqrt(gv));
+      ev = lam * ev + (1 - lam) * r[i] * r[i];
+      gv = om + al * r[i] * r[i] + be * gv;
+    }
+    for (i = WIN; i < n; i++) {
+      var v;
+      if (st.model === "flat") v = 0.02;
+      else if (st.model === "hist") {
+        var w = r.slice(i - WIN, i).sort(function (a, b) { return a - b; });
+        v = -quantile(w, tail);
+      } else if (st.model === "gauss") {
+        var w2 = r.slice(i - WIN, i);
+        v = -(mean(w2) + z * sd(w2));
+      } else if (st.model === "ewma") v = -z * ew[i];
+      else v = -z * ga[i] * TRATIO[st.conf + ""];
+      out.push({ i: i, v: v, r: r[i] });
+    }
+    return out;
+  }
+  function draw() {
+    var all = varPath(), tests = all.slice(all.length - st.T);
+    var p = 1 - st.conf / 100, T = tests.length, x = 0, worst = 0, run = 0, mrun = 0, i;
+    for (i = 0; i < T; i++) {
+      if (tests[i].r < -tests[i].v) {
+        x++; run++; if (run > mrun) mrun = run;
+        var ex = -tests[i].r - tests[i].v;
+        if (ex > worst) worst = ex;
+      } else run = 0;
+    }
+    var lr;
+    if (x === 0) lr = -2 * (T * Math.log(1 - p));
+    else lr = -2 * ((T - x) * Math.log(1 - p) + x * Math.log(p)) +
+              2 * ((T - x) * Math.log(1 - x / T) + x * Math.log(x / T));
+    if (!isFinite(lr) || lr < 0) lr = 0;
+    var pv = 2 * (1 - cnd(Math.sqrt(lr)));
+    $("kpObs").textContent = x + " / " + T;
+    $("kpExpN").textContent = (p * T).toFixed(1);
+    $("kpLr").textContent = lr.toFixed(2);
+    $("kpP").textContent = (pv * 100).toFixed(1) + "%";
+    $("kpWorst").textContent = worst > 0 ? money(worst * BOOK) + " past VaR" : "none";
+    $("kpRun").textContent = mrun + (mrun === 1 ? " day" : " days");
+    var lrEl = $("kpLr"), pEl = $("kpP");
+    lrEl.className = "sv " + (lr > 6.63 ? "bad" : lr > 3.84 ? "warn" : "ok");
+    pEl.className = "sv " + (pv < 0.01 ? "bad" : pv < 0.05 ? "warn" : "ok");
+    var ratio = p * T > 0 ? x / (p * T) : 0;
+    $("kpBar").style.width = Math.min(100, ratio / 2 * 100).toFixed(0) + "%";
+    /* zone */
+    var lamp = $("kpLamp"), zone, verdict;
+    lamp.className = "smoke";
+    if (st.conf === 99) {
+      var b250 = x * 250 / T;
+      if (b250 < 5) { zone = "BASEL GREEN · " + b250.toFixed(1) + " breaches per 250 days"; lamp.className = "smoke green"; }
+      else if (b250 < 10) { zone = "BASEL YELLOW · " + b250.toFixed(1) + " per 250 days"; lamp.className = "smoke amber"; }
+      else zone = "BASEL RED · " + b250.toFixed(1) + " per 250 days";
+    } else {
+      if (pv > 0.05) { zone = "KUPIEC PASS · p = " + (pv * 100).toFixed(1) + "%"; lamp.className = "smoke green"; }
+      else if (pv > 0.01) { zone = "KUPIEC MARGINAL · p = " + (pv * 100).toFixed(1) + "%"; lamp.className = "smoke amber"; }
+      else zone = "KUPIEC REJECT · p = " + (pv * 100).toFixed(2) + "%";
+    }
+    $("kpZone").textContent = zone;
+    if (lr > 3.84 && x > p * T) {
+      verdict = "Rejected for under-coverage: " + x + " breaches against " + (p * T).toFixed(1) +
+        " expected. The model is too optimistic — the losses it calls once-in-a-hundred arrive " +
+        (ratio).toFixed(1) + "× too often, and every limit set from it is too loose.";
+    } else if (lr > 3.84) {
+      verdict = "Rejected for over-coverage: only " + x + " breaches against " + (p * T).toFixed(1) +
+        " expected. Over-conservatism is a model error too — it reserves capital that earns nothing " +
+        "and tightens limits that did not need tightening.";
+    } else if (mrun >= 3) {
+      verdict = "Kupiec passes on the count (LR = " + lr.toFixed(2) + ", p = " + (pv * 100).toFixed(0) +
+        "%), but " + mrun + " breaches landed back to back. That is what Christoffersen's independence " +
+        "test is for: right number, wrong days, and the wrong days are the ones that cost money.";
+    } else {
+      verdict = "Passes: " + x + " breaches against " + (p * T).toFixed(1) + " expected, LR = " +
+        lr.toFixed(2) + " below the 3.84 critical value, no clustering worth flagging. This is the " +
+        "sentence a risk report needs — and it is a count, not an opinion.";
+    }
+    $("kpVerdict").textContent = verdict;
+
+    var svg = $("kpSvg"), W = 660, H = 250, pad = { l: 50, r: 16, t: 16, b: 30 };
+    clear(svg);
+    var y0 = 0, y1 = 0;
+    for (i = 0; i < T; i++) {
+      y0 = Math.min(y0, tests[i].r, -tests[i].v); y1 = Math.max(y1, tests[i].r);
+    }
+    y0 *= 1.1; y1 *= 1.15;
+    axes(svg, W, H, pad, y0, y1, function (v) { return (v * 100).toFixed(1) + "%"; }, 4);
+    var xw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    var zy = H - pad.b - (0 - y0) / (y1 - y0) * ph;
+    for (i = 0; i < T; i++) {
+      var px = pad.l + i / (T - 1) * xw;
+      var py = H - pad.b - (tests[i].r - y0) / (y1 - y0) * ph;
+      var brk = tests[i].r < -tests[i].v;
+      svg.appendChild(mk("line", { x1: px.toFixed(1), y1: zy.toFixed(1), x2: px.toFixed(1),
+        y2: py.toFixed(1), stroke: brk ? "#f85149" : "rgba(253,164,175,.5)",
+        "stroke-width": brk ? 1.8 : 1 }));
+    }
+    var vy = [], vx = [];
+    for (i = 0; i < T; i++) { vy.push(-tests[i].v); vx.push(i); }
+    polyline(svg, vy, W, H, pad, 0, T - 1, y0, y1, "#6cb6ff", 1.6, null, vx);
+    svg.appendChild(mk("line", { x1: pad.l, y1: zy, x2: W - pad.r, y2: zy, stroke: "#333a47" }));
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "out-of-sample P&L vs rolling " + st.conf +
+      "% VaR — red = breach", 9.5, "#5f6673"));
+    /* breach strip */
+    for (i = 0; i < T; i++) {
+      if (tests[i].r < -tests[i].v) {
+        var sx = pad.l + i / (T - 1) * xw;
+        svg.appendChild(mk("rect", { x: sx.toFixed(1), y: H - pad.b + 8, width: 2, height: 8,
+          fill: "#f85149" }));
+      }
+    }
+    svg.appendChild(txt(pad.l - 6, H - pad.b + 15, "breaches", 9, "#5f6673", "end"));
+  }
+  $("kpModel").addEventListener("change", function () { st.model = this.value; draw(); });
+  $("kpConf").addEventListener("change", function () { st.conf = +this.value; draw(); });
+  $("kpT").addEventListener("input", function () {
+    st.T = +this.value; $("kpTV").textContent = st.T + " d"; draw();
+  });
+  draw();
+})();
+
+/* ════ 5. DRAWDOWN + MARCH-2020 STRESS PANEL ══════════════════ */
+(function () {
+  var st = { shock: false, hedge: false, mag: 34, beta: 1.0 };
+  var C0 = 420, CL = 16, RL = 40;          /* crash start, length, rebound length */
+  var SCEN = [
+    ["2008-09 → 2008-11 · GFC", -0.300],
+    ["2020-02-19 → 2020-03-23", -0.339],
+    ["2018-02 · volmageddon", -0.102],
+    ["2022 · rate shock", -0.245],
+    ["1987-10-19 · one session", -0.205]
+  ];
+  function series() {
+    var r = [], i, rnd = lcg(31337), base = SERIES.r;
+    for (i = 0; i < base.length; i++) r.push(base[i] * st.beta);
+    if (st.shock) {
+      var mag = st.mag / 100 * Math.min(1.6, st.beta || 0.001);
+      mag = Math.min(0.92, mag);
+      var step = Math.pow(1 - mag, 1 / CL) - 1;
+      var cv = 3 * sd(base.slice(C0 - 60, C0)) * st.beta;
+      for (i = 0; i < CL; i++) r[C0 + i] = step + cv * gauss(rnd) * 0.8;
+      var reb = Math.pow(1 + mag * 0.62, 1 / RL) - 1;
+      for (i = 0; i < RL; i++) r[C0 + CL + i] = reb + cv * 0.45 * gauss(rnd);
+    }
+    if (st.hedge) {
+      var cost = 0.009 / 252;
+      for (i = 0; i < r.length; i++) {
+        r[i] -= cost;
+        if (r[i] < -0.03) r[i] += 0.45 * (-0.03 - r[i]);   /* put overlay payoff */
+      }
+    }
+    return r;
+  }
+  function draw() {
+    var r = series(), n = r.length, eq = [BOOK], hw = [BOOK], dd = [0], i;
+    for (i = 0; i < n; i++) {
+      var e = eq[i] * (1 + r[i]);
+      eq.push(e);
+      var h = Math.max(hw[i], e);
+      hw.push(h); dd.push(e / h - 1);
+    }
+    var maxdd = 0, trough = 0, cur = 0, longest = 0;
+    for (i = 1; i < dd.length; i++) {
+      if (dd[i] < maxdd) { maxdd = dd[i]; trough = i; }
+      if (dd[i] < -1e-9) { cur++; if (cur > longest) longest = cur; } else cur = 0;
+    }
+    var rec = -1;
+    for (i = trough; i < dd.length; i++) if (dd[i] >= -1e-9) { rec = i - trough; break; }
+    $("ddMax").textContent = (maxdd * 100).toFixed(1) + "%";
+    $("ddDur").textContent = longest + " d";
+    $("ddRec").textContent = rec < 0 ? "not recovered" : rec + " d";
+    var vb = sd(r.slice(C0 - 60, C0)) * Math.sqrt(252) * 100;
+    var vd = sd(r.slice(C0, C0 + CL)) * Math.sqrt(252) * 100;
+    $("ddVol").textContent = vb.toFixed(0) + "% / " + (st.shock ? vd.toFixed(0) + "%" : "—");
+    var pre = r.slice(C0 - 250, C0).sort(function (a, b) { return a - b; });
+    var v99 = -quantile(pre, 0.01), br = 0;
+    for (i = C0; i < C0 + CL; i++) if (r[i] < -v99) br++;
+    $("ddBr").textContent = st.shock ? br + " of " + CL : "—";
+    $("ddEnd").textContent = money(eq[eq.length - 1]);
+    var html = "";
+    for (i = 0; i < SCEN.length; i++) {
+      var pl = SCEN[i][1] * st.beta * BOOK * (st.hedge ? 0.62 : 1);
+      html += "<tr><td class=\"n\">" + SCEN[i][0] + "</td><td>" + (SCEN[i][1] * 100).toFixed(1) +
+        "%</td><td class=\"bad\">" + money(pl) + "</td></tr>";
+    }
+    $("ddTbody").innerHTML = html;
+
+    var svg = $("ddSvg"), W = 660, H = 320, pad = { l: 54, r: 14, t: 14, b: 24 };
+    clear(svg);
+    var topH = 190, e0 = Math.min.apply(null, eq) * 0.97, e1 = Math.max.apply(null, eq) * 1.03;
+    var xw = W - pad.l - pad.r, j;
+    for (j = 0; j <= 4; j++) {
+      var vv = e0 + (e1 - e0) * j / 4;
+      var yy = pad.t + topH - (vv - e0) / (e1 - e0) * topH;
+      svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+        stroke: j === 0 ? "#333a47" : "#242932" }));
+      svg.appendChild(txt(pad.l - 6, yy + 3.5, "$" + (vv / 1e6).toFixed(1) + "m", 9, "#5f6673", "end"));
+    }
+    var epad = { l: pad.l, r: pad.r, t: pad.t, b: H - pad.t - topH };
+    var xs = [], i2;
+    for (i2 = 0; i2 < hw.length; i2++) xs.push(i2);
+    polyline(svg, hw, W, H, epad, 0, hw.length - 1, e0, e1, "rgba(63,185,80,.55)", 1.2, "4 3", xs);
+    polyline(svg, eq, W, H, epad, 0, eq.length - 1, e0, e1, "#fda4af", 1.8, null, xs);
+    svg.appendChild(txt(pad.l + 2, pad.t + 10, "equity, $10m start" + (st.hedge ? " · put overlay on" : ""),
+      9.5, "#5f6673"));
+    if (st.shock) {
+      var sx = pad.l + C0 / (eq.length - 1) * xw, sw = CL / (eq.length - 1) * xw;
+      svg.appendChild(mk("rect", { x: sx.toFixed(1), y: pad.t, width: Math.max(2, sw).toFixed(1),
+        height: topH, fill: "rgba(248,81,73,.16)" }));
+      svg.appendChild(txt(sx + sw + 4, pad.t + 24, "2020-03", 9.5, "#f85149", "start", "700"));
+    }
+    /* underwater */
+    var ut = pad.t + topH + 24, uh = H - pad.b - ut;
+    var d1 = Math.min(-0.02, maxdd) * 1.08;
+    svg.appendChild(mk("line", { x1: pad.l, y1: ut, x2: W - pad.r, y2: ut, stroke: "#333a47" }));
+    svg.appendChild(txt(pad.l - 6, ut + 3.5, "0%", 9, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l - 6, H - pad.b + 3.5, (d1 * 100).toFixed(0) + "%", 9, "#5f6673", "end"));
+    var dpath = "M" + pad.l + " " + ut;
+    for (i = 0; i < dd.length; i++) {
+      var dx = pad.l + i / (dd.length - 1) * xw;
+      var dy = ut + Math.min(1, dd[i] / d1) * uh;
+      dpath += " L" + dx.toFixed(1) + " " + dy.toFixed(1);
+    }
+    dpath += " L" + (W - pad.r) + " " + ut + " Z";
+    svg.appendChild(mk("path", { d: dpath, fill: "rgba(248,81,73,.3)", stroke: "#f85149",
+      "stroke-width": 1.2 }));
+    var ty = ut + Math.min(1, maxdd / d1) * uh;
+    var tx = pad.l + trough / (dd.length - 1) * xw;
+    svg.appendChild(mk("circle", { cx: tx.toFixed(1), cy: ty.toFixed(1), r: 3, fill: "#f85149" }));
+    svg.appendChild(txt(Math.min(tx + 6, W - pad.r - 60), ty + 3, "max DD " + (maxdd * 100).toFixed(1) + "%",
+      9.5, "#f85149", "start", "700"));
+    svg.appendChild(txt(pad.l + 2, ut - 8, "underwater — % below the high-water mark", 9.5, "#5f6673"));
+  }
+  $("ddShock").addEventListener("click", function () {
+    st.shock = !st.shock; this.setAttribute("aria-pressed", st.shock ? "true" : "false");
+    this.classList.toggle("on", st.shock); draw();
+  });
+  $("ddHedge").addEventListener("click", function () {
+    st.hedge = !st.hedge; this.setAttribute("aria-pressed", st.hedge ? "true" : "false");
+    this.classList.toggle("on", st.hedge); draw();
+  });
+  $("ddReset").addEventListener("click", function () {
+    st.shock = false; st.hedge = false; st.mag = 34; st.beta = 1.0;
+    $("ddShock").setAttribute("aria-pressed", "false"); $("ddShock").classList.remove("on");
+    $("ddHedge").setAttribute("aria-pressed", "false"); $("ddHedge").classList.remove("on");
+    $("ddMag").value = 34; $("ddMagV").textContent = "−34%";
+    $("ddBeta").value = 100; $("ddBetaV").textContent = "1.00";
+    draw();
+  });
+  $("ddMag").addEventListener("input", function () {
+    st.mag = +this.value; $("ddMagV").textContent = "−" + st.mag + "%"; draw();
+  });
+  $("ddBeta").addEventListener("input", function () {
+    st.beta = +this.value / 100; $("ddBetaV").textContent = st.beta.toFixed(2); draw();
+  });
+  draw();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>
