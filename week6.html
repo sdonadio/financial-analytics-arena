@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -272,13 +277,13 @@
   <h1>Derivatives Analytics</h1>
   <p class="promise">An option price is one number that contains a whole distribution. This week you build
   the machine that turns the two into each other — Black-Scholes forward for a price, bisection backward for
-  an implied vol — and then you look at what the market's own prices say about the model: a smile that
+  an implied vol — and then you look at what the market’s own prices say about the model: a smile that
   should be flat, and an arbitrage that is only a stale quote.</p>
   <ul class="you">
     <li>Draw the <strong>payoff</strong> of any combination of legs and separate it from the
     <em class="hi">value</em> of that combination before expiry.</li>
     <li>Implement <strong>Black-Scholes</strong> and its Greeks, and verify your code against a number you
-    can check: <code>S=100, K=100, r=5%, &#963;=20%, T=1</code> gives a call of <code>10.4506</code>.</li>
+    can check: <code>S=100, K=100, r=5%, σ=20%, T=1</code> gives a call of <code>10.4506</code>.</li>
     <li>Invert the formula by <strong>bisection</strong> to get implied vol from a price, and know why you
     bisect on vega-positive functions rather than trusting Newton.</li>
     <li>Build the <strong>smile and the surface</strong> from a real option chain, and read the skew as a
@@ -304,7 +309,7 @@
 
   <div class="grid3" style="margin-top:16px">
     <div class="panel"><h4>Payoff</h4><p class="sub">Model-free. A call pays
-    <code>max(S&#8348;&#8722;K, 0)</code> at expiry and nothing before it. Add legs and the payoff adds:
+    <code>max(Sₜ−K, 0)</code> at expiry and nothing before it. Add legs and the payoff adds:
     every structure in the widget below is a sum of at most four of these kinks.</p></div>
     <div class="panel"><h4>Price</h4><p class="sub">Model-dependent. The value today is the discounted
     expected payoff under a <em class="hi">risk-neutral</em> measure, and Black-Scholes is one particular
@@ -344,7 +349,7 @@
     </div>
     <div class="stack">
       <div class="panel tight">
-        <div class="ctl"><label for="pfVol">Volatility &#963; <b id="pfVolV">20%</b></label>
+        <div class="ctl"><label for="pfVol">Volatility σ <b id="pfVolV">20%</b></label>
           <input type="range" id="pfVol" min="5" max="80" value="20" step="1" aria-label="Volatility in percent" /></div>
         <div class="ctl"><label for="pfT">Time to expiry <b id="pfTV">0.50 y</b></label>
           <input type="range" id="pfT" min="1" max="200" value="50" step="1" aria-label="Time to expiry in hundredths of a year" /></div>
@@ -352,12 +357,12 @@
           <input type="range" id="pfW" min="2" max="30" value="10" step="1" aria-label="Strike width for spreads and strangles" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Net premium</div><div class="sv acc" id="pfPrem">&#8212;</div></div>
-        <div class="stat"><div class="sl">Max profit</div><div class="sv ok" id="pfMax">&#8212;</div></div>
-        <div class="stat"><div class="sl">Max loss</div><div class="sv bad" id="pfMin">&#8212;</div></div>
-        <div class="stat"><div class="sl">Breakeven(s)</div><div class="sv" id="pfBe">&#8212;</div></div>
-        <div class="stat"><div class="sl">Net delta</div><div class="sv" id="pfDelta">&#8212;</div></div>
-        <div class="stat"><div class="sl">Net vega, per vol pt</div><div class="sv" id="pfVega">&#8212;</div></div>
+        <div class="stat"><div class="sl">Net premium</div><div class="sv acc" id="pfPrem">—</div></div>
+        <div class="stat"><div class="sl">Max profit</div><div class="sv ok" id="pfMax">—</div></div>
+        <div class="stat"><div class="sl">Max loss</div><div class="sv bad" id="pfMin">—</div></div>
+        <div class="stat"><div class="sl">Breakeven(s)</div><div class="sv" id="pfBe">—</div></div>
+        <div class="stat"><div class="sl">Net delta</div><div class="sv" id="pfDelta">—</div></div>
+        <div class="stat"><div class="sl">Net vega, per vol pt</div><div class="sv" id="pfVega">—</div></div>
       </div>
       <div class="tablewrap"><table class="t" aria-label="Legs of the selected structure">
         <thead><tr><th>Leg</th><th>Qty</th><th>Strike</th><th>BS value</th></tr></thead>
@@ -374,7 +379,7 @@
   <h2><span class="secnum">2</span>How you build it — forward for a price, backward for a vol</h2>
   <p class="lead">Black-Scholes is eight lines of code and one thing to get right: the two
   <code>d</code> terms. Write it, then check it against a number. <strong>At <code>S=100</code>,
-  <code>K=100</code>, <code>r=5%</code>, <code>&#963;=20%</code>, <code>T=1</code> the European call is
+  <code>K=100</code>, <code>r=5%</code>, <code>σ=20%</code>, <code>T=1</code> the European call is
   worth <code>10.4506</code></strong> and the put is worth <code>5.5735</code>. If your code does not
   reproduce those to four decimals, stop and fix it before you invert anything.</p>
 
@@ -410,13 +415,13 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
         <span class="k">else</span>:
             lo = mid
     <span class="k">return</span> (lo + hi) / <span class="n">2</span></pre>
-      <p class="sub" style="margin-top:9px">The call price is strictly increasing in <code>&#963;</code>
+      <p class="sub" style="margin-top:9px">The call price is strictly increasing in <code>σ</code>
       — vega is positive everywhere — so bisection <em class="hi">cannot</em> fail to converge, and it
       halves the bracket every step: 40 iterations gets you to
-      <code>5&#215;10<sup>&#8722;13</sup></code>. Newton is faster and diverges on deep out-of-the-money
+      <code>5×10<sup>−13</sup></code>. Newton is faster and diverges on deep out-of-the-money
       quotes where vega is near zero, which is exactly where a real chain is full of stale prices.</p>
       <p class="sub">Before you invert, check the no-arbitrage bounds:
-      <code>max(S&#8722;Ke<sup>&#8722;rT</sup>, 0) &#8804; C &#8804; S</code>. A quote outside them has no
+      <code>max(S−Ke<sup>−rT</sup>, 0) ≤ C ≤ S</code>. A quote outside them has no
       implied vol at all, and a mid computed from a one-sided book will breach them often.</p>
     </div>
   </div>
@@ -424,7 +429,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
   <h3 style="margin-top:30px">Interactive · Black-Scholes pricer and the Greeks</h3>
   <p class="sub" style="margin-bottom:12px">Every number here is computed in this page from the formula
   above, with a double-precision normal CDF. Press <b>Reference case</b> to set
-  <code>S=K=100, r=5%, &#963;=20%, T=1</code> and confirm the call reads <b>10.4506</b> — the same
+  <code>S=K=100, r=5%, σ=20%, T=1</code> and confirm the call reads <b>10.4506</b> — the same
   assertion your notebook should carry.</p>
 
   <div class="split-r">
@@ -436,7 +441,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
           <input type="range" id="bsK" min="4000" max="16000" value="10000" step="25" aria-label="Strike price, in hundredths" /></div>
         <div class="ctl"><label for="bsR">Rate r <b id="bsRV">5.00%</b></label>
           <input type="range" id="bsR" min="0" max="900" value="500" step="10" aria-label="Risk free rate in basis points" /></div>
-        <div class="ctl"><label for="bsV">Volatility &#963; <b id="bsVV">20.0%</b></label>
+        <div class="ctl"><label for="bsV">Volatility σ <b id="bsVV">20.0%</b></label>
           <input type="range" id="bsV" min="20" max="900" value="200" step="5" aria-label="Volatility in tenths of a percent" /></div>
         <div class="ctl"><label for="bsT">Time T <b id="bsTV">1.00 y</b></label>
           <input type="range" id="bsT" min="2" max="300" value="100" step="1" aria-label="Time to expiry in hundredths of a year" /></div>
@@ -447,18 +452,18 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
     </div>
     <div class="stack">
       <div class="stats">
-        <div class="stat"><div class="sl">Call</div><div class="sv acc" id="bsCall">&#8212;</div></div>
-        <div class="stat"><div class="sl">Put</div><div class="sv" id="bsPut">&#8212;</div></div>
-        <div class="stat"><div class="sl">d&#8321;</div><div class="sv" id="bsD1">&#8212;</div></div>
-        <div class="stat"><div class="sl">d&#8322;</div><div class="sv" id="bsD2">&#8212;</div></div>
+        <div class="stat"><div class="sl">Call</div><div class="sv acc" id="bsCall">—</div></div>
+        <div class="stat"><div class="sl">Put</div><div class="sv" id="bsPut">—</div></div>
+        <div class="stat"><div class="sl">d₁</div><div class="sv" id="bsD1">—</div></div>
+        <div class="stat"><div class="sl">d₂</div><div class="sv" id="bsD2">—</div></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Delta (call)</div><div class="sv" id="bsDelta">&#8212;</div></div>
-        <div class="stat"><div class="sl">Gamma</div><div class="sv" id="bsGamma">&#8212;</div></div>
-        <div class="stat"><div class="sl">Vega / vol pt</div><div class="sv acc" id="bsVega">&#8212;</div></div>
-        <div class="stat"><div class="sl">Theta / day</div><div class="sv bad" id="bsTheta">&#8212;</div></div>
-        <div class="stat"><div class="sl">Rho / 1% rate</div><div class="sv" id="bsRho">&#8212;</div></div>
-        <div class="stat"><div class="sl">Intrinsic / time</div><div class="sv" id="bsIntr">&#8212;</div></div>
+        <div class="stat"><div class="sl">Delta (call)</div><div class="sv" id="bsDelta">—</div></div>
+        <div class="stat"><div class="sl">Gamma</div><div class="sv" id="bsGamma">—</div></div>
+        <div class="stat"><div class="sl">Vega / vol pt</div><div class="sv acc" id="bsVega">—</div></div>
+        <div class="stat"><div class="sl">Theta / day</div><div class="sv bad" id="bsTheta">—</div></div>
+        <div class="stat"><div class="sl">Rho / 1% rate</div><div class="sv" id="bsRho">—</div></div>
+        <div class="stat"><div class="sl">Intrinsic / time</div><div class="sv" id="bsIntr">—</div></div>
       </div>
       <div class="svgwrap">
         <svg id="bsSvg" viewBox="0 0 660 240" role="img" aria-label="Call price and the selected Greek plotted against spot price"></svg>
@@ -500,10 +505,10 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
           <input type="range" id="ivT" min="2" max="200" value="100" step="1" aria-label="Time to expiry in hundredths of a year" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Implied vol</div><div class="sv acc" id="ivIv">&#8212;</div></div>
-        <div class="stat"><div class="sl">Bracket width</div><div class="sv" id="ivWidth">&#8212;</div></div>
-        <div class="stat"><div class="sl">Price error</div><div class="sv" id="ivErr">&#8212;</div></div>
-        <div class="stat"><div class="sl">Vega at the root</div><div class="sv" id="ivVega">&#8212;</div></div>
+        <div class="stat"><div class="sl">Implied vol</div><div class="sv acc" id="ivIv">—</div></div>
+        <div class="stat"><div class="sl">Bracket width</div><div class="sv" id="ivWidth">—</div></div>
+        <div class="stat"><div class="sl">Price error</div><div class="sv" id="ivErr">—</div></div>
+        <div class="stat"><div class="sl">Vega at the root</div><div class="sv" id="ivVega">—</div></div>
       </div>
       <div class="panel tight"><p class="sub" id="ivNote"></p></div>
     </div>
@@ -525,12 +530,12 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
     <div class="panel"><h4>So why keep using the model?</h4><p class="sub">Because implied vol is a
     <em class="hi">quoting convention</em>. Nobody believes the lognormal assumption; everybody uses
     Black-Scholes as an invertible map between a dollar price and a number that is comparable across
-    strikes, maturities and underlyings. A trader who says "I bought 22 vol" is quoting a price through a
+    strikes, maturities and underlyings. A trader who says “I bought 22 vol” is quoting a price through a
     model they know is wrong, on purpose.</p></div>
     <div class="panel"><h4>What the shape tells you</h4><p class="sub">The <b>level</b> is the price of
     variance. The <b>skew</b> is the price of the left tail — steeper skew means crash protection is
-    getting expensive. The <b>convexity</b> (the smile's curl) prices the probability of a large move in
-    either direction. Those three numbers are the equity-vol analogue of week 5's level, slope and
+    getting expensive. The <b>convexity</b> (the smile’s curl) prices the probability of a large move in
+    either direction. Those three numbers are the equity-vol analogue of week 5’s level, slope and
     curvature.</p></div>
   </div>
 
@@ -570,10 +575,10 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
           </select></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">ATM vol, this tenor</div><div class="sv acc" id="svAtmT">&#8212;</div></div>
-        <div class="stat"><div class="sl">90&#8722;110 skew</div><div class="sv" id="svRr">&#8212;</div></div>
-        <div class="stat"><div class="sl">Wing butterfly</div><div class="sv" id="svBf">&#8212;</div></div>
-        <div class="stat"><div class="sl">Vol of the 80% put</div><div class="sv bad" id="svPut80">&#8212;</div></div>
+        <div class="stat"><div class="sl">ATM vol, this tenor</div><div class="sv acc" id="svAtmT">—</div></div>
+        <div class="stat"><div class="sl">90−110 skew</div><div class="sv" id="svRr">—</div></div>
+        <div class="stat"><div class="sl">Wing butterfly</div><div class="sv" id="svBf">—</div></div>
+        <div class="stat"><div class="sl">Vol of the 80% put</div><div class="sv bad" id="svPut80">—</div></div>
       </div>
       <div class="panel tight"><p class="sub" id="svNote"></p></div>
     </div>
@@ -581,7 +586,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
 
   <h3 style="margin-top:34px">Interactive · put-call parity, and the arbitrage that is not one</h3>
   <p class="sub" style="margin-bottom:12px">Parity is model-free:
-  <code>C &#8722; P = S &#8722; Ke<sup>&#8722;rT</sup></code>, by a static replication argument that holds
+  <code>C − P = S − Ke<sup>−rT</sup></code>, by a static replication argument that holds
   whatever the underlying does. So a violation is either free money or bad data — and in a retail option
   chain it is <em class="hi">always</em> bad data. Turn on <b>stale quotes</b> to see the classic version:
   the underlying has moved, the option quotes have not, and parity appears to break by 60 cents.</p>
@@ -612,7 +617,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
         <svg id="pcSvg" viewBox="0 0 660 250" role="img" aria-label="The two sides of put-call parity compared, with the transaction-cost band around them"></svg>
       </div>
       <div class="panel tight">
-        <div class="smoke" id="pcLamp"><span class="lamp"></span><span id="pcZone">&#8212;</span></div>
+        <div class="smoke" id="pcLamp"><span class="lamp"></span><span id="pcZone">—</span></div>
         <p class="sub" id="pcVerdict" style="margin-top:8px"></p>
       </div>
     </div>
@@ -634,14 +639,14 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
   <details class="pit"><summary>Inverting the mid of a one-sided book — and getting a 300% implied vol</summary>
     <div class="body">
       <p>A free option chain contains rows with a bid of 0.00 and an ask of 0.05, rows that last traded
-      three weeks ago, and rows where the "price" is the last trade rather than a mid. Invert those and you
+      three weeks ago, and rows where the “price” is the last trade rather than a mid. Invert those and you
       get implied vols of 4%, 300%, or nothing at all — and then a single garbage point drags your smile fit
       into a shape no market ever quoted.</p>
       <p>The tell is a surface with spikes at the far wings and at the shortest expiry, which is exactly
       where liquidity dies.</p>
       <p class="fix">Fix: filter before you invert. Require a two-sided quote, a positive bid, a relative
       spread under some threshold, non-zero open interest, and a price inside the no-arbitrage bounds
-      <code>max(S&#8722;Ke<sup>&#8722;rT</sup>,0) &#8804; C &#8804; S</code>. Report how many rows you
+      <code>max(S−Ke<sup>−rT</sup>,0) ≤ C ≤ S</code>. Report how many rows you
       dropped and why — that count is part of the result.</p>
     </div></details>
 
@@ -653,7 +658,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
       option is strictly worth more, and inverting a European formula on it produces an implied vol biased
       upward.</p>
       <p>The bias is small for short, near-the-money options and material for deep in-the-money puts, which
-      is where a naive script finds its most exciting "skew".</p>
+      is where a naive script finds its most exciting “skew”.</p>
       <p class="fix">Fix: state the assumption. Restrict the fit to out-of-the-money options — where early
       exercise is worth almost nothing and the quotes are liquid — or price with a binomial tree if you need
       the in-the-money wing. Handle the dividend explicitly with <code>q</code>.</p>
@@ -661,8 +666,8 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
 
   <details class="pit"><summary>Newton-Raphson on the wing, and a divide-by-near-zero</summary>
     <div class="body">
-      <p>Newton's update is <code>&#963; &#8592; &#963; &#8722; (C(&#963;)&#8722;P)/vega</code>. Deep out of
-      the money, vega is <code>1e-8</code>, so one iteration throws <code>&#963;</code> to 40 or to a
+      <p>Newton’s update is <code>σ ← σ − (C(σ)−P)/vega</code>. Deep out of
+      the money, vega is <code>1e-8</code>, so one iteration throws <code>σ</code> to 40 or to a
       negative number, and the next call to <code>log</code> or <code>sqrt</code> returns
       <code>NaN</code>. The <code>NaN</code> then propagates silently through your surface fit.</p>
       <p>The same instability is why a vectorised Newton over a whole chain quietly returns a few
@@ -679,10 +684,10 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
       does <em class="hi">not</em> say the market expects a crash. Most of the skew is a risk premium: the
       people who sell crash protection demand to be paid for it, and index puts have earned a persistently
       negative return for decades precisely because that premium is real.</p>
-      <p>The mirror error: computing a risk-neutral density from the surface and calling it "the market's
-      probability distribution". It is the risk-neutral distribution, which differs from the real-world one
+      <p>The mirror error: computing a risk-neutral density from the surface and calling it “the market’s
+      probability distribution”. It is the risk-neutral distribution, which differs from the real-world one
       by exactly the risk premium you are trying to measure.</p>
-      <p class="fix">Fix: keep the two measures separate in your writing. Say "risk-neutral" every time you
+      <p class="fix">Fix: keep the two measures separate in your writing. Say “risk-neutral” every time you
       mean it, and if you want to make a claim about real-world probabilities, you need an assumption about
       the pricing kernel — so state it.</p>
     </div></details>
@@ -696,7 +701,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
       <em class="hi">sign</em> in a trending market.</p>
       <p>The second-order version: using an annual rate with the wrong compounding, or a
       <code>T</code> measured in calendar days when the quotes convention is business days. Both shift the
-      right-hand side by a few cents, which is enough to manufacture an "edge" of the same size as the one
+      right-hand side by a few cents, which is enough to manufacture an “edge” of the same size as the one
       you are hunting.</p>
       <p class="fix">Fix: one snapshot, one timestamp, recorded. Compare the parity residual to two full
       spreads plus fees before you use the word arbitrage, and plot the residual against moneyness — a real
@@ -710,19 +715,19 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
   <h2><span class="secnum">5</span>Check yourself</h2>
   <p class="lead">Three questions, instant feedback, nothing recorded.</p>
 
-  <div class="mcq" data-a="2" data-exp="<b>Bisection, because vega &gt; 0 makes the price strictly monotone in &#963;.</b> That single property guarantees exactly one root in the bracket and guarantees bisection finds it, halving the interval every step regardless of how flat the function is. Newton needs a division by vega, which on a deep out-of-the-money quote is effectively zero — one update throws &#963; to a wild or negative value and the next log or sqrt returns NaN. Bisection is not chosen for speed or accuracy at the root; it is chosen because it cannot fail.">
+  <div class="mcq" data-a="2" data-exp="<b>Bisection, because vega &gt; 0 makes the price strictly monotone in σ.</b> That single property guarantees exactly one root in the bracket and guarantees bisection finds it, halving the interval every step regardless of how flat the function is. Newton needs a division by vega, which on a deep out-of-the-money quote is effectively zero — one update throws σ to a wild or negative value and the next log or sqrt returns NaN. Bisection is not chosen for speed or accuracy at the root; it is chosen because it cannot fail.">
     <p class="q"><span>Q1</span>Why does the standard implied-vol routine bisect rather than use Newton-Raphson?</p>
     <div class="opts">
-      <button class="opt" type="button">Bisection converges faster — quadratically, against Newton's linear rate</button>
-      <button class="opt" type="button">Newton cannot be used because Black-Scholes has no closed-form derivative in &#963;</button>
-      <button class="opt" type="button">The call price is strictly increasing in &#963;, so bisection cannot diverge — while Newton divides by a vega that is near zero on the wings</button>
+      <button class="opt" type="button">Bisection converges faster — quadratically, against Newton’s linear rate</button>
+      <button class="opt" type="button">Newton cannot be used because Black-Scholes has no closed-form derivative in σ</button>
+      <button class="opt" type="button">The call price is strictly increasing in σ, so bisection cannot diverge — while Newton divides by a vega that is near zero on the wings</button>
       <button class="opt" type="button">Bisection returns the globally lowest implied vol when several roots exist</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
 
   <div class="mcq" data-a="1" data-exp="<b>The quotes are not from the same instant.</b> Parity is a static-replication identity: buy the call, sell the put, short the stock, lend Ke^(−rT) and you hold nothing at expiry whatever happens — so it holds with no model at all, and 40 cents of &quot;violation&quot; in a free chain is a data artefact. The overwhelmingly common cause is a timestamp mismatch between the underlying and the option quotes, and its signature is exactly what is described: it scales with delta and it has a sign in a trending market. Volatility skew cannot break parity — parity involves no volatility. And &quot;the market is inefficient&quot; is the conclusion of last resort, not first.">
-    <p class="q"><span>Q2</span>Your parity test on a free option chain shows <code>C &#8722; P &#8722; S + Ke<sup>&#8722;rT</sup> = +0.40</code> for near-the-money strikes, consistently, all afternoon. What is it?</p>
+    <p class="q"><span>Q2</span>Your parity test on a free option chain shows <code>C − P − S + Ke<sup>−rT</sup> = +0.40</code> for near-the-money strikes, consistently, all afternoon. What is it?</p>
     <div class="opts">
       <button class="opt" type="button">A genuine arbitrage: buy the synthetic, sell the actual, collect 40 cents</button>
       <button class="opt" type="button">A timestamp mismatch — the underlying moved between the option snapshot and the spot snapshot</button>
@@ -762,7 +767,7 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
     <div class="panel"><h4>Phase 1 is due · Phase 2 opens</h4><ul class="plain">
       <li><b>Phase 1 (14%):</b> the fund tearsheet — universe and data contract, documented adjustments,
       factor decomposition, optimised portfolio against 1/N, and the week-4 risk report. It must run
-      end-to-end from <code>make tearsheet</code> on a grader's laptop.</li>
+      end-to-end from <code>make tearsheet</code> on a grader’s laptop.</li>
       <li><b>Phase 2 (21%) opens:</b> pick a track — your own signal, or reproduce a published anomaly —
       and spec it. Costed walk-forward, purged CV, an explicit overfitting section, two live AlgoArena
       sessions, and a TCA plus attribution report.</li>
@@ -775,11 +780,11 @@ theta = (-S * norm.pdf(d1) * sig / (<span class="n">2</span> * np.sqrt(T))
     <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/derivatives.html"><div class="nl">See also</div>
       <div class="nt">Financial Markets Arena · Derivatives</div><div class="nd">What a forward, a future, a swap and an option are as contracts — margin, settlement, and who is on the other side — before you put a model on them.</div></a>
     <a class="nextcard" href="week5.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 5 · Rates, Inflation &amp; the Macro Panel</div><div class="nd">Where the discount factor in <code>Ke<sup>&#8722;rT</sup></code> comes from, and the level/slope/curvature decomposition this week's surface echoes.</div></a>
+      <div class="nt">← Week 5 · Rates, Inflation &amp; the Macro Panel</div><div class="nd">Where the discount factor in <code>Ke<sup>−rT</sup></code> comes from, and the level/slope/curvature decomposition this week’s surface echoes.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">The 10-week map</div><div class="nd">Where week 6 sits — the hinge between the two project phases.</div></a>
     <a class="nextcard" href="week7.html"><div class="nl">Next</div>
-      <div class="nt">Week 7 · Backtesting &amp; Performance Attribution &#8594;</div><div class="nd">Costs, slippage, walk-forward, deflated Sharpe and Brinson attribution — the week that decides whether any of this was real.</div></a>
+      <div class="nt">Week 7 · Backtesting &amp; Performance Attribution →</div><div class="nd">Costs, slippage, walk-forward, deflated Sharpe and Brinson attribution — the week that decides whether any of this was real.</div></a>
   </div>
 </section>
 
@@ -1027,13 +1032,13 @@ function xticks(svg, W, H, pad, x0, x1, n, fmt) {
     var ref = Math.abs(st.S - 100) < 1e-9 && Math.abs(st.K - 100) < 1e-9 &&
       Math.abs(st.r - 0.05) < 1e-9 && Math.abs(st.v - 0.20) < 1e-9 && Math.abs(st.T - 1) < 1e-9;
     $("bsCheck").innerHTML = ref
-      ? "<b>Reference case.</b> S=100, K=100, r=5%, &#963;=20%, T=1 &#8594; call <b>" +
+      ? "<b>Reference case.</b> S=100, K=100, r=5%, σ=20%, T=1 → call <b>" +
         g.call.toFixed(4) + "</b>, put <b>" + g.put.toFixed(4) + "</b>. The textbook values are " +
         "<b>10.4506</b> and <b>5.5735</b>; this page computes them from the formula with a " +
         "double-precision normal CDF and reproduces both to four decimals. Put the same assertion in " +
         "your notebook before you invert anything."
-      : "Off the reference case. Parity still holds at every setting: C &#8722; P = " +
-        (g.call - g.put).toFixed(4) + " and S &#8722; Ke<sup>&#8722;rT</sup> = " +
+      : "Off the reference case. Parity still holds at every setting: C − P = " +
+        (g.call - g.put).toFixed(4) + " and S − Ke<sup>−rT</sup> = " +
         (st.S - st.K * Math.exp(-st.r * st.T)).toFixed(4) + " — they agree to machine precision, " +
         "because the two formulas were derived from the same identity. Press <b>Reference case</b> to " +
         "check the 10.4506 benchmark.";

@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -277,12 +282,12 @@
   <ul class="you">
     <li>Fit and <em class="hi">defend</em> a CAPM regression: beta, alpha, the standard error of each, and the residual plot you are supposed to look at.</li>
     <li>Compute <strong>rolling betas</strong> and say out loud what your window length is trading off.</li>
-    <li>Run a <strong>Fama-French 3-factor attribution</strong> of a fund's returns, and report how much of its "alpha" was a value tilt with a good story.</li>
+    <li>Run a <strong>Fama-French 3-factor attribution</strong> of a fund’s returns, and report how much of its “alpha” was a value tilt with a good story.</li>
     <li>Say how long a track record has to be before an alpha of a given size is even <em class="hi">detectable</em> — and what happens to that threshold when you have tested a hundred strategies.</li>
   </ul>
   <div class="row" style="margin-top:22px">
     <span class="pill acc">Lab: FF factors from the Ken French library, rolling betas on 20 names</span>
-    <span class="pill">HW2: factor attribution of a fund — "is this alpha?"</span>
+    <span class="pill">HW2: factor attribution of a fund — “is this alpha?”</span>
     <span class="pill warn">Read the diagnostics, not the R²</span>
   </div>
 </section>
@@ -294,7 +299,7 @@
   <p class="lead">A factor model is a regression of excess returns on the excess returns of things you
   could have bought instead. The slopes say <strong>what you were exposed to</strong>; the intercept says
   <strong>what you got that the exposures do not explain</strong>. Both are estimates, both have standard
-  errors, and the intercept's standard error is the single number that decides whether the week's headline
+  errors, and the intercept’s standard error is the single number that decides whether the week’s headline
   claim survives.</p>
 
   <div class="grid2" style="margin-top:16px">
@@ -303,7 +308,7 @@
       <pre class="code">r<sub>i,t</sub> − rf<sub>t</sub> = α + β (r<sub>m,t</sub> − rf<sub>t</sub>) + ε<sub>t</sub></pre>
       <p class="sub" style="margin-top:9px"><b>β</b> is the slope: how much of the market you were
       carrying. <b>α</b> is the intercept: average excess return left after paying for that exposure at
-      the market's own price. <b>ε</b> is what is left each day, and <code>sd(ε)</code> annualised is
+      the market’s own price. <b>ε</b> is what is left each day, and <code>sd(ε)</code> annualised is
       <em class="hi">tracking error</em> — the denominator of every information ratio you will ever
       quote.</p>
       <div class="note" style="margin-top:11px"><b>The identity that matters.</b>
@@ -317,7 +322,7 @@
       <p class="sub" style="margin-top:9px">The three-factor model adds <b>SMB</b> (small minus big) and
       <b>HML</b> (high book-to-market minus low). The five-factor model adds profitability (<b>RMW</b>) and
       investment (<b>CMA</b>); momentum (<b>UMD</b>) is usually bolted on separately.</p>
-      <p class="sub">The point is not the R². The point is that a fund's CAPM alpha of 300&#8239;bps
+      <p class="sub">The point is not the R². The point is that a fund’s CAPM alpha of 300&#8239;bps
       routinely becomes an FF3 alpha of 40&#8239;bps, because the manager was holding cheap small
       companies and those have a <em class="hi">published price</em>. What survives that is the claim.</p>
     </div>
@@ -382,13 +387,13 @@
   <h2><span class="secnum">2</span>How you use it — rolling exposures and a real attribution</h2>
   <p class="lead">A single full-sample beta is a claim that the fund never changed. It always did. So the
   working tool is a <em class="hi">rolling</em> regression, and the working deliverable is an attribution
-  table that says how much of the return each exposure bought at the market's own price.</p>
+  table that says how much of the return each exposure bought at the market’s own price.</p>
 
   <h3 style="margin-top:22px">Interactive · rolling beta, and what your window is trading off</h3>
   <p class="sub" style="margin-bottom:12px">This fund really does change its beta — from 0.80 to 1.40
   halfway through the sample. Move the window and watch the estimate become either <b>slow</b> or
-  <b>noisy</b>. There is no window that is neither; picking one is the analyst's judgement, and stating it
-  is the analyst's job.</p>
+  <b>noisy</b>. There is no window that is neither; picking one is the analyst’s judgement, and stating it
+  is the analyst’s job.</p>
 
   <div class="split-r">
     <div class="stack">
@@ -544,7 +549,7 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
 
   <h3 style="margin-top:34px">Interactive · the multiple-testing trap</h3>
   <p class="sub" style="margin-bottom:12px">Here are N strategies. By default <b>every single one of them
-  is pure noise</b> — no alpha, no skill, nothing. Run them and count how many come back "significant" at
+  is pure noise</b> — no alpha, no skill, nothing. Run them and count how many come back “significant” at
   the 5% level, then look at the best one and ask yourself what its pitch deck would look like.</p>
 
   <div class="split">
@@ -579,7 +584,7 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
         <div class="row"><button class="btn primary" type="button" id="mtRun">Run them again →</button></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">"Significant" at 5%</div><div class="sv bad" id="mtSig">—</div></div>
+        <div class="stat"><div class="sl">“Significant” at 5%</div><div class="sv bad" id="mtSig">—</div></div>
         <div class="stat"><div class="sl">Of those, false</div><div class="sv warn" id="mtFalse">—</div></div>
         <div class="stat"><div class="sl">Best t of the batch</div><div class="sv" id="mtBest">—</div></div>
         <div class="stat"><div class="sl">Its Sharpe</div><div class="sv acc" id="mtBestS">—</div></div>
@@ -624,7 +629,7 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
 
   <details class="pit"><summary>Reporting R² as if it were the result</summary>
     <div class="body">
-      <p>"My FF3 regression has an R² of 0.94, so the model is good." An R² of 0.94 on a long-only equity
+      <p>“My FF3 regression has an R² of 0.94, so the model is good.” An R² of 0.94 on a long-only equity
       fund is not a finding, it is arithmetic: the fund holds equities and so does MKT. You can get 0.9
       by regressing a fund on itself with noise added.</p>
       <p>Worse, a <em class="hi">high</em> R² and a large alpha usually means the alpha is being carried
@@ -651,10 +656,10 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
     <div class="body">
       <p>Rolling betas from a 126-day window on daily data are massively autocorrelated: consecutive
       estimates share 125 of 126 observations. Any test that treats a series of rolling estimates as
-      independent observations — "beta was above 1.2 in 400 of 800 days, so the shift is significant" —
+      independent observations — “beta was above 1.2 in 400 of 800 days, so the shift is significant” —
       is inflating its sample size by two orders of magnitude.</p>
       <p>The same trap applies to overlapping k-day forward returns in a predictive regression, which is
-      week 8's version of the problem.</p>
+      week 8’s version of the problem.</p>
       <p class="fix">Fix: Newey-West standard errors (<code>cov_type="HAC"</code> in statsmodels), or
       non-overlapping windows, or both. And never count rolling estimates as data points.</p>
     </div></details>
@@ -671,10 +676,10 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
       observations per regressor is a floor, not a target.</p>
     </div></details>
 
-  <details class="pit"><summary>"I only tested one strategy" — after testing forty</summary>
+  <details class="pit"><summary>“I only tested one strategy” — after testing forty</summary>
     <div class="body">
       <p>The most human of these. You tried a 20-day lookback, then 10, then 50; you tried it on the
-      S&amp;P 500 and then on the Russell; you dropped 2008 because it was "not representative". That is
+      S&amp;P 500 and then on the Russell; you dropped 2008 because it was “not representative”. That is
       not one test, and the 1.96 threshold no longer applies to it — the relevant threshold for 40 tests
       is about 3.2.</p>
       <p>Every one of those choices was made <em class="hi">after</em> seeing data, which is what makes
@@ -697,7 +702,7 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
       <button class="opt" type="button">The CAPM alpha is the real one; adding factors always shrinks alpha, so ignore FF3</button>
       <button class="opt" type="button">The manager has genuine skill that the three-factor model is too crude to capture</button>
       <button class="opt" type="button">The fund is mis-specified; you should add more factors until the alpha returns</button>
-      <button class="opt" type="button">Most of the "alpha" was a value tilt with a published price — benchmark it against a value index</button>
+      <button class="opt" type="button">Most of the “alpha” was a value tilt with a published price — benchmark it against a value index</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
@@ -714,7 +719,7 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
   </div>
 
   <div class="mcq" data-a="2" data-exp="<b>About five, and that is exactly what a 5% level means.</b> With 100 independent true nulls, the number of |t| &gt; 1.96 results is binomial(100, 0.05), so around five, and the largest of 100 standard normals is typically about 2.5 — a Sharpe near 2.5 over five years. None of them is real. This is why N has to be reported: the 1.96 threshold is a statement about ONE test. For 100 tests the Bonferroni threshold is roughly 3.5, and the best-of-100 noise strategy will not clear it.">
-    <p class="q"><span>Q3</span>You backtest 100 strategies that are all pure noise, at the 5% significance level. How many come back "significant"?</p>
+    <p class="q"><span>Q3</span>You backtest 100 strategies that are all pure noise, at the 5% significance level. How many come back “significant”?</p>
     <div class="opts">
       <button class="opt" type="button">None — they have no edge, so no test can find one</button>
       <button class="opt" type="button">One, on average, since 1/100 is the natural false-positive rate</button>
@@ -740,8 +745,8 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
       <li>Read the diagnostics: residual plots, the three biggest residuals by date, and the variance
       inflation factors. Not the R².</li>
     </ul></div>
-    <div class="panel"><h4>Homework 2 · "is this alpha?"</h4><ul class="plain">
-      <li>A full factor attribution of one fund's monthly returns: CAPM, FF3 and FF5, side by side, with
+    <div class="panel"><h4>Homework 2 · “is this alpha?”</h4><ul class="plain">
+      <li>A full factor attribution of one fund’s monthly returns: CAPM, FF3 and FF5, side by side, with
       standard errors and HAC t-stats.</li>
       <li>A written verdict — one paragraph — on whether the alpha exists, including the sample length
       needed for t = 2 at the measured information ratio.</li>
@@ -751,7 +756,7 @@ t_crit_bonf = norm.ppf(1 - 0.025/N)</pre>
   </div>
   <div class="nextgrid" style="margin-top:18px">
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
-      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course's own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
+      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course’s own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/intro.html"><div class="nl">See also</div>
       <div class="nt">Financial Markets Arena · Part 1</div><div class="nd">Where factor premia sit among the alpha families, and the four ways a backtest lies — the same argument as Part 3 here, from the trading side.</div></a>
     <a class="nextcard" href="week1.html"><div class="nl">Previous</div>
@@ -928,11 +933,11 @@ function ols(y, x) {
     var ir = fit.sig > 0 ? (fit.a * 12) / (fit.sig * Math.sqrt(12)) : 0;
     var need = ir !== 0 ? Math.pow(2 / Math.abs(ir), 2) : 999;
     $("capNote").innerHTML = "<b>The estimate is not the truth.</b> You set the true alpha to " +
-      st.trueA + " bps and OLS recovered " + Math.round(aAnn) + " bps &plusmn; " + Math.round(seAnn) +
+      st.trueA + " bps and OLS recovered " + Math.round(aAnn) + " bps ± " + Math.round(seAnn) +
       " — over " + st.months + " months, with " + st.idio + "% tracking error. The implied information " +
       "ratio is " + ir.toFixed(2) + ", so a t of 2 would need about <b>" +
       (need > 200 ? "200+" : need.toFixed(0)) + " years</b> of this fund. Drag <em class=\"hi\">months of " +
-      "history</em> to the right and watch the standard error shrink as &radic;T, slowly.";
+      "history</em> to the right and watch the standard error shrink as √T, slowly.";
   }
 
   /* dragging: slope follows the pointer's vertical position at a fixed x */
@@ -1075,7 +1080,7 @@ function ols(y, x) {
     $("rbNote").innerHTML = "<b>" + w + " days.</b> The estimate wobbles with s.d. " + sd(est).toFixed(3) +
       " around a truth it tracks with mean absolute error " + mae.toFixed(3) +
       (st.mode === "step" ? ", and it takes " + $("rbLag").textContent + " to cross the midpoint after the fund actually changes" : "") +
-      ". Shorten the window and the wobble grows as 1/&radic;w; lengthen it and the lag grows linearly. " +
+      ". Shorten the window and the wobble grows as 1/√w; lengthen it and the lag grows linearly. " +
       "The full-sample beta of " + full.b.toFixed(2) + " is the average of two regimes and describes " +
       "neither" + (st.mode === "flat" ? " — except here, where it is exactly right, which is the case you almost never have" : "") + ".";
     if (mean2 === 0) $("rbNote").textContent = "";

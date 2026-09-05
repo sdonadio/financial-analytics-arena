@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -333,7 +338,7 @@
       </div>
       <div class="legend">
         <span><i style="background:#3fb950"></i>true frontier</span>
-        <span><i style="background:rgba(253,164,175,.5)"></i>one sample's frontier</span>
+        <span><i style="background:rgba(253,164,175,.5)"></i>one sample’s frontier</span>
         <span><i style="background:#6cb6ff"></i>1/N</span>
         <span><i style="background:#d29922"></i>true tangency portfolio</span>
       </div>
@@ -537,7 +542,7 @@
     <div class="panel">
       <h4>Why 1/N is the benchmark, not the joke</h4>
       <p class="sub">1/N has no parameters, so it has no estimation error, so it cannot be wrong in the
-      way MVO is wrong. DeMiguel, Garlappi and Uppal's result — that across many datasets 1/N beats
+      way MVO is wrong. DeMiguel, Garlappi and Uppal’s result — that across many datasets 1/N beats
       sample-based mean-variance out of sample — is not a claim that optimisation is useless. It is a
       claim that <em class="hi">the error in the inputs dominates the gain from optimising</em> unless you
       do something about the error.</p>
@@ -548,8 +553,8 @@
     <div class="panel">
       <h4>What a constraint really is</h4>
       <p class="sub">A 10% position cap looks like a compliance nuisance. Statistically it is a
-      <em class="hi">prior</em>: it says "I do not believe any single estimate enough to bet more than 10%
-      on it". Jagannathan and Ma showed that a long-only constraint on min-variance is equivalent to
+      <em class="hi">prior</em>: it says “I do not believe any single estimate enough to bet more than 10%
+      on it”. Jagannathan and Ma showed that a long-only constraint on min-variance is equivalent to
       shrinking the covariance matrix — the constraint <em class="hi">is</em> the regularisation.</p>
       <p class="sub">Which is why the constraint widget above reports how often the mandate
       <em class="hi">raises</em> the true Sharpe across 200 fresh samples, rather than asserting that it
@@ -566,7 +571,7 @@
     </div>
     <div class="panel">
       <h4>What week 4 does with it</h4>
-      <p class="sub">Takes these weights and asks how badly they can behave: the return distribution's
+      <p class="sub">Takes these weights and asks how badly they can behave: the return distribution’s
       left tail, VaR and Expected Shortfall, the drawdown, and whether the covariance matrix you shrank
       here is still the right one in a crisis. Correlations go to one exactly when your diversification
       was the argument for the weights.</p>
@@ -597,7 +602,7 @@
           <span class="txt"><span class="t">5 · Every result is quoted against 1/N</span>
           <span class="c">assert report.index.isin(["1/N"]).any()</span></span></label>
         <label class="item"><input type="checkbox" data-i="5" aria-label="Optimiser convergence is checked"/>
-          <span class="txt"><span class="t">6 · The optimiser's exit status is checked, every time</span>
+          <span class="txt"><span class="t">6 · The optimiser’s exit status is checked, every time</span>
           <span class="c">res = minimize(...); assert res.success, res.message</span></span></label>
         <label class="item"><input type="checkbox" data-i="6" aria-label="Condition number is monitored"/>
           <span class="txt"><span class="t">7 · The condition number of Σ is logged at each rebalance</span>
@@ -654,7 +659,7 @@
     <div class="body">
       <p>With 50 names and 36 monthly observations, the sample covariance has rank 36 and is singular.
       <code>np.linalg.inv</code> will still return something — an enormous, arbitrary something — and the
-      optimiser will find a "zero-variance" portfolio built entirely out of the null space.</p>
+      optimiser will find a “zero-variance” portfolio built entirely out of the null space.</p>
       <p>The tell is weights of ±800%, a reported portfolio vol of 0.4%, and an in-sample Sharpe in the
       double digits.</p>
       <p class="fix">Fix: shrink, or use a factor covariance, or use fewer names. And log
@@ -687,10 +692,10 @@
 
   <details class="pit"><summary>Treating the constraint as the enemy</summary>
     <div class="body">
-      <p>"My optimiser wants 180% in one name and the cap won't let it." The optimiser does not want
+      <p>“My optimiser wants 180% in one name and the cap won’t let it.” The optimiser does not want
       anything; it is reporting that your estimated mean for that name is enormous relative to its
       estimated risk, and that estimate is almost certainly noise.</p>
-      <p>Students often respond by loosening the cap until the "optimal" solution is allowed. The result
+      <p>Students often respond by loosening the cap until the “optimal” solution is allowed. The result
       reliably gets worse out of sample.</p>
       <p class="fix">Fix: read a binding constraint as a diagnostic. If long-only or a 10% cap changes
       your portfolio materially, your inputs are too noisy to justify the unconstrained answer — so
@@ -706,10 +711,10 @@
   <p class="lead">Three questions, instant feedback, nothing recorded.</p>
 
   <div class="mcq" data-a="1" data-exp="<b>The means.</b> Estimation error in μ dominates: the optimiser's weights are roughly proportional to Σ⁻¹μ, and a 1% error in an expected return moves a weight far more than a comparable error in a covariance. That asymmetry is exactly why minimum-variance and risk parity — which never touch μ — are so competitive out of sample, and why the standard fixes (shrink μ toward the grand mean, or drop μ and target risk instead) work. Σ is not innocent: a singular or ill-conditioned Σ can produce nonsense too. But given a fixed data budget, the means are where the damage is.">
-    <p class="q"><span>Q1</span>You have 120 monthly observations on 30 names. Which input's estimation error hurts a mean-variance portfolio more?</p>
+    <p class="q"><span>Q1</span>You have 120 monthly observations on 30 names. Which input’s estimation error hurts a mean-variance portfolio more?</p>
     <div class="opts">
       <button class="opt" type="button">The covariance matrix, because it has 465 parameters and μ has only 30</button>
-      <button class="opt" type="button">The expected returns, because the optimiser's weights are far more sensitive to them</button>
+      <button class="opt" type="button">The expected returns, because the optimiser’s weights are far more sensitive to them</button>
       <button class="opt" type="button">Neither — with 120 observations both are estimated precisely enough</button>
       <button class="opt" type="button">It depends only on the number of names, not on which input</button>
     </div>
@@ -762,7 +767,7 @@
   </div>
   <div class="nextgrid" style="margin-top:18px">
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
-      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course's own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
+      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course’s own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/assets.html"><div class="nl">See also</div>
       <div class="nt">Financial Markets Arena · Asset Classes</div><div class="nd">What is actually in the universe you are weighting — and why the correlations between those things are not stable.</div></a>
     <a class="nextcard" href="week2.html"><div class="nl">Previous</div>

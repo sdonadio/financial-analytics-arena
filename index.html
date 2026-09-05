@@ -294,9 +294,14 @@
   @media (max-width:720px){ .qgrid{grid-template-columns:minmax(0,1fr)} }
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -314,12 +319,12 @@
 
 <!-- ══════════════ HERO ══════════════ -->
 <section id="hero">
-  <div class="kicker">10 weeks · one analyst's toolkit · free public data</div>
+  <div class="kicker">10 weeks · one analyst’s toolkit · free public data</div>
   <h1>Financial <span class="g">Analytics</span></h1>
   <p class="lead">From prices to decisions: <strong>returns, factors, portfolios, risk, rates, options,
-  backtests, ML, and the order book — one analyst's toolkit</strong>. Ten weeks of pandas against data you
+  backtests, ML, and the order book — one analyst’s toolkit</strong>. Ten weeks of pandas against data you
   fetch yourself, ending inside <strong>AlgoArena</strong>, a live market where your strategy trades against
-  your classmates' and leaves a tape you then have to explain.</p>
+  your classmates’ and leaves a tape you then have to explain.</p>
   <div class="cta">
     <a class="p" href="week1.html">Start with Week 1</a>
     <a href="#map">See the 10-week map</a>
@@ -458,7 +463,7 @@
       <text x="150" y="96" text-anchor="middle" font-size="7" fill="#5f6673" font-family="monospace">K</text>
     </svg></div><div class="bd">
       <div class="n">Week 6</div><h3>Derivatives Analytics</h3>
-      <p>Payoffs, Black-Scholes, the Greeks, and inverting a live chain for implied vol — then the smile, the surface, and the stale-quote "arbitrage".</p>
+      <p>Payoffs, Black-Scholes, the Greeks, and inverting a live chain for implied vol — then the smile, the surface, and the stale-quote “arbitrage”.</p>
       <div class="tags"><span>option chain</span><span>Greeks</span><span>put-call parity</span><span>Phase 1 due</span></div>
       <div class="go">Open week 6</div></div></a>
   </div></div>
@@ -506,7 +511,7 @@
 
   <!-- ARC 5 · MARKETS LIVE -->
   <div class="arcblock" data-arc="live">
-  <div class="arcband"><span class="an">Arc 5 · Markets live</span><span class="ad">Weeks 9–10 · two scored sessions in the class's own venue, then measure what the tape says you paid.</span></div>
+  <div class="arcband"><span class="an">Arc 5 · Markets live</span><span class="ad">Weeks 9–10 · two scored sessions in the class’s own venue, then measure what the tape says you paid.</span></div>
   <div class="weeks">
     <a class="wk" href="week9.html"><div class="art"><svg viewBox="0 0 300 96" role="img" aria-label="An order-book ladder with bids and asks either side of a mid price and a fill marked away from the mid">
       <rect x="18" y="14" width="112" height="9" rx="2" fill="rgba(63,185,80,.5)"/>
@@ -537,7 +542,7 @@
       <text x="243" y="70" text-anchor="middle" font-size="7.5" fill="var(--accent-2)" font-family="monospace">final</text>
     </svg></div><div class="bd">
       <div class="n">Week 10</div><h3>Review Day &amp; Final</h3>
-      <p>A second live session, peer analyst-reviews of every team's tearsheet in the room, then the closed-book final.</p>
+      <p>A second live session, peer analyst-reviews of every team’s tearsheet in the room, then the closed-book final.</p>
       <div class="tags"><span>peer review</span><span>final exam</span><span>Phase 2 due</span><span>live session 2</span></div>
       <div class="go">Open week 10</div></div></a>
   </div></div>
@@ -547,7 +552,7 @@
 <section id="tearsheet">
   <div class="kicker">The one artefact</div>
   <h2>Anatomy of a tearsheet</h2>
-  <p class="lead">Everything this course teaches ends up on one page: a fund's return series, cut six ways.
+  <p class="lead">Everything this course teaches ends up on one page: a fund’s return series, cut six ways.
   Below is a <strong>seeded synthetic fund</strong> — 756 trading days, three years — measured against a
   benchmark. Move the sliders and every panel re-computes from the same series, so you can watch which
   numbers are robust and which are an artefact of the sample. Each panel is labelled with the week that
@@ -628,13 +633,13 @@
           <button class="chip" type="button" data-w="7">Wk 7 · Sharpe, honestly</button>
         </div>
         <div class="note" id="tsWeekNote" style="margin-top:11px"><b>Pick a week.</b> Each panel above is
-        somebody's whole lecture. Click a chip to find out whose.</div>
+        somebody’s whole lecture. Click a chip to find out whose.</div>
       </div>
 
       <div class="note"><b>Read the t-stat, not the alpha.</b> With three years of daily data and 9%
       idiosyncratic vol, an alpha of 150&#8239;bps a year is roughly a t-stat of 0.9 — indistinguishable
       from zero. Drag <em class="hi">idiosyncratic vol</em> down and watch the same alpha become
-      "significant" without becoming any more real. That is the whole argument of weeks 2, 7 and 8.</div>
+      “significant” without becoming any more real. That is the whole argument of weeks 2, 7 and 8.</div>
     </div>
   </div>
 </section>
@@ -667,8 +672,8 @@
     <div class="panel tight">
       <h3>The four answers that are always wrong</h3>
       <ul class="plain">
-        <li><b>A single number with no interval.</b> "VaR is $1.2&#8239;m" is not a risk report; "VaR 95%
-        1-day is $1.2&#8239;m, with 14 exceedances in 500 days against 25 expected" is.</li>
+        <li><b>A single number with no interval.</b> “VaR is $1.2&#8239;m” is not a risk report; “VaR 95%
+        1-day is $1.2&#8239;m, with 14 exceedances in 500 days against 25 expected” is.</li>
         <li><b>An in-sample number.</b> If the parameter was chosen on the data it is measured on, the
         number is a description of the past, not a forecast.</li>
         <li><b>A number with no cost.</b> Gross of fees, gross of spread, gross of impact — three ways to
@@ -731,7 +736,7 @@
           <p class="fix">Fix: pass <code>auto_adjust=False</code> when you want both series — week 1 asks
           you to re-derive the adjustment, which is impossible if you only have the adjusted one.</p></div></details>
         <details class="pit"><summary><code>pandas-datareader</code> cannot reach FRED or Ken French</summary>
-          <div class="body"><p>Both are plain HTTP endpoints behind a university proxy that sometimes
+          <div class="body"><p>Both are plain HTTP endpoints, and a corporate or campus network proxy sometimes
           blocks them, and the reader surfaces that as a parse error rather than a network error.</p>
           <p class="fix">Fix: use the cached snapshot in the starter repo
           (<code>data/cache/</code>), and treat the network as an optimisation, not a dependency.</p></div></details>
@@ -741,7 +746,7 @@
           <p class="fix">Fix: Python 3.11 exactly, in a fresh venv, then
           <code>pip install --only-binary :all: arch scipy</code> so pip refuses to compile from source.</p></div></details>
         <details class="pit"><summary>Your team token is in a file you are about to commit</summary>
-          <div class="body"><p>The team token authorises trades against your team's capital in the arena
+          <div class="body"><p>The team token authorises trades against your team’s capital in the arena
           weeks. It belongs in a <code>.gitignore</code>d <code>.env</code> and nowhere else — not in a
           notebook cell, not in a screenshot, not in a chat message.</p>
           <p class="fix">Fix: <code>git check-ignore -v .env</code> before your first commit; if you have
@@ -762,12 +767,12 @@
     <a class="nextcard" href="week1.html"><div class="nl">Begin</div><div class="nt">Week 1 · Financial Data &amp; Returns</div>
       <div class="nd">Prices vs total returns, corporate actions, alignment — and the join that invents a profit.</div></a>
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
-      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course's own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
+      <div class="nt">Get the code</div><div class="nd">Labs and homework live in your course’s own site; the starter repo is public. Use it as a template, clone, <code>make install</code>.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/"><div class="nl">See also · finance primer</div>
       <div class="nt">Financial Markets Arena</div><div class="nd">The prerequisite reading. What a share, a bond, a future and an option each actually are, and the venue they trade on — no finance background assumed. Start at <em class="hi">Part 1</em>.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/computer-architecture-arena/"><div class="nl">See also · the machine</div>
       <div class="nt">Computer Architecture Arena</div><div class="nd">The prequel underneath the timings: caches, branches and memory, i.e. why your vectorised pandas beats your loop by 40×.</div></a>
-    <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/"><div class="nl">See also · the builder's course</div>
+    <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/"><div class="nl">See also · the builder’s course</div>
       <div class="nt">Systematic Trading Arena</div><div class="nd">Nine weeks building the machinery this course analyses — backtester architecture, complexity, ML signal ops, CI/CD.</div></a>
   </div>
   <p class="sub" style="margin-top:16px">Cross-links appear again on each week page, pointed at the

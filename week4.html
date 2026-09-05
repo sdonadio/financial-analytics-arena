@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -276,7 +281,7 @@
   that settles the argument: count how often each one was wrong.</p>
   <ul class="you">
     <li>Compute <strong>VaR and Expected Shortfall</strong> three ways — historical, Gaussian, EWMA — on the portfolio you optimised in week 3, and say which assumption each one is really making.</li>
-    <li>Fit a <em class="hi">GARCH(1,1)</em> with <code>arch</code>, read <code>&#945;+&#946;</code> as a persistence half-life, and forecast a vol term structure instead of a single number.</li>
+    <li>Fit a <em class="hi">GARCH(1,1)</em> with <code>arch</code>, read <code>α+β</code> as a persistence half-life, and forecast a vol term structure instead of a single number.</li>
     <li>Backtest your own risk model with a <strong>Kupiec unconditional-coverage test</strong> and a Basel traffic light — and accept the verdict when it is red.</li>
     <li>Stress the book on <strong>March 2020</strong>, report max drawdown and time-to-recover, and distinguish a drawdown from a loss.</li>
   </ul>
@@ -292,18 +297,18 @@
   <div class="kicker">Part 1</div>
   <h2><span class="secnum">1</span>What is it? Four numbers, and only one of them is a fact</h2>
   <p class="lead">Risk analytics is the business of summarising a return distribution into something a
-  committee can act on. Realised <strong>volatility</strong> is the only one of this week's numbers that is
+  committee can act on. Realised <strong>volatility</strong> is the only one of this week’s numbers that is
   simply a property of the sample you have. <strong>VaR</strong>, <strong>Expected Shortfall</strong> and a
   <strong>GARCH forecast</strong> are all statements about tomorrow, and each is only as good as the shape
   it assumes the tail has.</p>
 
   <div class="grid3" style="margin-top:16px">
     <div class="panel"><h4>Volatility, realised</h4><p class="sub">The standard deviation of the sample,
-    annualised by <code>&#215;&#8730;252</code>. Backward-looking, model-free, and roughly symmetric — which
+    annualised by <code>×√252</code>. Backward-looking, model-free, and roughly symmetric — which
     is exactly why it is a poor description of an equity book, whose left tail is much longer than its
     right.</p></div>
-    <div class="panel"><h4>VaR<sub>&#945;</sub></h4><p class="sub">The loss you exceed with probability
-    <code>1&#8722;&#945;</code>. A <em class="hi">quantile</em>, so it says nothing about how bad the
+    <div class="panel"><h4>VaR<sub>α</sub></h4><p class="sub">The loss you exceed with probability
+    <code>1−α</code>. A <em class="hi">quantile</em>, so it says nothing about how bad the
     breach is when it happens. Not sub-additive in general: the VaR of a portfolio can exceed the sum of
     its parts, which makes it a bad object to allocate limits with.</p></div>
     <div class="panel"><h4>Expected Shortfall</h4><p class="sub">The mean loss <em class="hi">given</em>
@@ -320,8 +325,8 @@
   <h3 style="margin-top:30px">Interactive · the return-distribution explorer</h3>
   <p class="sub" style="margin-bottom:12px">2,000 seeded daily returns, rescaled to a constant volatility.
   Drag <b>skew</b> and <b>tail weight</b> and watch the histogram pull away from the Gaussian overlay
-  (dashed) while &#963; stays fixed. The two rows under the chart are the ones that matter: how many
-  &#8722;3&#963; days the sample actually contains, against the 0.135% a Gaussian promises.</p>
+  (dashed) while σ stays fixed. The two rows under the chart are the ones that matter: how many
+  −3σ days the sample actually contains, against the 0.135% a Gaussian promises.</p>
 
   <div class="split">
     <div class="stack">
@@ -338,29 +343,29 @@
       </div>
       <div class="legend">
         <span><i style="background:var(--accent)"></i> sample histogram</span>
-        <span><i style="background:#6cb6ff"></i> Gaussian, same &#963;</span>
+        <span><i style="background:#6cb6ff"></i> Gaussian, same σ</span>
         <span><i style="background:var(--bad)"></i> 99% VaR quantile</span>
       </div>
     </div>
     <div class="stack">
       <div class="panel tight">
-        <div class="ctl"><label for="dxSkew">Skew &#949; <b id="dxSkewV">0.00</b></label>
+        <div class="ctl"><label for="dxSkew">Skew ε <b id="dxSkewV">0.00</b></label>
           <input type="range" id="dxSkew" min="-100" max="100" value="0" step="5" aria-label="Skew parameter epsilon" /></div>
-        <div class="ctl"><label for="dxTail">Tail weight &#948; <b id="dxTailV">1.00</b></label>
+        <div class="ctl"><label for="dxTail">Tail weight δ <b id="dxTailV">1.00</b></label>
           <input type="range" id="dxTail" min="80" max="180" value="100" step="2" aria-label="Tail weight parameter delta" /></div>
-        <div class="ctl"><label for="dxVol">Annualised &#963; <b id="dxVolV">17.5%</b></label>
+        <div class="ctl"><label for="dxVol">Annualised σ <b id="dxVolV">17.5%</b></label>
           <input type="range" id="dxVol" min="80" max="400" value="175" step="5" aria-label="Target annualised volatility in percent" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Sample &#963; (ann.)</div><div class="sv acc" id="dxSd">17.5%</div></div>
+        <div class="stat"><div class="sl">Sample σ (ann.)</div><div class="sv acc" id="dxSd">17.5%</div></div>
         <div class="stat"><div class="sl">Skewness</div><div class="sv" id="dxSk">0.00</div></div>
         <div class="stat"><div class="sl">Excess kurtosis</div><div class="sv" id="dxKu">0.00</div></div>
-        <div class="stat"><div class="sl">Worst day</div><div class="sv bad" id="dxWorst">&#8722;3.2%</div></div>
-        <div class="stat"><div class="sl">P(r &lt; &#8722;3&#963;) observed</div><div class="sv" id="dxT3">0.14%</div></div>
+        <div class="stat"><div class="sl">Worst day</div><div class="sv bad" id="dxWorst">−3.2%</div></div>
+        <div class="stat"><div class="sl">P(r &lt; −3σ) observed</div><div class="sv" id="dxT3">0.14%</div></div>
         <div class="stat"><div class="sl">99% VaR, 1&#8209;day</div><div class="sv bad" id="dxVar">2.56%</div></div>
       </div>
-      <div class="panel tight"><p class="sub" id="dxVerdict">A Gaussian sample: skew &#8776; 0, excess
-      kurtosis &#8776; 0, and the &#8722;3&#963; frequency lands near the textbook 0.135%.</p></div>
+      <div class="panel tight"><p class="sub" id="dxVerdict">A Gaussian sample: skew ≈ 0, excess
+      kurtosis ≈ 0, and the −3σ frequency lands near the textbook 0.135%.</p></div>
     </div>
   </div>
 </section>
@@ -399,7 +404,7 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     <div class="panel">
       <h4>What each one is really assuming</h4>
       <ul class="plain">
-        <li><b>Historical.</b> That the past <code>n</code> days are an i.i.d. draw from tomorrow's
+        <li><b>Historical.</b> That the past <code>n</code> days are an i.i.d. draw from tomorrow’s
         distribution. No shape assumption — and no ability to see a loss larger than the worst one in the
         window. Your 99% VaR from 250 days is the 2.5th-worst day; it is an <em class="hi">order
         statistic</em>, with the variance of one.</li>
@@ -407,7 +412,7 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
         — and understates the 99% loss on equities by 20–40% in a typical sample.</li>
         <li><b>EWMA.</b> That vol is persistent and the shape is Gaussian. It reacts to a regime change in
         days rather than months, which is why it is the estimator that gets a risk limit cut in time.</li>
-        <li><b>GARCH.</b> EWMA plus mean reversion: the extra parameter <code>&#969;</code> pulls the
+        <li><b>GARCH.</b> EWMA plus mean reversion: the extra parameter <code>ω</code> pulls the
         forecast back to a long-run level, so the term structure has a shape instead of being flat.</li>
       </ul>
     </div>
@@ -424,7 +429,7 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
       <div class="panel tight">
         <div class="ctl"><label for="vrConf">Confidence level <b id="vrConfV">99.0%</b></label>
           <input type="range" id="vrConf" min="900" max="999" value="990" step="5" aria-label="VaR confidence level in tenths of a percent" /></div>
-        <div class="ctl"><label for="vrLam">EWMA &#955; <b id="vrLamV">0.94</b></label>
+        <div class="ctl"><label for="vrLam">EWMA λ <b id="vrLamV">0.94</b></label>
           <input type="range" id="vrLam" min="88" max="99" value="94" step="1" aria-label="EWMA decay lambda" /></div>
         <div class="ctl"><label for="vrWin">Estimation window</label>
           <select id="vrWin" aria-label="Estimation window length">
@@ -445,10 +450,10 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
         <svg id="vrSvg" viewBox="0 0 660 300" role="img" aria-label="Daily profit and loss series with value at risk thresholds from three estimators"></svg>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Model-risk spread</div><div class="sv warn" id="vrSpread">&#8212;</div></div>
-        <div class="stat"><div class="sl">Breaches of Gaussian VaR</div><div class="sv" id="vrBrG">&#8212;</div></div>
-        <div class="stat"><div class="sl">Expected at this level</div><div class="sv" id="vrExp">&#8212;</div></div>
-        <div class="stat"><div class="sl">ES / VaR ratio (hist.)</div><div class="sv acc" id="vrRatio">&#8212;</div></div>
+        <div class="stat"><div class="sl">Model-risk spread</div><div class="sv warn" id="vrSpread">—</div></div>
+        <div class="stat"><div class="sl">Breaches of Gaussian VaR</div><div class="sv" id="vrBrG">—</div></div>
+        <div class="stat"><div class="sl">Expected at this level</div><div class="sv" id="vrExp">—</div></div>
+        <div class="stat"><div class="sl">ES / VaR ratio (hist.)</div><div class="sv acc" id="vrRatio">—</div></div>
       </div>
       <div class="legend">
         <span><i style="background:var(--accent-2)"></i> daily P&amp;L</span>
@@ -460,10 +465,10 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
   </div>
 
   <h3 style="margin-top:34px">Interactive · GARCH(1,1) and the anatomy of a vol cluster</h3>
-  <p class="sub" style="margin-bottom:12px"><code>&#963;&#178;&#7511; = &#969; + &#945;r&#178;&#8348;&#8331;&#8321; + &#946;&#963;&#178;&#8348;&#8331;&#8321;</code>.
+  <p class="sub" style="margin-bottom:12px"><code>σ²ᵗ = ω + αr²ₜ₋₁ + βσ²ₜ₋₁</code>.
   Press <b>Play</b> to walk the process forward one day at a time: the top panel is the return, the bottom
-  is the conditional volatility that generated it. <code>&#945;</code> is how violently vol reacts to
-  yesterday's shock; <code>&#946;</code> is how long it remembers. Their sum is the persistence, and it
+  is the conditional volatility that generated it. <code>α</code> is how violently vol reacts to
+  yesterday’s shock; <code>β</code> is how long it remembers. Their sum is the persistence, and it
   decides the shape of the forecast on the right of the vol panel.</p>
 
   <div class="split">
@@ -472,8 +477,8 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
         <svg id="ghSvg" viewBox="0 0 660 320" role="img" aria-label="Simulated returns and conditional volatility from a GARCH one one process, with a forward volatility forecast"></svg>
       </div>
       <div class="row">
-        <button class="btn primary" type="button" id="ghPlay">&#9654; Play</button>
-        <button class="btn" type="button" id="ghStep">Step +25 &#8594;</button>
+        <button class="btn primary" type="button" id="ghPlay">▶ Play</button>
+        <button class="btn" type="button" id="ghStep">Step +25 →</button>
         <button class="btn" type="button" id="ghAll">Show all</button>
         <button class="btn" type="button" id="ghReset">Reset</button>
         <span class="pill acc" id="ghPos">day 0 / 500</span>
@@ -481,20 +486,20 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     </div>
     <div class="stack">
       <div class="panel tight">
-        <div class="ctl"><label for="ghA">&#945; &#183; shock reaction <b id="ghAV">0.09</b></label>
+        <div class="ctl"><label for="ghA">α · shock reaction <b id="ghAV">0.09</b></label>
           <input type="range" id="ghA" min="1" max="30" value="9" step="1" aria-label="GARCH alpha, reaction to yesterday's shock" /></div>
-        <div class="ctl"><label for="ghB">&#946; &#183; vol memory <b id="ghBV">0.89</b></label>
+        <div class="ctl"><label for="ghB">β · vol memory <b id="ghBV">0.89</b></label>
           <input type="range" id="ghB" min="50" max="98" value="89" step="1" aria-label="GARCH beta, persistence of volatility" /></div>
         <div class="ctl"><label for="ghL">Long-run vol (ann.) <b id="ghLV">18%</b></label>
           <input type="range" id="ghL" min="8" max="40" value="18" step="1" aria-label="Long run annualised volatility target in percent" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Persistence &#945;+&#946;</div><div class="sv" id="ghPers">0.98</div></div>
+        <div class="stat"><div class="sl">Persistence α+β</div><div class="sv" id="ghPers">0.98</div></div>
         <div class="stat"><div class="sl">Shock half-life</div><div class="sv acc" id="ghHl">34 d</div></div>
-        <div class="stat"><div class="sl">&#969;</div><div class="sv" id="ghOm">&#8212;</div></div>
-        <div class="stat"><div class="sl">&#963; today (ann.)</div><div class="sv acc" id="ghNow">&#8212;</div></div>
-        <div class="stat"><div class="sl">&#963; forecast, 20&#8209;day avg</div><div class="sv" id="ghF20">&#8212;</div></div>
-        <div class="stat"><div class="sl">Kurtosis of the path</div><div class="sv" id="ghKu">&#8212;</div></div>
+        <div class="stat"><div class="sl">ω</div><div class="sv" id="ghOm">—</div></div>
+        <div class="stat"><div class="sl">σ today (ann.)</div><div class="sv acc" id="ghNow">—</div></div>
+        <div class="stat"><div class="sl">σ forecast, 20&#8209;day avg</div><div class="sv" id="ghF20">—</div></div>
+        <div class="stat"><div class="sl">Kurtosis of the path</div><div class="sv" id="ghKu">—</div></div>
       </div>
       <div class="panel tight"><p class="sub" id="ghNote"></p></div>
     </div>
@@ -514,20 +519,20 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     <div class="panel">
       <h4>The Kupiec unconditional-coverage test</h4>
       <p class="sub">With <code>T</code> tests, <code>x</code> breaches and coverage
-      <code>p = 1&#8722;&#945;</code>, the likelihood-ratio statistic is</p>
+      <code>p = 1−α</code>, the likelihood-ratio statistic is</p>
       <pre class="code">LR = -2*log((1-p)**(T-x) * p**x)
      +2*log((1-x/T)**(T-x) * (x/T)**x)</pre>
-      <p class="sub" style="margin-top:9px">which is <code>&#967;&#178;(1)</code> under the null, so
+      <p class="sub" style="margin-top:9px">which is <code>χ²(1)</code> under the null, so
       <code>LR &gt; 3.84</code> rejects at 5%. It tests the <em class="hi">number</em> of breaches only.
-      Christoffersen's independence test asks the second question — whether they cluster — and a model can
+      Christoffersen’s independence test asks the second question — whether they cluster — and a model can
       pass Kupiec while failing that badly.</p>
     </div>
     <div class="panel">
       <h4>The Basel traffic light</h4>
       <p class="sub">Over 250 business days at 99%, the supervisory response is mechanical: <b>green</b> for
       0–4 breaches, <b>yellow</b> for 5–9 with an escalating capital multiplier, <b>red</b> at 10 or more,
-      which means the model is presumed broken. That is the entire industry's answer to "is your risk model
-      any good", and it is a counting exercise.</p>
+      which means the model is presumed broken. That is the entire industry’s answer to “is your risk model
+      any good”, and it is a counting exercise.</p>
       <p class="sub">The lesson for a tearsheet: report the count, the expectation and the test — never a
       lone VaR number. <em class="hi">A VaR without a backtest is a decoration.</em></p>
     </div>
@@ -545,27 +550,27 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
         <div class="ctl"><label for="kpModel">Risk model under test</label>
           <select id="kpModel" aria-label="Risk model under test">
             <option value="hist">Historical simulation (250&#8209;day window)</option>
-            <option value="gauss">Gaussian, rolling &#963;</option>
-            <option value="ewma">EWMA &#963;, &#955;=0.94, Gaussian quantile</option>
+            <option value="gauss">Gaussian, rolling σ</option>
+            <option value="ewma">EWMA σ, λ=0.94, Gaussian quantile</option>
             <option value="garch">GARCH(1,1)&#8209;style, fat&#8209;tail quantile</option>
             <option value="flat">Flat 2% VaR (a hand&#8209;tuned favourite)</option>
           </select></div>
         <div class="ctl"><label for="kpConf">Coverage</label>
           <select id="kpConf" aria-label="VaR coverage level">
-            <option value="99">99% &#183; expect 1 breach in 100</option>
-            <option value="97.5">97.5% &#183; FRTB ES level</option>
-            <option value="95">95% &#183; expect 1 in 20</option>
+            <option value="99">99% · expect 1 breach in 100</option>
+            <option value="97.5">97.5% · FRTB ES level</option>
+            <option value="95">95% · expect 1 in 20</option>
           </select></div>
         <div class="ctl"><label for="kpT">Test length <b id="kpTV">500 d</b></label>
           <input type="range" id="kpT" min="120" max="500" value="500" step="20" aria-label="Number of out of sample test days" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Observed breaches</div><div class="sv" id="kpObs">&#8212;</div></div>
-        <div class="stat"><div class="sl">Expected</div><div class="sv" id="kpExpN">&#8212;</div></div>
-        <div class="stat"><div class="sl">Kupiec LR</div><div class="sv" id="kpLr">&#8212;</div></div>
-        <div class="stat"><div class="sl">p&#8209;value</div><div class="sv" id="kpP">&#8212;</div></div>
-        <div class="stat"><div class="sl">Worst breach</div><div class="sv bad" id="kpWorst">&#8212;</div></div>
-        <div class="stat"><div class="sl">Max run of breaches</div><div class="sv" id="kpRun">&#8212;</div></div>
+        <div class="stat"><div class="sl">Observed breaches</div><div class="sv" id="kpObs">—</div></div>
+        <div class="stat"><div class="sl">Expected</div><div class="sv" id="kpExpN">—</div></div>
+        <div class="stat"><div class="sl">Kupiec LR</div><div class="sv" id="kpLr">—</div></div>
+        <div class="stat"><div class="sl">p&#8209;value</div><div class="sv" id="kpP">—</div></div>
+        <div class="stat"><div class="sl">Worst breach</div><div class="sv bad" id="kpWorst">—</div></div>
+        <div class="stat"><div class="sl">Max run of breaches</div><div class="sv" id="kpRun">—</div></div>
       </div>
     </div>
     <div class="stack">
@@ -573,7 +578,7 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
         <svg id="kpSvg" viewBox="0 0 660 250" role="img" aria-label="Out of sample profit and loss against the rolling value at risk threshold, with breaches marked"></svg>
       </div>
       <div class="panel tight">
-        <div class="smoke" id="kpLamp"><span class="lamp"></span><span id="kpZone">&#8212;</span></div>
+        <div class="smoke" id="kpLamp"><span class="lamp"></span><span id="kpZone">—</span></div>
         <div class="bar" aria-hidden="true"><i id="kpBar"></i></div>
         <p class="sub" id="kpVerdict" style="margin-top:2px"></p>
       </div>
@@ -582,7 +587,7 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
 
   <h3 style="margin-top:34px">Interactive · drawdown and the March-2020 stress</h3>
   <p class="sub" style="margin-bottom:12px">Volatility is symmetric; a drawdown is not. Inject a
-  2020-03-style crash — <b>&#8722;34% in 16 sessions with vol tripling</b> is the historical S&amp;P
+  2020-03-style crash — <b>−34% in 16 sessions with vol tripling</b> is the historical S&amp;P
   calibration — and read off the two numbers a client actually feels: how deep, and how long until it came
   back. Then use the beta slider to see the same shocks hit <em class="hi">your</em> book.</p>
 
@@ -593,7 +598,7 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
       </div>
       <div class="row">
         <button class="btn primary" type="button" id="ddShock" aria-pressed="false">Inject 2020&#8209;03 shock</button>
-        <button class="btn" type="button" id="ddHedge" aria-pressed="false">Add put overlay (&#8722;90&#8239;bps/yr)</button>
+        <button class="btn" type="button" id="ddHedge" aria-pressed="false">Add put overlay (−90&#8239;bps/yr)</button>
         <button class="btn" type="button" id="ddReset">Reset</button>
       </div>
       <div class="legend">
@@ -604,18 +609,18 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     </div>
     <div class="stack">
       <div class="panel tight">
-        <div class="ctl"><label for="ddMag">Crash depth <b id="ddMagV">&#8722;34%</b></label>
+        <div class="ctl"><label for="ddMag">Crash depth <b id="ddMagV">−34%</b></label>
           <input type="range" id="ddMag" min="10" max="45" value="34" step="1" aria-label="Crash depth in percent" /></div>
         <div class="ctl"><label for="ddBeta">Portfolio beta to the shock <b id="ddBetaV">1.00</b></label>
           <input type="range" id="ddBeta" min="0" max="180" value="100" step="5" aria-label="Portfolio beta to the shock" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Max drawdown</div><div class="sv bad" id="ddMax">&#8212;</div></div>
-        <div class="stat"><div class="sl">Drawdown duration</div><div class="sv" id="ddDur">&#8212;</div></div>
-        <div class="stat"><div class="sl">Time to recover</div><div class="sv" id="ddRec">&#8212;</div></div>
-        <div class="stat"><div class="sl">Vol before / during</div><div class="sv" id="ddVol">&#8212;</div></div>
-        <div class="stat"><div class="sl">99% VaR breaches in crash</div><div class="sv warn" id="ddBr">&#8212;</div></div>
-        <div class="stat"><div class="sl">Final equity</div><div class="sv" id="ddEnd">&#8212;</div></div>
+        <div class="stat"><div class="sl">Max drawdown</div><div class="sv bad" id="ddMax">—</div></div>
+        <div class="stat"><div class="sl">Drawdown duration</div><div class="sv" id="ddDur">—</div></div>
+        <div class="stat"><div class="sl">Time to recover</div><div class="sv" id="ddRec">—</div></div>
+        <div class="stat"><div class="sl">Vol before / during</div><div class="sv" id="ddVol">—</div></div>
+        <div class="stat"><div class="sl">99% VaR breaches in crash</div><div class="sv warn" id="ddBr">—</div></div>
+        <div class="stat"><div class="sl">Final equity</div><div class="sv" id="ddEnd">—</div></div>
       </div>
       <div class="tablewrap"><table class="t" aria-label="Historical stress scenarios applied to the portfolio">
         <thead><tr><th>Scenario</th><th>Index</th><th>Your P&amp;L</th></tr></thead>
@@ -636,13 +641,13 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
   <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
   <p class="lead">Every one of these has appeared in a submitted risk report. Open them.</p>
 
-  <details class="pit"><summary>Scaling a one-day VaR by <code>&#8730;10</code> and calling it a ten-day VaR</summary>
+  <details class="pit"><summary>Scaling a one-day VaR by <code>√10</code> and calling it a ten-day VaR</summary>
     <div class="body">
       <p>The square-root-of-time rule requires i.i.d. returns. Returns are not i.i.d.: volatility is
       persistent, so the ten-day variance is larger than ten times the one-day variance whenever vol is
       autocorrelated, and the ten-day <em class="hi">quantile</em> is further out still because the
       aggregated distribution is skewed.</p>
-      <p>In a GARCH world with <code>&#945;+&#946; = 0.98</code>, scaling from a calm day understates the
+      <p>In a GARCH world with <code>α+β = 0.98</code>, scaling from a calm day understates the
       ten-day 99% VaR by 15–25%. The error is largest exactly when it matters, because that is when the
       starting point is unrepresentative.</p>
       <p class="fix">Fix: simulate the horizon. Draw ten-day paths from your fitted GARCH (or block
@@ -652,10 +657,10 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
 
   <details class="pit"><summary>Backtesting the model in sample, on the window it was fitted to</summary>
     <div class="body">
-      <p>Estimate &#963; over the full sample, compute a 99% VaR from it, then count breaches over the same
+      <p>Estimate σ over the full sample, compute a 99% VaR from it, then count breaches over the same
       full sample. You will get close to 1% almost by construction — the quantile was chosen to make that
       true. It is a tautology dressed as validation.</p>
-      <p>The same error in a subtler form: choosing the EWMA <code>&#955;</code> that minimises the breach
+      <p>The same error in a subtler form: choosing the EWMA <code>λ</code> that minimises the breach
       count, then reporting that breach count as evidence the model works.</p>
       <p class="fix">Fix: rolling, strictly out of sample. Estimate on days <code>[t-250, t)</code>, test on
       day <code>t</code>, advance. If you tuned a parameter, tune it on the first half and test on the
@@ -667,32 +672,32 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
       <p>Historical 97.5% ES over 250 days is the mean of the worst six days. Historical 99% ES over 250
       days is the mean of the worst two or three. The standard error on that mean is enormous — add one new
       bad day and your ES moves by 20%.</p>
-      <p>Students then compare last quarter's ES to this quarter's, find a 15% change, and write a
+      <p>Students then compare last quarter’s ES to this quarter’s, find a 15% change, and write a
       paragraph explaining it. There is nothing to explain: that is sampling noise.</p>
       <p class="fix">Fix: either estimate ES parametrically from a fitted tail (Student-t or a
       generalised-Pareto fit above a threshold), or bootstrap a confidence interval and publish it. An ES
-      of "$412k (95% CI $310–560k)" is an honest number; "$412k" is not.</p>
+      of “$412k (95% CI $310–560k)” is an honest number; “$412k” is not.</p>
     </div></details>
 
-  <details class="pit"><summary>A GARCH fit with <code>&#945;+&#946; &gt; 1</code>, shipped anyway</summary>
+  <details class="pit"><summary>A GARCH fit with <code>α+β &gt; 1</code>, shipped anyway</summary>
     <div class="body">
       <p><code>arch</code> will happily return a fit whose persistence exceeds one, usually because the
       sample contains one structural break (a merger, a redenomination, 2020-03) that the model absorbs by
       making variance non-stationary. The long-run variance
-      <code>&#969;/(1&#8722;&#945;&#8722;&#946;)</code> is then negative or infinite, and every multi-day
+      <code>ω/(1−α−β)</code> is then negative or infinite, and every multi-day
       forecast diverges to nonsense.</p>
-      <p>Its cousin: <code>&#945;+&#946; = 0.999</code>, which is technically stationary and has a shock
-      half-life of 693 days. That is IGARCH — a random walk in variance — and it means your "long-run vol"
+      <p>Its cousin: <code>α+β = 0.999</code>, which is technically stationary and has a shock
+      half-life of 693 days. That is IGARCH — a random walk in variance — and it means your “long-run vol”
       is doing no work at all.</p>
       <p class="fix">Fix: check <code>res.params</code> before you use the fit. Assert
       <code>alpha+beta &lt; 0.999</code>, look at the half-life
-      <code>ln(0.5)/ln(&#945;+&#946;)</code> and ask whether it is plausible, and refit on a sample split
+      <code>ln(0.5)/ln(α+β)</code> and ask whether it is plausible, and refit on a sample split
       around any suspected break. Report the persistence next to every vol forecast.</p>
     </div></details>
 
   <details class="pit"><summary>Confusing volatility with risk — and drawdown with loss</summary>
     <div class="body">
-      <p>A short-volatility book has low realised vol until the day it does not: measured &#963; is 6% a
+      <p>A short-volatility book has low realised vol until the day it does not: measured σ is 6% a
       year for three years and the fourth year takes 40%. Any risk system driven by trailing volatility
       sizes that position <em class="hi">up</em> right before the event, because low vol is being read as
       low risk.</p>
@@ -722,23 +727,23 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="3" data-exp="<b>Same volatility, different tail.</b> Volatility is the second moment and says nothing about the third and fourth; a fat-tailed, left-skewed sample and a Gaussian one can share a &#963; exactly while their 99% quantiles differ by 30–40%, which is what the distribution explorer at the top of this page demonstrates with the vol slider held fixed. Neither &quot;one of them is wrong&quot; nor a data error is needed to produce the gap. And the Gaussian estimate is the low one, not the high one, because the thin tail is an assumption rather than a measurement.">
+  <div class="mcq" data-a="3" data-exp="<b>Same volatility, different tail.</b> Volatility is the second moment and says nothing about the third and fourth; a fat-tailed, left-skewed sample and a Gaussian one can share a σ exactly while their 99% quantiles differ by 30–40%, which is what the distribution explorer at the top of this page demonstrates with the vol slider held fixed. Neither &quot;one of them is wrong&quot; nor a data error is needed to produce the gap. And the Gaussian estimate is the low one, not the high one, because the thin tail is an assumption rather than a measurement.">
     <p class="q"><span>Q2</span>Historical and Gaussian 99% VaR on the same series differ by 35%, and both are computed correctly on the same window. What is the most likely explanation?</p>
     <div class="opts">
       <button class="opt" type="button">A bug — two correct estimators of the same quantity cannot differ by 35%</button>
       <button class="opt" type="button">The Gaussian estimate is the larger one, because the normal distribution has the fatter tail</button>
-      <button class="opt" type="button">The sample has excess kurtosis and negative skew, so its empirical quantile sits well beyond &#8722;2.33&#963;</button>
+      <button class="opt" type="button">The sample has excess kurtosis and negative skew, so its empirical quantile sits well beyond −2.33σ</button>
       <button class="opt" type="button">The window is too long, and shortening it will make the two converge</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="0" data-exp="<b>&#945;+&#946; = 0.995 means a shock half-life of about 138 days.</b> From ln(0.5)/ln(0.995) &#8776; 138, a vol spike decays only halfway back to its long-run level after roughly seven months — so the multi-day forecast is nearly flat at today's level, and the long-run variance &#969;/(1&#8722;&#945;&#8722;&#946;) is estimated from almost no mean reversion and is therefore wildly imprecise. That is the IGARCH warning sign. It does not mean the fit is non-stationary (0.995 &lt; 1), it does not make the model better, and a high &#946; is about memory, not about reaction size, which is &#945;.">
-    <p class="q"><span>Q3</span>Your GARCH(1,1) fit returns <code>&#945; = 0.06</code>, <code>&#946; = 0.935</code>. What should you write in the report?</p>
+  <div class="mcq" data-a="0" data-exp="<b>α+β = 0.995 means a shock half-life of about 138 days.</b> From ln(0.5)/ln(0.995) ≈ 138, a vol spike decays only halfway back to its long-run level after roughly seven months — so the multi-day forecast is nearly flat at today's level, and the long-run variance ω/(1−α−β) is estimated from almost no mean reversion and is therefore wildly imprecise. That is the IGARCH warning sign. It does not mean the fit is non-stationary (0.995 &lt; 1), it does not make the model better, and a high β is about memory, not about reaction size, which is α.">
+    <p class="q"><span>Q3</span>Your GARCH(1,1) fit returns <code>α = 0.06</code>, <code>β = 0.935</code>. What should you write in the report?</p>
     <div class="opts">
       <button class="opt" type="button">Persistence is 0.995 — a ~138-day half-life, so the vol term structure is almost flat and the long-run level is barely identified</button>
       <button class="opt" type="button">The process is non-stationary and the fit must be discarded</button>
-      <button class="opt" type="button">Volatility reacts very strongly to each new shock, since &#946; is large</button>
+      <button class="opt" type="button">Volatility reacts very strongly to each new shock, since β is large</button>
       <button class="opt" type="button">Nothing — these are the textbook values, so the fit needs no comment</button>
     </div>
     <div class="fb" role="status"></div>
@@ -753,10 +758,10 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
       <li>Take the week-3 portfolio weights, build the daily P&amp;L series, and compute VaR and ES three
       ways at 95% and 99%. Tabulate all twelve numbers.</li>
-      <li>Fit a GARCH(1,1) with <code>arch</code>. Report <code>&#945;</code>, <code>&#946;</code>,
+      <li>Fit a GARCH(1,1) with <code>arch</code>. Report <code>α</code>, <code>β</code>,
       persistence and half-life, and plot the 60-day vol forecast against the unconditional level.</li>
       <li>Rolling out-of-sample exceedance backtest: 250-day estimation window, Kupiec LR, Basel zone.</li>
-      <li>Replay 2020-02-19 &#8594; 2020-03-23 through the book and report max drawdown, duration and
+      <li>Replay 2020-02-19 → 2020-03-23 through the book and report max drawdown, duration and
       time-to-recover.</li>
     </ul></div>
     <div class="panel"><h4>Homework 4 · risk report + exceedance backtest</h4><ul class="plain">
@@ -773,13 +778,13 @@ es_h  = -pnl[pnl &lt;= -var_h].mean()</pre>
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
       <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — then point <code>risk/</code> at your week-3 weights.</div></a>
     <a class="nextcard" href="week3.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 3 · Portfolio Analytics &amp; Optimisation</div><div class="nd">Where the weights came from — and why the covariance matrix you stressed this week needed shrinking first.</div></a>
+      <div class="nt">← Week 3 · Portfolio Analytics &amp; Optimisation</div><div class="nd">Where the weights came from — and why the covariance matrix you stressed this week needed shrinking first.</div></a>
     <a class="nextcard" href="week7.html"><div class="nl">See also</div>
       <div class="nt">Week 7 · Backtesting &amp; Attribution</div><div class="nd">The same discipline applied to returns instead of losses: out-of-sample, costed, and counted.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">The 10-week map</div><div class="nd">Where week 4 sits, and the tearsheet section it fills in.</div></a>
     <a class="nextcard" href="week5.html"><div class="nl">Next</div>
-      <div class="nt">Week 5 · Rates, Inflation &amp; the Macro Panel &#8594;</div><div class="nd">From the equity tail to the discount curve: bootstrapping, duration, breakevens, and the three components every curve move is made of.</div></a>
+      <div class="nt">Week 5 · Rates, Inflation &amp; the Macro Panel →</div><div class="nd">From the equity tail to the discount curve: bootstrapping, duration, breakevens, and the three components every curve move is made of.</div></a>
   </div>
 </section>
 
@@ -1237,7 +1242,7 @@ var SERIES = (function () {
   }
   function stop() {
     if (timer) { clearInterval(timer); timer = null; }
-    $("ghPlay").innerHTML = "&#9654; Play";
+    $("ghPlay").innerHTML = "▶ Play";
   }
   function rebuild() { path = build(); if (st.pos < 2) st.pos = 2; draw(); }
   $("ghA").addEventListener("input", function () {
@@ -1252,7 +1257,7 @@ var SERIES = (function () {
   $("ghPlay").addEventListener("click", function () {
     if (timer) { stop(); return; }
     if (st.pos >= N) st.pos = 2;
-    this.innerHTML = "&#10073;&#10073; Pause";
+    this.innerHTML = "❙❙ Pause";
     timer = setInterval(function () {
       st.pos += 6;
       if (st.pos >= N) { st.pos = N; stop(); }

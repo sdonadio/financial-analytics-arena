@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -274,15 +279,15 @@
   <p class="promise">A backtest is not an experiment. It is a <em class="hi">claim</em> — that if you had
   been in the market, with this signal, paying these costs, this is what would have happened. This week you
   take one signal and watch a single <code>.shift(1)</code> move its Sharpe from <strong>+3.10 to
-  &#8722;3.48</strong>, then subtract the spread, then the fee, then count how many configurations you
+  −3.48</strong>, then subtract the spread, then the fee, then count how many configurations you
   tried, and finally split what survives into allocation, selection and interaction with a residual of
   exactly zero.</p>
   <ul class="you">
     <li>Build the same backtest <strong>twice</strong> — vectorised and event-driven — and find the
     look-ahead bug that lives on exactly one line of the vectorised version.</li>
-    <li>Decompose a loss into its parts: on the arena tape, <code>&#8722;8,600</code> is
-    <em class="hi">spread &#8722;2,127</em>, <em class="hi">fee &#8722;6,473</em> and
-    <em class="hi">lag &#8722;1.35</em> — and defend the claim that the lag term is small because the alpha
+    <li>Decompose a loss into its parts: on the arena tape, <code>−8,600</code> is
+    <em class="hi">spread −2,127</em>, <em class="hi">fee −6,473</em> and
+    <em class="hi">lag −1.35</em> — and defend the claim that the lag term is small because the alpha
     is zero, not because your execution is fast.</li>
     <li>Compute <strong>Sharpe, Sortino and the deflated Sharpe</strong> that knows how many things you
     tried, and say why the run that lost 103% of the account has the best Sharpe of four.</li>
@@ -331,17 +336,17 @@
     </div>
   </div>
 
-  <div class="note" style="margin-top:16px"><b>The course's rule.</b> Prototype vectorised, confirm
+  <div class="note" style="margin-top:16px"><b>The course’s rule.</b> Prototype vectorised, confirm
   event-driven, and reconcile the two before you believe either. On the AlgoArena tape the reconciliation
   target is the change in net worth — cash plus mark-to-mid — because that number is sign-correct even
-  when the harness's own realised-P&amp;L line is not.</div>
+  when the harness’s own realised-P&amp;L line is not.</div>
 
   <div class="grid3" style="margin-top:18px">
     <div class="panel tight"><h3>The four questions a backtest exists to answer</h3>
       <ul class="plain">
         <li><strong>How much did it earn?</strong> Gross return, before anything is subtracted.</li>
         <li><strong>How much of that was me paying the market?</strong> Spread, fee, impact — each named
-        and sourced, never one lump "cost assumption".</li>
+        and sourced, never one lump “cost assumption”.</li>
         <li><strong>Would I have believed it if I had been honest about my search?</strong> The trial
         count, and the deflated Sharpe at that count.</li>
         <li><strong>Where did it come from?</strong> Attribution — allocation, selection, interaction.</li>
@@ -350,7 +355,7 @@
       <ul class="plain">
         <li>A session recording: every broadcast the exchange sent, in order — <code>book_snapshot</code>,
         <code>trade_execution</code>, <code>session_event</code>.</li>
-        <li>4,000 ticks &#215; 5 symbols = <strong>20,000 book snapshots</strong>, about 5&#160;MB.</li>
+        <li>4,000 ticks × 5 symbols = <strong>20,000 book snapshots</strong>, about 5&#160;MB.</li>
         <li>It is <em class="hi">broadcast-only</em>: no order acknowledgements, no cancels, no per-team
         ladder. Nothing order-level can be reconstructed from it — remember that in week 9.</li>
         <li>The offline recorder makes one without a network, so no result in this course depends on
@@ -360,9 +365,9 @@
       <div class="kv">
         <div class="k">mid move / snapshot</div><div class="v">2.1 – 5.0 bps</div>
         <div class="k">quoted spread</div><div class="v">6.2 – 14.1 bps</div>
-        <div class="k">half-spread / vol</div><div class="v">1.66&#215;</div>
-        <div class="k">AC(1), AC(5)</div><div class="v">&#8722;0.018 … +0.020</div>
-        <div class="k">2&#963; band, n=3,999</div><div class="v">&#177;0.032</div>
+        <div class="k">half-spread / vol</div><div class="v">1.66×</div>
+        <div class="k">AC(1), AC(5)</div><div class="v">−0.018 … +0.020</div>
+        <div class="k">2σ band, n=3,999</div><div class="v">±0.032</div>
         <div class="k">taker fee</div><div class="v">15 bps of notional</div>
       </div>
       <p class="sub" style="margin-top:9px">Read together: crossing costs 1.66 snapshots of movement, and
@@ -387,14 +392,14 @@
       <div class="svgwrap"><svg id="vdSvg" viewBox="0 0 700 300" role="img"
         aria-label="Bar-by-bar timeline showing when a signal is computed and which bar's return it is paid"></svg></div>
       <div class="row" style="margin-top:12px">
-        <button class="btn primary" id="vdStep" type="button" aria-label="Advance one bar">Step &#9656;</button>
+        <button class="btn primary" id="vdStep" type="button" aria-label="Advance one bar">Step ▸</button>
         <button class="btn" id="vdRun" type="button" aria-label="Run to the end of the tape">Run to end</button>
         <button class="btn" id="vdReset" type="button" aria-label="Reset the stepper">Reset</button>
         <span class="pill acc" id="vdBar">bar 0 / 24</span>
       </div>
       <div class="stats" style="margin-top:12px">
         <div class="stat"><div class="sl">Cumulative</div><div class="sv acc" id="vdCum">+0.00%</div></div>
-        <div class="stat"><div class="sl">Sharpe (&#215;&#8730;n)</div><div class="sv" id="vdSh">—</div></div>
+        <div class="stat"><div class="sl">Sharpe (×√n)</div><div class="sv" id="vdSh">—</div></div>
         <div class="stat"><div class="sl">Hit rate</div><div class="sv" id="vdHit">—</div></div>
         <div class="stat"><div class="sl">Bars paid</div><div class="sv" id="vdFills">0</div></div>
       </div>
@@ -426,13 +431,13 @@
   <h3 style="margin-top:22px">Widget 2 · the one-bar-lag flip</h3>
   <p>A mid computed from a two-sided book <em class="hi">bounces</em>: it sits nearer the bid, then nearer
   the ask, as makers requote. That bounce is mechanically negative autocorrelation — pooled
-  <strong>AC(1) = &#8722;0.222</strong> on the deck's five-second bars, and the more negative the wider the
-  market, with a rank correlation of &#8722;0.321 against half-spread. It is not a forecastable return, and
+  <strong>AC(1) = −0.222</strong> on the deck’s five-second bars, and the more negative the wider the
+  market, with a rank correlation of −0.321 against half-spread. It is not a forecastable return, and
   it evaporates the instant you have to transact at the touch. Set the bounce and watch the sign of the
   Sharpe change with one row of alignment.</p>
   <div class="split-r">
     <div class="panel">
-      <div class="ctl"><label for="lfAc">Bounce · AC(1) of bar returns <b id="lfAcV">&#8722;0.22</b></label>
+      <div class="ctl"><label for="lfAc">Bounce · AC(1) of bar returns <b id="lfAcV">−0.22</b></label>
         <input type="range" id="lfAc" min="-45" max="10" value="-22" step="1" aria-label="First-order autocorrelation of bar returns"></div>
       <div class="ctl"><label for="lfL">Signal lookback <b id="lfLV">3 bars</b></label>
         <input type="range" id="lfL" min="2" max="72" value="3" step="1" aria-label="Signal lookback in bars"></div>
@@ -453,11 +458,11 @@
     <div class="stack">
       <div class="svgwrap"><svg id="lfSvg" viewBox="0 0 700 300" role="img"
         aria-label="Two equity curves for the same signal: same-bar execution and one-bar-lagged execution"></svg></div>
-      <div class="note"><b>Reference, from the deck's real tape.</b> Same 60-second reversal signal, same
-      373 bars: same-bar total <strong>&#8722;50.010%</strong> at Sharpe <strong>&#8722;3.10</strong>;
+      <div class="note"><b>Reference, from the deck’s real tape.</b> Same 60-second reversal signal, same
+      373 bars: same-bar total <strong>−50.010%</strong> at Sharpe <strong>−3.10</strong>;
       one-bar lag <strong>+119.155%</strong> at Sharpe <strong>+3.48</strong>. Momentum on the same bars is
       the mirror image: <strong>+90.697%</strong> / <strong>+3.10</strong> same-bar,
-      <strong>&#8722;56.868%</strong> / <strong>&#8722;3.48</strong> lagged. One
+      <strong>−56.868%</strong> / <strong>−3.48</strong> lagged. One
       <code>.shift(1)</code>, 169 percentage points, both directions.</div>
     </div>
   </div>
@@ -469,11 +474,11 @@
   <p class="sub" style="margin-top:10px">Note which way the trap points. A leaky <em class="hi">momentum</em>
   backtest on a bouncing mid looks brilliant and is worthless. A leaky <em class="hi">reversal</em> backtest
   looks catastrophic and hides a real (if unharvestable) effect. The sign of your leak depends on the sign
-  of your signal, so "my result looks bad, therefore I have not leaked" is not an argument.</p>
+  of your signal, so “my result looks bad, therefore I have not leaked” is not an argument.</p>
 
   <h3 style="margin-top:28px">Widget 3 · the cost ladder — four levels of honesty</h3>
   <p>Costs are not a haircut applied at the end. They decide whether the strategy exists. Measure them off
-  the tape you would have traded: the deck's mean half-spread is <strong>12.2 bps</strong> and the arena's
+  the tape you would have traded: the deck’s mean half-spread is <strong>12.2 bps</strong> and the arena’s
   taker fee is <strong>15 bps</strong>, so a round trip costs <strong>54 bps</strong> against a per-bar
   gross edge of <strong>+21.7 bps</strong> — and the answer is decided by turnover, not by Sharpe.</p>
   <div class="split">
@@ -483,7 +488,7 @@
       <div class="tablewrap" style="margin-top:12px"><table class="t" id="clTable">
         <thead><tr><th>Variant</th><th>Total</th><th>Sharpe</th><th>DD</th><th>Hit</th></tr></thead>
         <tbody></tbody></table></div>
-      <p class="sub">Real output from the deck's tape. Watch the hit rate fall 53.6% &#8594; 36.5% while the
+      <p class="sub">Real output from the deck’s tape. Watch the hit rate fall 53.6% → 36.5% while the
       total stays positive: costs turn a majority of small winners into small losers, so the surviving
       P&amp;L comes from fewer, larger bars. Skew +8.85 and excess kurtosis 112 on 373 observations means a
       handful of bars are doing all the work — and every statistic that assumes i.i.d. normal returns,
@@ -517,25 +522,25 @@
 
   <div class="panel" style="margin-top:20px"><h4>The loss that adds up</h4>
     <p class="sub">Frictionless, the crossover on <code>session_fa07.jsonl</code> lost $2,126.95 on 14,000
-    shares — which is <code>14000 &#215; $0.15</code>, exactly half a 30-cent spread. Charge the venue's
-    15 bps and the fee bill is $6,473.33, so P&amp;L becomes &#8722;$8,600.27: the same fills, the same
+    shares — which is <code>14000 × $0.15</code>, exactly half a 30-cent spread. Charge the venue’s
+    15 bps and the fee bill is $6,473.33, so P&amp;L becomes −$8,600.27: the same fills, the same
     prices, one extra debit each. <strong>A well-behaved cost model is a pure subtraction when nothing else
     changes.</strong> Then add a one-bar lag done properly and the P&amp;L moves by
     <strong>$1.35</strong>.</p>
     <div class="tablewrap" style="margin-top:10px"><table class="t">
       <thead><tr><th>Run</th><th>P&amp;L</th><th>Fills</th><th>Fees</th><th>Signals</th></tr></thead>
       <tbody>
-        <tr><td>frictionless</td><td class="n">&#8722;2,127</td><td>868</td><td>$0</td><td>868</td></tr>
-        <tr><td>inverted</td><td class="n">&#8722;2,073</td><td>780</td><td>$0</td><td>780</td></tr>
-        <tr><td>+ 15 bps fee</td><td class="n">&#8722;8,600</td><td>868</td><td>$6,473</td><td>868</td></tr>
-        <tr class="lead-row"><td>+ lag, buggy</td><td class="bad">&#8722;103,465</td><td>8,405</td><td>$79,684</td><td>18,670</td></tr>
-        <tr><td>+ lag, fixed</td><td class="n">&#8722;8,599</td><td>827</td><td>$6,473</td><td>827</td></tr>
+        <tr><td>frictionless</td><td class="n">−2,127</td><td>868</td><td>$0</td><td>868</td></tr>
+        <tr><td>inverted</td><td class="n">−2,073</td><td>780</td><td>$0</td><td>780</td></tr>
+        <tr><td>+ 15 bps fee</td><td class="n">−8,600</td><td>868</td><td>$6,473</td><td>868</td></tr>
+        <tr class="lead-row"><td>+ lag, buggy</td><td class="bad">−103,465</td><td>8,405</td><td>$79,684</td><td>18,670</td></tr>
+        <tr><td>+ lag, fixed</td><td class="n">−8,599</td><td>827</td><td>$6,473</td><td>827</td></tr>
       </tbody></table></div>
     <p class="sub" style="margin-top:9px">The inverted run is the cheapest sanity check in this course, and
     it costs one environment variable: same 14,000 shares, same loss to within 2.5%. <strong>A strategy
     whose sign does not change its P&amp;L is not a strategy, it is a trading-volume experiment.</strong>
-    And regressing P&amp;L on fill count across all 24 configurations gives R&#178; = 0.9966 with a slope
-    of &#8722;$2.91 a fill — 14.5 cents a share against a 15-cent half-spread. The search explored a space
+    And regressing P&amp;L on fill count across all 24 configurations gives R² = 0.9966 with a slope
+    of −$2.91 a fill — 14.5 cents a share against a 15-cent half-spread. The search explored a space
     of trading volumes, not a space of strategies.</p>
   </div>
 </section>
@@ -550,8 +555,8 @@
 
   <h3 style="margin-top:22px">Widget 4 · in-sample versus walk-forward</h3>
   <p>Fit the parameter on one fold, trade the next, roll, never re-fitting on data you have already traded.
-  The deck's four folds go in-sample <strong>+2.26 / +3.64 / +1.44</strong> and out-of-sample
-  <strong>+2.89 / +1.44 / &#8722;2.97</strong> — mean OOS <strong>+0.45</strong> against a best in-sample
+  The deck’s four folds go in-sample <strong>+2.26 / +3.64 / +1.44</strong> and out-of-sample
+  <strong>+2.89 / +1.44 / −2.97</strong> — mean OOS <strong>+0.45</strong> against a best in-sample
   <strong>+2.87</strong>, a haircut of about 2.4 Sharpe. Fold 3 is the point: it is not noise to be
   averaged away, it is the honest distribution of outcomes for this procedure.</p>
   <div class="split">
@@ -587,12 +592,12 @@
   </div>
 
   <h3 style="margin-top:28px">Widget 5 · the deflated Sharpe ratio</h3>
-  <p>Bailey and L&#243;pez de Prado's correction asks the only question that matters about a backtest:
+  <p>Bailey and López de Prado’s correction asks the only question that matters about a backtest:
   <em class="hi">how many did you try?</em> If you try one coin-flip strategy its expected Sharpe is zero;
   if you try a hundred and keep the best, the best has a large positive Sharpe by construction. So the
-  correct null is not "Sharpe = 0", it is "Sharpe = SR&#8320;(M)", the expected
+  correct null is not “Sharpe = 0”, it is “Sharpe = SR₀(M)”, the expected
   <strong>maximum</strong> of <em class="hi">M</em> trials with no edge at all — which grows like the square
-  root of log&#160;M. Then the third and fourth moments of the winner's returns enter the denominator,
+  root of log&#160;M. Then the third and fourth moments of the winner’s returns enter the denominator,
   because a Sharpe built from a handful of enormous bars is worth less than one built from many small
   ones.</p>
   <div class="split-r">
@@ -610,13 +615,13 @@
       <div class="ctl"><label for="dsKu">Excess kurtosis <b id="dsKuV">112.2</b></label>
         <input type="range" id="dsKu" min="0" max="1600" value="1122" step="2" aria-label="Excess kurtosis of the winning curve"></div>
       <div class="stats">
-        <div class="stat"><div class="sl">SR&#8320; (luck's best)</div><div class="sv warn" id="dsSr0">—</div></div>
+        <div class="stat"><div class="sl">SR₀ (luck’s best)</div><div class="sv warn" id="dsSr0">—</div></div>
         <div class="stat"><div class="sl">PSR</div><div class="sv" id="dsPsr">—</div></div>
         <div class="stat"><div class="sl">Deflated Sharpe</div><div class="sv" id="dsDsr">—</div></div>
         <div class="stat"><div class="sl">Verdict</div><div class="sv" id="dsVerd">—</div></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <button class="btn" id="dsHonest" type="button">Deck's 6 trials</button>
+        <button class="btn" id="dsHonest" type="button">Deck’s 6 trials</button>
         <button class="btn" id="dsReal" type="button">A real Phase-2 search (M = 200)</button>
         <button class="btn" id="dsNoise" type="button">Pure noise, best of 60</button>
       </div>
@@ -628,7 +633,7 @@
       <em class="hi">excess</em> kurtosis; the deflated-Sharpe formula wants the raw fourth moment. Forget
       the <code>+ 3</code> and your denominator is wrong in the direction that flatters you. And watch what
       happens above: push skew high enough and the moment correction
-      <code>1 &#8722; &#947;&#8323;&#183;SR + (&#947;&#8324;&#8722;1)/4&#183;SR&#178;</code> goes negative,
+      <code>1 − γ₃·SR + (γ₄−1)/4·SR²</code> goes negative,
       at which point the statistic is not conservative — it is undefined, and the honest report says
       so.</div>
     </div>
@@ -647,7 +652,7 @@
       <div class="svgwrap"><svg id="brSvg" viewBox="0 0 700 280" role="img"
         aria-label="Allocation, selection and interaction bars summing to the active return"></svg></div>
       <div class="tablewrap" style="margin-top:12px"><table class="t" id="brTable">
-        <thead><tr><th>Sec</th><th>w&#7529;</th><th>r&#7529;/r&#7495;</th><th>Alloc</th><th>Sel</th><th>Int</th></tr></thead>
+        <thead><tr><th>Sec</th><th>wᵩ</th><th>rᵩ/rᵇ</th><th>Alloc</th><th>Sel</th><th>Int</th></tr></thead>
         <tbody></tbody></table></div>
     </div>
     <div class="panel">
@@ -657,13 +662,13 @@
       </div>
       <div class="ctl"><label for="brW">Portfolio weight · hardware <b id="brWV">80%</b></label>
         <input type="range" id="brW" min="0" max="100" value="80" step="1" aria-label="Portfolio weight in the hardware sector"></div>
-      <div class="ctl"><label for="brRpH">r&#7529; hardware <b id="brRpHV">+3 bps</b></label>
+      <div class="ctl"><label for="brRpH">rᵩ hardware <b id="brRpHV">+3 bps</b></label>
         <input type="range" id="brRpH" min="-400" max="400" value="3" step="1" aria-label="Portfolio return in hardware, basis points"></div>
-      <div class="ctl"><label for="brRbH">r&#7495; hardware <b id="brRbHV">&#8722;164 bps</b></label>
+      <div class="ctl"><label for="brRbH">rᵇ hardware <b id="brRbHV">−164 bps</b></label>
         <input type="range" id="brRbH" min="-400" max="400" value="-164" step="1" aria-label="Benchmark return in hardware, basis points"></div>
-      <div class="ctl"><label for="brRpS">r&#7529; software <b id="brRpSV">+89 bps</b></label>
+      <div class="ctl"><label for="brRpS">rᵩ software <b id="brRpSV">+89 bps</b></label>
         <input type="range" id="brRpS" min="-400" max="400" value="89" step="1" aria-label="Portfolio return in software, basis points"></div>
-      <div class="ctl"><label for="brRbS">r&#7495; software <b id="brRbSV">+64 bps</b></label>
+      <div class="ctl"><label for="brRbS">rᵇ software <b id="brRbSV">+64 bps</b></label>
         <input type="range" id="brRbS" min="-400" max="400" value="64" step="1" aria-label="Benchmark return in software, basis points"></div>
       <div class="stats">
         <div class="stat"><div class="sl">Active return</div><div class="sv acc" id="brActive">—</div></div>
@@ -672,9 +677,9 @@
         <div class="stat"><div class="sl">Inter / alloc</div><div class="sv" id="brRatio">—</div></div>
       </div>
       <p class="sub" style="margin-top:10px">Switch the convention and the total does not move by a basis
-      point while allocation and selection both do. BHB measures allocation against the sector's own
+      point while allocation and selection both do. BHB measures allocation against the sector’s own
       return; Brinson-Fachler measures it against the benchmark <em class="hi">total</em>, which makes
-      "overweight a sector that beat the benchmark" the thing you get paid for. <strong>A report that does
+      “overweight a sector that beat the benchmark” the thing you get paid for. <strong>A report that does
       not name its convention is not reproducible.</strong></p>
       <div class="note"><b>Single period only.</b> Chaining periods needs a linking scheme — Carino,
       Menchero — because the components compound and the naive sum drifts from the geometric excess. Do not
@@ -685,14 +690,14 @@
   <div class="grid2" style="margin-top:22px">
     <div class="panel"><h4>Sharpe cannot see ruin</h4>
       <p class="sub">Of the four curves in the lab, the one that <em class="hi">lost more than the entire
-      account</em> — &#8722;103.47%, max drawdown 103.51% — has the <strong>best</strong> Sharpe of the
-      four at &#8722;0.005, and a PSR of 0.295. As net worth approached zero its per-mark returns became
+      account</em> — −103.47%, max drawdown 103.51% — has the <strong>best</strong> Sharpe of the
+      four at −0.005, and a PSR of 0.295. As net worth approached zero its per-mark returns became
       large and symmetric, and Sharpe is a ratio of moments. Report max drawdown next to every Sharpe you
       ever quote, and never annualise a per-mark ratio across a tape that spans a few seconds of wall
-      clock: multiply by &#8730;252 and you have invented a year.</p></div>
+      clock: multiply by √252 and you have invented a year.</p></div>
     <div class="panel"><h4>Sortino is a skewness detector</h4>
       <p class="sub">Sortino is Sharpe with downside deviation in the denominator, so it flatters anything
-      with positive skew. Variant D's Sortino is <strong>2.9&#215;</strong> its Sharpe — that ratio is not a
+      with positive skew. Variant D’s Sortino is <strong>2.9×</strong> its Sharpe — that ratio is not a
       second opinion about quality, it is a measurement of asymmetry. Quote both and the reader learns
       something; quote only the larger and you are selling.</p></div>
   </div>
@@ -708,10 +713,10 @@
     <div class="body">
       <p>Compute a signal from the returns up to and including bar <em>t</em>, then multiply it by the
       return of bar <em>t</em>. Nothing errors, nothing looks odd, and on a bouncing mid the result is a
-      Sharpe of +3.10 that reverses to &#8722;3.48 the moment the weights are shifted by one row. The leak
+      Sharpe of +3.10 that reverses to −3.48 the moment the weights are shifted by one row. The leak
       is worth 169 percentage points of total return on 373 bars.</p>
       <p>Its subtler siblings: a feature built with a centred rolling window; a forward-filled price that
-      carries tomorrow's close backwards over a gap; a cross-sectional rank computed over the full sample
+      carries tomorrow’s close backwards over a gap; a cross-sectional rank computed over the full sample
       instead of per date.</p>
       <p class="fix">Fix: build the event-driven version and reconcile. If a vectorised backtest and an
       event-driven one agree to a basis point, your alignment is right; if they disagree, the vectorised one
@@ -719,10 +724,10 @@
       control.</p>
     </div></details>
 
-  <details class="pit"><summary>One "cost assumption" instead of three measured terms</summary>
+  <details class="pit"><summary>One “cost assumption” instead of three measured terms</summary>
     <div class="body">
-      <p>"We assumed 10 bps of costs" is a number somebody made up. The tape says the mean half-spread is
-      12.2 bps, the venue's config says the taker fee is 15 bps, and the per-symbol vector matters because
+      <p>“We assumed 10 bps of costs” is a number somebody made up. The tape says the mean half-spread is
+      12.2 bps, the venue’s config says the taker fee is 15 bps, and the per-symbol vector matters because
       META at 2.7 bps and NFLX at 20.8 bps are not the same instrument. Lumping them hides the ranking, and
       the ranking is the finding: on this venue the <em class="hi">fee is three times the spread</em>.</p>
       <p>The mirror error is charging costs on notional traded when your strategy is a
@@ -737,22 +742,22 @@
   <details class="pit"><summary>Reporting the best of a grid search as though it were a single result</summary>
     <div class="body">
       <p>Twenty-four configurations is a modest sweep for a student project. Regressing P&amp;L on fill count
-      across those 24 runs gave R&#178; = <strong>0.9966</strong> and a slope of &#8722;$2.91 a fill, which
-      on 20-share orders is 14.5 cents a share against a 15-cent half-spread. The "parameter search"
+      across those 24 runs gave R² = <strong>0.9966</strong> and a slope of −$2.91 a fill, which
+      on 20-share orders is 14.5 cents a share against a 15-cent half-spread. The “parameter search”
       explored a space of trading volumes, and its winner was the configuration that never trades.</p>
       <p>Then the deflated Sharpe: with only six trials, luck alone produces a Sharpe of +1.12, so +2.87
-      clears the bar. Six is a suspiciously honest count. Ask what SR&#8320; looks like at
+      clears the bar. Six is a suspiciously honest count. Ask what SR₀ looks like at
       <em class="hi">M</em> = 200 — the number you will actually have run by the time Phase 2 is due,
       counting the ones you deleted.</p>
       <p class="fix">Fix: log every configuration you run, including abandoned ones, and report the count as
-      the <code>--trials</code> argument. Then show the P&amp;L-versus-turnover regression: if R&#178; is
+      the <code>--trials</code> argument. Then show the P&amp;L-versus-turnover regression: if R² is
       high, you measured your cost model, not your idea.</p>
     </div></details>
 
   <details class="pit"><summary>An attribution whose parts do not add to the change in net worth</summary>
     <div class="body">
-      <p>The lab's harness reports <code>P&amp;L &#8722;2,126.95</code> and
-      <code>Realized &#8722;4,294.11</code> with the book flat and unrealised zero. Flat plus zero
+      <p>The lab’s harness reports <code>P&amp;L −2,126.95</code> and
+      <code>Realized −4,294.11</code> with the book flat and unrealised zero. Flat plus zero
       unrealised means realised P&amp;L <em class="hi">is</em> the P&amp;L, so the two lines disagree by
       $2,167 and at most one is right: <code>apply_buy</code> computes
       <code>old_qty = max(0, position)</code>, so buying back a short realises nothing and resets the
@@ -766,15 +771,15 @@
       the real errors live.</p>
     </div></details>
 
-  <details class="pit"><summary>Concluding "our execution is fast" from a lag sweep that measures nothing</summary>
+  <details class="pit"><summary>Concluding “our execution is fast” from a lag sweep that measures nothing</summary>
     <div class="body">
-      <p>Sweeping the execution lag over 0, 1, 5, 25 and 100 ticks moved P&amp;L from &#8722;8,600.27 to
-      &#8722;8,634.99. A hundred ticks of latency cost 0.4% of the loss. The flattering reading is that the
+      <p>Sweeping the execution lag over 0, 1, 5, 25 and 100 ticks moved P&amp;L from −8,600.27 to
+      −8,634.99. A hundred ticks of latency cost 0.4% of the loss. The flattering reading is that the
       execution is excellent; the correct reading is that lag destroys P&amp;L in proportion to how fast
       your alpha decays, and this signal has none. <strong>A lag term that measures zero is evidence your
       signal is flat, not that your pipes are fast.</strong></p>
       <p>The opposite failure hides in the same experiment. Adding a naive one-bar lag turned a 2% loser
-      into a &#8722;103.5% loser with a negative account balance and 18,670 signals against 868 — because
+      into a −103.5% loser with a negative account balance and 18,670 signals against 868 — because
       the controller compared its target against a position that had not moved yet and re-issued the same
       order every tick. No traceback, no exception: the classic production bug is
       <em class="hi">no in-flight order accounting</em>, and it cost $79,684 in fees.</p>
@@ -790,34 +795,34 @@
   <h2><span class="secnum">5</span>Check yourself</h2>
   <p class="lead">Three questions, instant feedback, nothing recorded.</p>
 
-  <div class="mcq" data-a="2" data-exp="<b>The mid bounces, and your signal is reading its own footprint.</b> A mid computed from a two-sided book alternates between sitting nearer the bid and nearer the ask as makers requote, which is mechanically negative autocorrelation &#8212; pooled AC(1) = &#8722;0.222 on the deck's bars. A momentum signal that includes bar t in its own lookback and is then paid bar t's return is being handed the answer, so it flips sign the moment the weights are shifted. Neither a genuine trend nor a code error is required, and a longer lookback does not fix an alignment bug &#8212; it only dilutes it.">
+  <div class="mcq" data-a="2" data-exp="<b>The mid bounces, and your signal is reading its own footprint.</b> A mid computed from a two-sided book alternates between sitting nearer the bid and nearer the ask as makers requote, which is mechanically negative autocorrelation — pooled AC(1) = −0.222 on the deck's bars. A momentum signal that includes bar t in its own lookback and is then paid bar t's return is being handed the answer, so it flips sign the moment the weights are shifted. Neither a genuine trend nor a code error is required, and a longer lookback does not fix an alignment bug — it only dilutes it.">
     <p class="q"><span>Q1</span>Your momentum backtest on five-second mid bars reports a Sharpe of
-    <b>+3.10</b>. You add <code>.shift(1)</code> to the weights and it becomes <b>&#8722;3.48</b>. What
+    <b>+3.10</b>. You add <code>.shift(1)</code> to the weights and it becomes <b>−3.48</b>. What
     happened?</p>
     <div class="opts">
       <button class="opt" type="button">The lag destroyed a real but fast-decaying edge — the alpha lives inside one bar</button>
       <button class="opt" type="button">A bug in the shift: a correct alignment change cannot reverse the sign of a result</button>
-      <button class="opt" type="button">The same-bar run was paying itself the return it used to decide, and the mid's negative autocorrelation made that look like momentum</button>
+      <button class="opt" type="button">The same-bar run was paying itself the return it used to decide, and the mid’s negative autocorrelation made that look like momentum</button>
       <button class="opt" type="button">The lookback is too short; lengthening it will make both runs agree</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="1" data-exp="<b>Sharpe is a ratio of moments and cannot see ruin.</b> As net worth fell towards zero the per-mark returns became large and roughly symmetric, so mean over standard deviation improved even as the account was destroyed &#8212; which is why max drawdown of 103.51% must be reported beside every Sharpe. The tape's timestamps span a few seconds of wall clock, so there is no honest annualisation factor either: multiplying a per-mark ratio by &#8730;252 invents a year. The run is not the best of the four by any measure a risk committee would accept, and a negative Sharpe is not a division-by-zero artefact.">
+  <div class="mcq" data-a="1" data-exp="<b>Sharpe is a ratio of moments and cannot see ruin.</b> As net worth fell towards zero the per-mark returns became large and roughly symmetric, so mean over standard deviation improved even as the account was destroyed — which is why max drawdown of 103.51% must be reported beside every Sharpe. The tape's timestamps span a few seconds of wall clock, so there is no honest annualisation factor either: multiplying a per-mark ratio by √252 invents a year. The run is not the best of the four by any measure a risk committee would accept, and a negative Sharpe is not a division-by-zero artefact.">
     <p class="q"><span>Q2</span>Four backtest curves. The one that <b>lost 103% of the account</b> has the
-    best Sharpe of the four (&#8722;0.005) and a PSR of 0.295. What should the report say?</p>
+    best Sharpe of the four (−0.005) and a PSR of 0.295. What should the report say?</p>
     <div class="opts">
       <button class="opt" type="button">Report it as the best curve — Sharpe is the risk-adjusted measure, and it is the highest</button>
       <button class="opt" type="button">Report Sharpe beside max drawdown: Sharpe cannot see ruin, and 103.51% drawdown is the number that can</button>
       <button class="opt" type="button">Discard the Sharpe as undefined, because the equity curve crossed zero</button>
-      <button class="opt" type="button">Annualise all four by &#8730;252 so they can be compared to published strategies</button>
+      <button class="opt" type="button">Annualise all four by √252 so they can be compared to published strategies</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="3" data-exp="<b>The three effects sum to the active return by algebra, so a residual is a bug.</b> Allocation + selection + interaction is an identity, not an approximation: 4 bps of residual means the average weights and the average returns were computed over different windows, or a zero-weight sector produced a NaN that a .sum() silently dropped. Switching convention changes how allocation and selection split the total but never the total itself, so BHB will not close the gap; extra sectors and a linking scheme address different problems entirely &#8212; linking is for chaining periods, and this is a single period.">
+  <div class="mcq" data-a="3" data-exp="<b>The three effects sum to the active return by algebra, so a residual is a bug.</b> Allocation + selection + interaction is an identity, not an approximation: 4 bps of residual means the average weights and the average returns were computed over different windows, or a zero-weight sector produced a NaN that a .sum() silently dropped. Switching convention changes how allocation and selection split the total but never the total itself, so BHB will not close the gap; extra sectors and a linking scheme address different problems entirely — linking is for chaining periods, and this is a single period.">
     <p class="q"><span>Q3</span>Your single-period Brinson attribution gives allocation +12 bps, selection
-    +31 bps, interaction &#8722;7 bps, and an active return of <b>+40 bps</b>. What do you do?</p>
+    +31 bps, interaction −7 bps, and an active return of <b>+40 bps</b>. What do you do?</p>
     <div class="opts">
       <button class="opt" type="button">Nothing — 4 bps is floating-point noise on numbers this size</button>
       <button class="opt" type="button">Switch from Brinson-Fachler to BHB, which reconciles exactly</button>
@@ -838,7 +843,7 @@
       <em class="hi">before</em> backtesting anything — and write down the result you expect.</li>
       <li>Run the crossover frictionless, then with the 15 bps taker fee, then with a one-bar lag; diagnose
       the in-flight-order bug from its symptom (18,670 signals) rather than from a traceback.</li>
-      <li>Invert the signal. Same shares, same loss &#8594; the signal contributed nothing.</li>
+      <li>Invert the signal. Same shares, same loss → the signal contributed nothing.</li>
       <li>Sharpe, Sortino, PSR and DSR on all four curves at <code>--trials 24</code>, then the 24-point
       sweep and the P&amp;L-versus-fills regression.</li>
       <li>Brinson-Fachler over two sectors, and assert the residual is zero.</li>
@@ -858,13 +863,13 @@
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
       <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — then point <code>scripts/backtest.py</code> at a tape you recorded yourself.</div></a>
     <a class="nextcard" href="week6.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 6 · Derivatives Analytics</div><div class="nd">Where a price came from a model instead of a print — and where implied vol taught you that a quote is a convention.</div></a>
+      <div class="nt">← Week 6 · Derivatives Analytics</div><div class="nd">Where a price came from a model instead of a print — and where implied vol taught you that a quote is a convention.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/week4.html"><div class="nl">See also</div>
-      <div class="nt">Systematic Trading Arena · Backtesting</div><div class="nd">The same harness from the trader's side: event-driven replay, fill models, and what a live session does to a backtested number.</div></a>
+      <div class="nt">Systematic Trading Arena · Backtesting</div><div class="nd">The same harness from the trader’s side: event-driven replay, fill models, and what a live session does to a backtested number.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">The 10-week map</div><div class="nd">Where week 7 sits, and the tearsheet sections it fills in.</div></a>
     <a class="nextcard" href="week8.html"><div class="nl">Next</div>
-      <div class="nt">Week 8 · Machine Learning for Finance &#8594;</div><div class="nd">The same leak, industrialised: a shuffled <code>KFold</code> puts a million training rows on the same day as their own test fold, and the AUC that funds a desk collapses onto the coin toss.</div></a>
+      <div class="nt">Week 8 · Machine Learning for Finance →</div><div class="nd">The same leak, industrialised: a shuffled <code>KFold</code> puts a million training rows on the same day as their own test fold, and the AUC that funds a desk collapses onto the coin toss.</div></a>
   </div>
 </section>
 
@@ -1505,7 +1510,7 @@ function sgn(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
     $("dsN").value = st.n; $("dsNV").textContent = String(st.n);
     $("dsSd").value = Math.round(st.sdT * 100); $("dsSdV").textContent = st.sdT.toFixed(2);
     $("dsSk").value = Math.round(st.skew * 100);
-    $("dsSkV").innerHTML = (st.skew >= 0 ? "+" : "&#8722;") + Math.abs(st.skew).toFixed(2);
+    $("dsSkV").innerHTML = (st.skew >= 0 ? "+" : "−") + Math.abs(st.skew).toFixed(2);
     $("dsKu").value = Math.round(st.kurt * 10); $("dsKuV").textContent = st.kurt.toFixed(1);
     draw();
   }
@@ -1515,7 +1520,7 @@ function sgn(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
   $("dsSd").addEventListener("input", function () { st.sdT = +this.value / 100; $("dsSdV").textContent = st.sdT.toFixed(2); draw(); });
   $("dsSk").addEventListener("input", function () {
     st.skew = +this.value / 100;
-    $("dsSkV").innerHTML = (st.skew >= 0 ? "+" : "&#8722;") + Math.abs(st.skew).toFixed(2); draw();
+    $("dsSkV").innerHTML = (st.skew >= 0 ? "+" : "−") + Math.abs(st.skew).toFixed(2); draw();
   });
   $("dsKu").addEventListener("input", function () { st.kurt = +this.value / 10; $("dsKuV").textContent = st.kurt.toFixed(1); draw(); });
   $("dsHonest").addEventListener("click", function () {
@@ -1629,13 +1634,13 @@ function sgn(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
   }
   bind("brW", "brWV", function (v) { st.w = v; }, function () { return st.w + "%"; });
   bind("brRpH", "brRpHV", function (v) { st.rpH = v; },
-    function () { return (st.rpH >= 0 ? "+" : "&#8722;") + Math.abs(st.rpH) + " bps"; });
+    function () { return (st.rpH >= 0 ? "+" : "−") + Math.abs(st.rpH) + " bps"; });
   bind("brRbH", "brRbHV", function (v) { st.rbH = v; },
-    function () { return (st.rbH >= 0 ? "+" : "&#8722;") + Math.abs(st.rbH) + " bps"; });
+    function () { return (st.rbH >= 0 ? "+" : "−") + Math.abs(st.rbH) + " bps"; });
   bind("brRpS", "brRpSV", function (v) { st.rpS = v; },
-    function () { return (st.rpS >= 0 ? "+" : "&#8722;") + Math.abs(st.rpS) + " bps"; });
+    function () { return (st.rpS >= 0 ? "+" : "−") + Math.abs(st.rpS) + " bps"; });
   bind("brRbS", "brRbSV", function (v) { st.rbS = v; },
-    function () { return (st.rbS >= 0 ? "+" : "&#8722;") + Math.abs(st.rbS) + " bps"; });
+    function () { return (st.rbS >= 0 ? "+" : "−") + Math.abs(st.rbS) + " bps"; });
   $("brFach").addEventListener("click", function () {
     st.fach = true; this.setAttribute("aria-pressed", "true");
     $("brBhb").setAttribute("aria-pressed", "false"); draw();

@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -272,9 +277,9 @@
   <div class="wk">WEEK 9</div>
   <h1>Market Microstructure &amp; Execution Analytics</h1>
   <p class="promise">You stand up a real market, trade into it, and then measure the same 200-share order
-  two ways. TCA against the prevailing mid says your execution cost <strong>&#8722;2.49 bps</strong>.
+  two ways. TCA against the prevailing mid says your execution cost <strong>−2.49 bps</strong>.
   Implementation shortfall against the price you <em class="hi">decided</em> at says
-  <strong>&#8722;24.62 bps</strong>. Both are computed correctly, and the ten-times gap is the whole
+  <strong>−24.62 bps</strong>. Both are computed correctly, and the ten-times gap is the whole
   lesson: <em class="hi">a benchmark you move is a benchmark that flatters you.</em> Then three
   surveillance rules that catch a wash pair perfectly on a live tape accuse two innocent bots on a clean
   one.</p>
@@ -312,15 +317,15 @@
         30-cent spread is 6 bps on MSFT and 27 bps on INTC.</li>
         <li><strong>Depth</strong> — size at the touch, and cumulative size over five levels. The first
         number decides whether your child order fills; the second decides what your parent costs.</li>
-        <li><strong>Imbalance</strong> — <code>(bid_sz &#8722; ask_sz)/(bid_sz + ask_sz)</code>, the only
+        <li><strong>Imbalance</strong> — <code>(bid_sz − ask_sz)/(bid_sz + ask_sz)</code>, the only
         free directional information in a book.</li>
         <li><strong>Microprice</strong> — the size-weighted mid, which sits off the arithmetic mid by
-        roughly <em class="hi">imbalance &#215; half-spread</em>.</li>
+        roughly <em class="hi">imbalance × half-spread</em>.</li>
       </ul></div>
     <div class="panel tight"><h3>Price-time priority</h3>
       <ul class="plain">
         <li>An incoming order scans the opposite side from the best price inward.</li>
-        <li>If prices cross, the trade executes at the <strong>resting</strong> order's price — the
+        <li>If prices cross, the trade executes at the <strong>resting</strong> order’s price — the
         aggressor pays the spread, the passive side earns it.</li>
         <li>At the same price, earlier orders fill first. Post at the touch behind 40 shares and 40 shares
         must trade before you do.</li>
@@ -338,7 +343,7 @@
       </div>
       <p class="sub" style="margin-top:9px">A recording is a <em class="hi">broadcast</em> log, so of the
       three surveillance rules below only self-match can be computed from it. The other two need each
-      participant's own audit trail — the self-declared order log a firm owes a regulator. <strong>Pick
+      participant’s own audit trail — the self-declared order log a firm owes a regulator. <strong>Pick
       your detector after you know what you are entitled to observe.</strong></p></div>
   </div>
 
@@ -348,14 +353,14 @@
       <div class="svgwrap"><svg id="obSvg" viewBox="0 0 700 320" role="img"
         aria-label="A five-level limit order book ladder with bid and ask depth, your resting order, and the queue ahead of it"></svg></div>
       <div class="row" style="margin-top:12px">
-        <button class="btn primary" id="obBuy" type="button" aria-label="Send a market buy that walks the ask side">Market buy 60 &#9656;</button>
+        <button class="btn primary" id="obBuy" type="button" aria-label="Send a market buy that walks the ask side">Market buy 60 ▸</button>
         <button class="btn" id="obPost" type="button" aria-label="Post a passive bid at the touch">Post 20 at the bid</button>
         <button class="btn" id="obReset" type="button" aria-label="Reset the book">Reset</button>
       </div>
       <div class="log" id="obLog" role="status" aria-live="polite" style="margin-top:12px"></div>
     </div>
     <div class="panel">
-      <div class="ctl"><label for="obSpread">Quoted spread <b id="obSpreadV">30&#162;</b></label>
+      <div class="ctl"><label for="obSpread">Quoted spread <b id="obSpreadV">30¢</b></label>
         <input type="range" id="obSpread" min="2" max="80" value="30" step="1" aria-label="Quoted spread in cents"></div>
       <div class="ctl"><label for="obPrice">Price level <b id="obPriceV">$309.50</b></label>
         <input type="range" id="obPrice" min="20" max="600" value="310" step="1" aria-label="Price level in dollars"></div>
@@ -404,9 +409,9 @@
         <input type="range" id="tcSlices" min="2" max="40" value="10" step="1" aria-label="Number of child orders"></div>
       <div class="ctl"><label for="tcEvery">Interval <b id="tcEveryV">2 ticks</b></label>
         <input type="range" id="tcEvery" min="1" max="20" value="2" step="1" aria-label="Ticks between child orders"></div>
-      <div class="ctl"><label for="tcImp">Impact per 100 shares <b id="tcImpV">86&#162;</b></label>
+      <div class="ctl"><label for="tcImp">Impact per 100 shares <b id="tcImpV">86¢</b></label>
         <input type="range" id="tcImp" min="0" max="140" value="86" step="1" aria-label="Permanent impact in cents per hundred shares"></div>
-      <div class="ctl"><label for="tcDrift">Market drift <b id="tcDriftV">&#8722;0.27&#162;/tick</b></label>
+      <div class="ctl"><label for="tcDrift">Market drift <b id="tcDriftV">−0.27¢/tick</b></label>
         <input type="range" id="tcDrift" min="-100" max="100" value="-27" step="1" aria-label="Market drift in tenths of a cent per tick"></div>
       <div class="sw" role="group" aria-label="Order style" style="margin-bottom:12px">
         <button id="tcCross" type="button" aria-pressed="true">Cross the spread</button>
@@ -419,13 +424,13 @@
         <div class="stat"><div class="sl">TCA vs prevailing mid</div><div class="sv" id="tcSlip">—</div></div>
       </div>
       <div class="verdict" id="tcVerdict"></div>
-      <div class="note" style="margin-top:12px"><b>The lab's measured run.</b> Buy 200 AAPL, filled 146 in
+      <div class="note" style="margin-top:12px"><b>The lab’s measured run.</b> Buy 200 AAPL, filled 146 in
       10.0 s. Decision mid 309.5150, first child mid 309.4350, final mid 310.7650, execution VWAP
       310.0967. Delay <strong>+11.68</strong> ($, +1.89 bps, and it is <em class="hi">luck</em> — the mid
       drifted 8 cents our way between deciding and sending). Impact plus spread
-      <strong>&#8722;96.61</strong> (&#8722;15.61 bps). Shortfall &#8722;84.93. Opportunity cost on the 54
-      shares we never got, marked at the final mid, <strong>&#8722;67.50</strong> (&#8722;10.90 bps) — over
-      half the total. <strong>Total &#8722;152.43, or &#8722;24.62 bps.</strong></div>
+      <strong>−96.61</strong> (−15.61 bps). Shortfall −84.93. Opportunity cost on the 54
+      shares we never got, marked at the final mid, <strong>−67.50</strong> (−10.90 bps) — over
+      half the total. <strong>Total −152.43, or −24.62 bps.</strong></div>
     </div>
   </div>
   <p class="sub" style="margin-top:10px">Push the slice count up and the interval out: the impact term falls
@@ -463,16 +468,16 @@
     <div class="stack">
       <div class="svgwrap"><svg id="mtSvg" viewBox="0 0 700 300" role="img"
         aria-label="All-in cost in basis points against the passive share of fills, with the lab's six participants marked"></svg></div>
-      <div class="panel tight"><h3>TCA — the lab's session, 162 trades in 3.2 minutes</h3>
+      <div class="panel tight"><h3>TCA — the lab’s session, 162 trades in 3.2 minutes</h3>
         <div class="tablewrap"><table class="t">
           <thead><tr><th>Team</th><th>Mkr%</th><th>Net fee</th><th>Slip</th><th>Cap</th></tr></thead>
           <tbody>
             <tr><td class="n">broker_1</td><td class="ok">100%</td><td class="ok">+138.91</td><td>—</td><td class="ok">+4.51</td></tr>
-            <tr><td class="n">rogue_3</td><td>53%</td><td class="bad">&#8722;27.82</td><td class="bad">&#8722;3.74</td><td>+3.39</td></tr>
-            <tr><td class="n">rogue_4</td><td>49%</td><td class="bad">&#8722;65.52</td><td class="bad">&#8722;3.37</td><td>+3.65</td></tr>
-            <tr><td class="n">exec_1</td><td>17%</td><td class="bad">&#8722;63.27</td><td class="bad">&#8722;2.49</td><td>+2.61</td></tr>
-            <tr><td class="n">rogue_1</td><td>5%</td><td class="bad">&#8722;85.13</td><td class="bad">&#8722;4.44</td><td>+2.35</td></tr>
-            <tr class="lead-row"><td class="n">retail_1</td><td class="bad">0%</td><td class="bad">&#8722;73.77</td><td class="bad">&#8722;6.07</td><td>—</td></tr>
+            <tr><td class="n">rogue_3</td><td>53%</td><td class="bad">−27.82</td><td class="bad">−3.74</td><td>+3.39</td></tr>
+            <tr><td class="n">rogue_4</td><td>49%</td><td class="bad">−65.52</td><td class="bad">−3.37</td><td>+3.65</td></tr>
+            <tr><td class="n">exec_1</td><td>17%</td><td class="bad">−63.27</td><td class="bad">−2.49</td><td>+2.61</td></tr>
+            <tr><td class="n">rogue_1</td><td>5%</td><td class="bad">−85.13</td><td class="bad">−4.44</td><td>+2.35</td></tr>
+            <tr class="lead-row"><td class="n">retail_1</td><td class="bad">0%</td><td class="bad">−73.77</td><td class="bad">−6.07</td><td>—</td></tr>
           </tbody></table></div>
         <p class="sub" style="margin-top:9px">121 / 36 / 37 / 12 / 40 / 78 fills respectively. Slip is
         measured on taker fills against the prevailing mid; capture on maker fills. The market maker is 100% passive, pays nothing, collects $138.91 of rebates
@@ -490,7 +495,7 @@
   which spread you quoted. The second is knowing whether the volume you measured was real.</p>
 
   <h3 style="margin-top:22px">Widget 4 · quoted, effective, and trade-weighted spread</h3>
-  <p>The lab's broker quotes a fixed 30 cents on every name, which is 6.4 bps on MSFT at $485 and
+  <p>The lab’s broker quotes a fixed 30 cents on every name, which is 6.4 bps on MSFT at $485 and
   <strong>26.6 bps on INTC</strong> near $90. <em class="hi">A spread in cents is not a spread.</em> And the
   effective spread — what takers actually paid, 7.44 bps on AAPL — sits <strong>below</strong> the quoted
   10.02 bps, which is not a discount but a weighting: trades cluster when the spread is tight.</p>
@@ -510,7 +515,7 @@
       section.</p>
     </div>
     <div class="panel">
-      <div class="ctl"><label for="spCents">Broker spread <b id="spCentsV">30&#162;</b></label>
+      <div class="ctl"><label for="spCents">Broker spread <b id="spCentsV">30¢</b></label>
         <input type="range" id="spCents" min="1" max="90" value="30" step="1" aria-label="Broker quoted spread in cents"></div>
       <div class="ctl"><label for="spClust">Trade clustering at tight spreads <b id="spClustV">0.26</b></label>
         <input type="range" id="spClust" min="0" max="80" value="26" step="1" aria-label="How strongly trades cluster when the spread is tight"></div>
@@ -525,18 +530,18 @@
         <div class="stat"><div class="sl">Messages that are news</div><div class="sv" id="spNews">—</div></div>
       </div>
       <div class="verdict" id="spVerdict"></div>
-      <div class="note" style="margin-top:12px"><b>Liveness is not "the data is arriving".</b> In the lab
+      <div class="note" style="margin-top:12px"><b>Liveness is not “the data is arriving”.</b> In the lab
       <code>stale_pct</code> was 92–97% on every symbol except the one the bots were fighting over, where
-      it was 59.7%. An event-driven feed goes quiet, and a consumer written to assume "a message means
-      news" will mistake a dead market for a calm one. Separately: 32 of AAPL's 93 prints were the wash
+      it was 59.7%. An event-driven feed goes quiet, and a consumer written to assume “a message means
+      news” will mistake a dead market for a calm one. Separately: 32 of AAPL’s 93 prints were the wash
       pair, so a third of its volume transferred no risk. <strong>Never use share volume as a liquidity
       proxy on a tape you have not surveilled.</strong></div>
     </div>
   </div>
 
   <h3 style="margin-top:28px">Widget 5 · three detectors, and the innocent they accuse</h3>
-  <p>The regulator's view. Three post-trade rules over one session: <strong>cancel-to-fill</strong> and
-  <strong>quote-stuffing</strong> from the participants' audit trails, <strong>self-match</strong> from the
+  <p>The regulator’s view. Three post-trade rules over one session: <strong>cancel-to-fill</strong> and
+  <strong>quote-stuffing</strong> from the participants’ audit trails, <strong>self-match</strong> from the
   tape. Move the thresholds and watch precision and recall move — then switch to the clean control, a tape
   with no abuse in it at all.</p>
   <div class="split">
@@ -561,7 +566,7 @@
       <div class="verdict" id="svVerdict"></div>
     </div>
     <div class="panel">
-      <div class="ctl"><label for="svCf">R1 · cancel-to-fill threshold <b id="svCfV">10.0&#215;</b></label>
+      <div class="ctl"><label for="svCf">R1 · cancel-to-fill threshold <b id="svCfV">10.0×</b></label>
         <input type="range" id="svCf" min="5" max="1000" value="100" step="5" aria-label="Cancel to fill ratio threshold"></div>
       <div class="ctl"><label for="svRate">R3 · peak message rate <b id="svRateV">40 /s</b></label>
         <input type="range" id="svRate" min="5" max="120" value="40" step="1" aria-label="Peak messages per second threshold"></div>
@@ -573,11 +578,11 @@
         <input type="range" id="svNg" min="1" max="60" value="15" step="1" aria-label="Net over gross ceiling"></div>
       <div class="note" style="margin-top:6px"><b>Three findings, in increasing order of
       importance.</b> The stuffer is unmissable: 2,565 orders, <em class="hi">zero</em> fills, a peak of 68
-      messages a second and 70 distinct seconds over the venue's quota. The wash pair is textbook:
-      reciprocity 0.938, 93% of each account's volume done with the other, net/gross 0.091. But the honest
+      messages a second and 70 distinct seconds over the venue’s quota. The wash pair is textbook:
+      reciprocity 0.938, 93% of each account’s volume done with the other, net/gross 0.091. But the honest
       market maker and the honest retail flow score reciprocity 0.868 and net/gross 0.258 — two of the
-      rule's three features — and are acquitted only by concentration, 0.336 against a 0.50 threshold. In a
-      market with one liquidity provider, <em class="hi">everyone's</em> concentration is high, so the
+      rule’s three features — and are acquitted only by concentration, 0.336 against a 0.50 threshold. In a
+      market with one liquidity provider, <em class="hi">everyone’s</em> concentration is high, so the
       thinnest discriminator is the one carrying the whole rule.</div>
       <div class="note" style="margin-top:10px"><b>And the genuine failure.</b> <code>rogue_1</code>, the
       layerer, is flagged by none of the three: it fills often enough (40 times) that its cancel-to-fill
@@ -607,7 +612,7 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
       <p class="sub" style="margin-top:9px">The venue proving its own books balance: every share bought was
       sold, no position breaks, no cash gap. An operations analyst reads that line before any P&amp;L, and
       so should you — a tape whose recon failed is a tape whose numbers you cannot cite. Note too that the
-      broker in this session was quoting off the exchange's own mark, because Yahoo was unreachable: correct
+      broker in this session was quoting off the exchange’s own mark, because Yahoo was unreachable: correct
       engineering, but a market whose only price reference is itself has no outside anchor, and that is
       worth one sentence in any report written off the tape.</p></div>
   </div>
@@ -623,8 +628,8 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
     <div class="body">
       <p>TCA measures every fill against the mid prevailing <em class="hi">at that moment</em>. By the
       fourth child of our parent order that mid was already 30 cents higher, because we had bought the
-      first three. So the report says <strong>&#8722;2.49 bps</strong> while the shortfall against the
-      decision price says <strong>&#8722;24.62 bps</strong> — a ten-times difference, and neither number is
+      first three. So the report says <strong>−2.49 bps</strong> while the shortfall against the
+      decision price says <strong>−24.62 bps</strong> — a ten-times difference, and neither number is
       computed incorrectly.</p>
       <p>The same trap in miniature: judging a child order against the arrival price of that child rather
       than of the parent. Every slice looks excellent and the parent still cost 25 bps.</p>
@@ -639,7 +644,7 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
       liquidity built on cents is a statement about price levels. And on AAPL the time-weighted median
       quoted spread was 10.021 bps while the trade-weighted median was 7.444 — because trades cluster when
       the spread is tight, not because anyone got a discount.</p>
-      <p>Then the volume trap: 32 of AAPL's 93 prints were a wash pair, so a third of the "volume" moved no
+      <p>Then the volume trap: 32 of AAPL’s 93 prints were a wash pair, so a third of the “volume” moved no
       risk at all.</p>
       <p class="fix">Fix: always bps of the contemporaneous mid; state whether a spread is time-weighted,
       trade-weighted or effective; and compute the realised spread too — the mid five seconds after the
@@ -651,7 +656,7 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
     <div class="body">
       <p>The most dangerous state in this platform: 547 messages arrive in twelve seconds, ten of eleven
       books are two-sided, <code>best_bid</code> and <code>best_ask</code> are populated, the spreads are
-      sane — and the market has been dead for thirty-seven seconds, because a disconnected participant's
+      sane — and the market has been dead for thirty-seven seconds, because a disconnected participant’s
       resting orders are never cancelled. Your bot keeps trading against a corpse, and its fills are
       real.</p>
       <p>Its analytic cousin is <code>stale_pct = 95%</code>: nine snapshots in ten were bit-identical to
@@ -680,7 +685,7 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
     <div class="body">
       <p>Of the three rules, only self-match can be computed from a recording, because a recording is a
       broadcast log: no order acknowledgements, no cancels, no rejects, no per-team ladder. Cancel-to-fill
-      and quote-stuffing need each participant's own audit trail, which exists only because we asked the
+      and quote-stuffing need each participant’s own audit trail, which exists only because we asked the
       bots to write one. Layering needs <code>ladder_snapshot</code> — per-team resting size at each price
       level — which is sent to observer and teacher connections and never recorded at all.</p>
       <p>So the abuser that all three miss is not a tuning failure. It is an evidence failure, and no
@@ -697,9 +702,9 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
   <h2><span class="secnum">5</span>Check yourself</h2>
   <p class="lead">Three questions, instant feedback, nothing recorded.</p>
 
-  <div class="mcq" data-a="2" data-exp="<b>The mid you measured against is the mid you moved.</b> TCA scores each fill against the mid prevailing at that instant, and by the fourth child that mid had already risen because the first three had bought; implementation shortfall scores everything against the decision price and additionally charges the 54 unfilled shares at the final mid. Both calculations are correct, so neither is a bug and neither needs discarding &#8212; and the fees are a separate, explicit line, not the source of a ten-times gap. Report both; if you report only one, report the shortfall.">
-    <p class="q"><span>Q1</span>TCA reports your 200-share order cost <b>&#8722;2.49 bps</b>; implementation
-    shortfall reports <b>&#8722;24.62 bps</b>. Both are computed correctly. Why do they differ by ten
+  <div class="mcq" data-a="2" data-exp="<b>The mid you measured against is the mid you moved.</b> TCA scores each fill against the mid prevailing at that instant, and by the fourth child that mid had already risen because the first three had bought; implementation shortfall scores everything against the decision price and additionally charges the 54 unfilled shares at the final mid. Both calculations are correct, so neither is a bug and neither needs discarding — and the fees are a separate, explicit line, not the source of a ten-times gap. Report both; if you report only one, report the shortfall.">
+    <p class="q"><span>Q1</span>TCA reports your 200-share order cost <b>−2.49 bps</b>; implementation
+    shortfall reports <b>−24.62 bps</b>. Both are computed correctly. Why do they differ by ten
     times?</p>
     <div class="opts">
       <button class="opt" type="button">One of them forgot the fees, which are 15 bps of notional on this venue</button>
@@ -710,7 +715,7 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="0" data-exp="<b>It is a property of legitimate mean reversion against a monopoly liquidity provider.</b> A mean-reversion bot trades both directions by construction, so reciprocity is near one; it ends flat by construction, so net/gross is near zero; and with one market maker in the room its counterparty concentration is high for everyone. That is why a clean control is mandatory before a rule ships, and why the standard fix &#8212; a known-entity exemption list &#8212; creates its own liability: it is the first thing an abuser asks to be added to. Raising the reciprocity threshold would not separate them, since the innocent bot scores 0.992.">
+  <div class="mcq" data-a="0" data-exp="<b>It is a property of legitimate mean reversion against a monopoly liquidity provider.</b> A mean-reversion bot trades both directions by construction, so reciprocity is near one; it ends flat by construction, so net/gross is near zero; and with one market maker in the room its counterparty concentration is high for everyone. That is why a clean control is mandatory before a rule ships, and why the standard fix — a known-entity exemption list — creates its own liability: it is the first thing an abuser asks to be added to. Raising the reciprocity threshold would not separate them, since the innocent bot scores 0.992.">
     <p class="q"><span>Q2</span>Your self-match rule fires on an honest mean-reversion bot on a tape you
     know is clean: reciprocity 0.992, net/gross 0.017, concentration 0.706. What is the right
     conclusion?</p>
@@ -723,14 +728,14 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="3" data-exp="<b>The market has been dead for thirty-seven seconds.</b> A disconnected participant's resting orders are never cancelled, so the books stay two-sided and the spreads stay sane while nothing changes &#8212; and the message flow you are watching is other traffic, not quote updates. Liveness is 'the data is changing', which only a comparison of two snapshots can establish; message count, two-sidedness and spread sanity all pass on a frozen book. Trading into it produces real fills at stale prices.">
+  <div class="mcq" data-a="3" data-exp="<b>The market has been dead for thirty-seven seconds.</b> A disconnected participant's resting orders are never cancelled, so the books stay two-sided and the spreads stay sane while nothing changes — and the message flow you are watching is other traffic, not quote updates. Liveness is 'the data is changing', which only a comparison of two snapshots can establish; message count, two-sidedness and spread sanity all pass on a frozen book. Trading into it produces real fills at stale prices.">
     <p class="q"><span>Q3</span>Pre-flight: 547 messages in 12 s, 10 of 11 books two-sided, spreads sane,
     session open. Your health check passes. What has it failed to detect?</p>
     <div class="opts">
       <button class="opt" type="button">Nothing — those four checks are exactly what liveness means</button>
       <button class="opt" type="button">That the exchange is rejecting your orders, which a message count cannot show</button>
       <button class="opt" type="button">That your token is for the hosted venue rather than localhost</button>
-      <button class="opt" type="button">That the book is frozen: nothing changed, because a disconnected maker's resting orders are never cancelled</button>
+      <button class="opt" type="button">That the book is frozen: nothing changed, because a disconnected maker’s resting orders are never cancelled</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
@@ -743,12 +748,12 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
   <div class="grid2" style="margin-top:14px">
     <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
       <li>Bring up an exchange, a market maker and retail flow, then three abusive bots so the tape has
-      something to find. Every client gets <code>EXCHANGE_HOST=localhost</code> — without it your "local"
+      something to find. Every client gets <code>EXCHANGE_HOST=localhost</code> — without it your “local”
       rogue attacks the hosted venue in front of the class.</li>
       <li>Work a 200-share parent order through the book with a slicing algorithm that logs its own decision
       price, and decompose the shortfall.</li>
       <li>Close the session, read the recon line, then run <code>scripts/tca_report.py</code> and put its
-      &#8722;2.49 bps next to your &#8722;24.62.</li>
+      −2.49 bps next to your −24.62.</li>
       <li>Compute spread, depth, imbalance and <code>stale_pct</code> from <code>book_snapshot</code>
       alone, then the time- versus trade-weighted spread.</li>
       <li>Three detectors, a threshold sweep, and the clean control that accuses the innocent.</li>
@@ -767,13 +772,13 @@ SESSION CLOSED  trades=<span class="n">162</span></pre>
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
       <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — then run the offline recorder and point the four tools at your own tape.</div></a>
     <a class="nextcard" href="week8.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 8 · Machine Learning for Finance</div><div class="nd">Where the cost ladder killed a +29%/yr signal at 10 bps a side — this week is where that 10 bps comes from.</div></a>
+      <div class="nt">← Week 8 · Machine Learning for Finance</div><div class="nd">Where the cost ladder killed a +29%/yr signal at 10 bps a side — this week is where that 10 bps comes from.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/microstructure.html"><div class="nl">See also</div>
       <div class="nt">Financial Markets Arena · Microstructure</div><div class="nd">The primer: order types, matching, queue position and adverse selection, without the analytics.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">The 10-week map</div><div class="nd">Where week 9 sits, and the Phase-2 sections it fills in.</div></a>
     <a class="nextcard" href="week10.html"><div class="nl">Next</div>
-      <div class="nt">Week 10 · Review Day &amp; Final &#8594;</div><div class="nd">The second live session, peer analyst reviews by re-running each other's numbers, and the concept list the closed-book exam draws from.</div></a>
+      <div class="nt">Week 10 · Review Day &amp; Final →</div><div class="nd">The second live session, peer analyst reviews by re-running each other’s numbers, and the concept list the closed-book exam draws from.</div></a>
   </div>
 </section>
 
@@ -1064,7 +1069,7 @@ function bps(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === u
     build(); log("book rebuilt", "hl"); draw();
   });
   $("obSpread").addEventListener("input", function () {
-    st.cents = +this.value; $("obSpreadV").innerHTML = st.cents + "&#162;"; build(); draw();
+    st.cents = +this.value; $("obSpreadV").innerHTML = st.cents + "¢"; build(); draw();
   });
   $("obPrice").addEventListener("input", function () {
     st.price = +this.value; $("obPriceV").textContent = "$" + (st.price - 0.5).toFixed(2); build(); draw();
@@ -1209,9 +1214,9 @@ function bps(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === u
   bind("tcSlices", "tcSlicesV", function (v) { st.slices = v; }, function () { return String(st.slices); });
   bind("tcEvery", "tcEveryV", function (v) { st.every = v; },
     function () { return st.every + (st.every === 1 ? " tick" : " ticks"); });
-  bind("tcImp", "tcImpV", function (v) { st.imp = v; }, function () { return st.imp + "&#162;"; });
+  bind("tcImp", "tcImpV", function (v) { st.imp = v; }, function () { return st.imp + "¢"; });
   bind("tcDrift", "tcDriftV", function (v) { st.drift = v; },
-    function () { return (st.drift >= 0 ? "+" : "&#8722;") + Math.abs(st.drift / 100).toFixed(2) + "&#162;/tick"; });
+    function () { return (st.drift >= 0 ? "+" : "−") + Math.abs(st.drift / 100).toFixed(2) + "¢/tick"; });
   $("tcCross").addEventListener("click", function () {
     st.cross = true; this.setAttribute("aria-pressed", "true");
     $("tcPost").setAttribute("aria-pressed", "false"); draw();
@@ -1360,7 +1365,7 @@ function bps(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === u
   function bind(id, vid, f, fm) {
     $(id).addEventListener("input", function () { f(+this.value); $(vid).innerHTML = fm(); draw(); });
   }
-  bind("spCents", "spCentsV", function (v) { st.cents = v; }, function () { return st.cents + "&#162;"; });
+  bind("spCents", "spCentsV", function (v) { st.cents = v; }, function () { return st.cents + "¢"; });
   bind("spClust", "spClustV", function (v) { st.clust = v / 100; },
     function () { return st.clust.toFixed(2); });
   bind("spStale", "spStaleV", function (v) { st.stale = v; }, function () { return st.stale + "%"; });
@@ -1463,7 +1468,7 @@ function bps(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === u
     $(id).addEventListener("input", function () { f(+this.value); $(vid).innerHTML = fm(); draw(); });
   }
   bind("svCf", "svCfV", function (v) { st.cf = v / 10; },
-    function () { return st.cf.toFixed(1) + "&#215;"; });
+    function () { return st.cf.toFixed(1) + "×"; });
   bind("svRate", "svRateV", function (v) { st.rate = v; }, function () { return st.rate + " /s"; });
   bind("svRecip", "svRecipV", function (v) { st.recip = v / 100; },
     function () { return st.recip.toFixed(2); });

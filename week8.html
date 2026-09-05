@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -274,7 +279,7 @@
   <p class="promise">This week you fit a next-day-direction classifier, get an <strong>AUC of
   0.5164</strong> that would fund a desk, and then <em class="hi">count the leak</em> — 1,033,740 training
   rows sharing a date with a row in their own test fold. Rebuilt as purged, embargoed walk-forward the AUC
-  lands on <strong>0.5021</strong>, the coin toss, and the error bar gets <strong>5.7&#215; wider</strong>.
+  lands on <strong>0.5021</strong>, the coin toss, and the error bar gets <strong>5.7× wider</strong>.
   Then the awkward part: a signal whose hit rate is <em class="hi">below</em> the base rate earns
   <strong>+29.56%/yr gross</strong> — and dies at 10 bps a side.</p>
   <ul class="you">
@@ -305,7 +310,7 @@
   <p class="lead">Machine learning for finance is ordinary supervised learning applied to data whose rows
   are not exchangeable. Two rows on the same date are not independent draws — the market moved and both
   moved with it — and a label at <em class="hi">t</em> is a function of a price at <em class="hi">t+h</em>,
-  so a row can know something about its neighbour's answer. Every technique in this week exists to handle
+  so a row can know something about its neighbour’s answer. Every technique in this week exists to handle
   those two facts.</p>
 
   <div class="grid3" style="margin-top:16px">
@@ -327,7 +332,7 @@
     <div class="panel tight"><h3>Eight trailing features</h3>
       <ul class="plain">
         <li><code>mom5</code>, <code>mom21</code>, <code>mom63</code> — trailing returns</li>
-        <li><code>rev1</code> — yesterday's return</li>
+        <li><code>rev1</code> — yesterday’s return</li>
         <li><code>vol21</code> — 21-day realised vol</li>
         <li><code>volume_z</code> — volume, z-scored on 63 days</li>
         <li><code>dist52</code> — distance below the 52-week high</li>
@@ -335,18 +340,18 @@
       </ul>
       <p class="sub" style="margin-top:9px">All computable at the close of day <em class="hi">t</em>, and
       all built with <code>fill_method=None</code>. That argument is not decoration:
-      <code>pct_change</code>'s deprecated default <strong>pads NA values</strong>, carrying the last price
+      <code>pct_change</code>’s deprecated default <strong>pads NA values</strong>, carrying the last price
       across a gap and reporting a 0% return on a day with no price — fabricating returns on exactly the
       days that deserve suspicion.</p></div>
     <div class="panel tight"><h3>The label, and the base rate</h3>
       <div class="kv">
         <div class="k">design matrix</div><div class="v">258,435 × 8</div>
         <div class="k">dates</div><div class="v">2,685</div>
-        <div class="k">label</div><div class="v">sign(r&#8407; t→t+1)</div>
+        <div class="k">label</div><div class="v">sign(r⃗ t→t+1)</div>
         <div class="k">horizon</div><div class="v">1 day</div>
         <div class="k">base rate</div><div class="v">0.5199</div>
       </div>
-      <p class="sub" style="margin-top:9px">Always predicting "up" scores <strong>52% accuracy and zero
+      <p class="sub" style="margin-top:9px">Always predicting “up” scores <strong>52% accuracy and zero
       AUC</strong>. That is why this week scores AUC and not accuracy — and why an accuracy of 0.53 in a
       report is an unanswered question rather than a result.</p></div>
   </div>
@@ -383,7 +388,7 @@
   </div>
   <p class="sub" style="margin-top:10px">The rose bracket is the whole reason the next widget exists. A row
   dated <em class="hi">t</em> carries a label built from prices out to <em class="hi">t+h</em>, so any
-  training row within <em class="hi">h</em> days before a test block already knows part of that block's
+  training row within <em class="hi">h</em> days before a test block already knows part of that block’s
   answer. Purging deletes exactly those rows; embargoing deletes the days just after, where the same
   overlap runs the other way.</p>
 </section>
@@ -434,8 +439,8 @@
       </div>
       <div class="verdict" id="cvVerdict"></div>
       <div class="note" style="margin-top:12px"><b>The two knobs point opposite ways.</b> Raising capacity
-      from 50 iterations at depth 3 to 500 at depth 8 lifts the leaky score 0.5148 &#8594; 0.5182 and drops
-      the honest one 0.5039 &#8594; 0.4997. Capacity is not buying alpha, it is buying a better memory for
+      from 50 iterations at depth 3 to 500 at depth 8 lifts the leaky score 0.5148 → 0.5182 and drops
+      the honest one 0.5039 → 0.4997. Capacity is not buying alpha, it is buying a better memory for
       <em class="hi">which day it is</em>. If validation improves while out-of-sample degrades as you add
       capacity, you are not underfitting — you are measuring your own leak.</div>
     </div>
@@ -452,7 +457,7 @@
           <tr><td class="n">purged + embargoed WF</td><td class="acc">0.5021</td><td>0.0111</td><td class="ok">0</td></tr>
         </tbody></table></div>
       <p class="sub" style="margin-top:9px">Shuffle premium <strong>+0.0144</strong>; purge cost
-      <strong>+0.0024</strong>; error bar <strong>5.7&#215; wider</strong> once honest. Regime 2 earns
+      <strong>+0.0024</strong>; error bar <strong>5.7× wider</strong> once honest. Regime 2 earns
       thirty seconds of your attention: <code>shuffle=False</code> scores 0.5024, nearly the honest answer,
       because contiguous blocks mostly avoid the shared cross-section and leak only at the four seams (794
       rows). <strong>Not shuffling is 90% of the fix</strong> — it still trains on the future, which is why
@@ -463,10 +468,10 @@
         <tbody>
           <tr><td class="n">1 day</td><td>0.5044</td><td>0.5021</td><td>+0.0024</td><td>600</td></tr>
           <tr><td class="n">5 days</td><td>0.5056</td><td>0.5049</td><td>+0.0007</td><td>974</td></tr>
-          <tr><td class="n">21 days</td><td>0.5094</td><td>0.5104</td><td class="ok">&#8722;0.0010</td><td>2,466</td></tr>
+          <tr><td class="n">21 days</td><td>0.5094</td><td>0.5104</td><td class="ok">−0.0010</td><td>2,466</td></tr>
         </tbody></table></div>
       <p class="sub" style="margin-top:9px">In a walk-forward the purge is a <em class="hi">rounding
-      error</em>: even a 21-day label moves the AUC by &#8722;0.0010 — purging slightly helped, i.e. noise.
+      error</em>: even a 21-day label moves the AUC by −0.0010 — purging slightly helped, i.e. noise.
       The leak that mattered was the shuffle, three orders of magnitude bigger: 1,033,740 rows against 467.
       Keep the purge anyway, because it costs 0.002 AUC and it is your only defence once splits stop being
       one-sided. Just do not claim it saved you when the shuffle is what you fixed.</p></div>
@@ -513,7 +518,7 @@
   <div class="kicker">Part 3</div>
   <h2><span class="secnum">3</span>Why it matters: AUC 0.55 is a good day, until you pay for it</h2>
   <p class="lead">AUC is not a P&amp;L, and the translation between them is where most ML-for-finance
-  projects either become interesting or quietly stop. Score every out-of-sample row, sort each day's
+  projects either become interesting or quietly stop. Score every out-of-sample row, sort each day’s
   cross-section into deciles, long the top, short the bottom, hold one day — and then subtract what it
   costs to do that 252 times a year.</p>
 
@@ -526,7 +531,7 @@
         <thead><tr><th>Costs</th><th>bps/day</th><th>%/yr</th><th>Sharpe</th></tr></thead>
         <tbody></tbody></table></div>
       <p class="sub">Measured on 214,891 out-of-sample rows. Pooled AUC <strong>0.5016</strong>, and the top
-      decile's hit rate of <strong>0.5146</strong> is <em class="hi">below</em> the 0.5187 base rate — the
+      decile’s hit rate of <strong>0.5146</strong> is <em class="hi">below</em> the 0.5187 base rate — the
       model picks winners slightly <strong>less</strong> often than chance, and earns +29.56%/yr gross.
       Both are true, and the resolution is the most useful sentence of the week: <strong>the model is not
       sorting by probability of going up, it is sorting by size of move.</strong> Accuracy bets on the sign;
@@ -550,13 +555,13 @@
         <div class="stat"><div class="sl">Verdict</div><div class="sv" id="plVerd">—</div></div>
       </div>
       <div class="verdict" id="plVerdict"></div>
-      <div class="note" style="margin-top:12px"><b>Then refuse to believe it.</b> t = 1.53, p &#8776; 0.13,
-      and the 95% interval on the Sharpe is 0.514 &#177; 0.66 — nine years of daily data and we cannot
-      reject "this is nothing". The extreme deciles are yesterday's losers (&#8722;76 bps) against
-      yesterday's winners (+117 bps), both in the high-vol names (0.0246 and 0.0222 against 0.0169 in the
-      middle): short-term reversal with a volatility tilt, which is week 2's factor problem in an ML
+      <div class="note" style="margin-top:12px"><b>Then refuse to believe it.</b> t = 1.53, p ≈ 0.13,
+      and the 95% interval on the Sharpe is 0.514 ± 0.66 — nine years of daily data and we cannot
+      reject “this is nothing”. The extreme deciles are yesterday’s losers (−76 bps) against
+      yesterday’s winners (+117 bps), both in the high-vol names (0.0246 and 0.0222 against 0.0169 in the
+      middle): short-term reversal with a volatility tilt, which is week 2’s factor problem in an ML
       costume. And <strong>2018 and 2025 give +59.9 and +57.4 bps/day while the other eight years run
-      between &#8722;11.5 and +3.8</strong> — two years of ten carry the entire result.</div>
+      between −11.5 and +3.8</strong> — two years of ten carry the entire result.</div>
     </div>
   </div>
 
@@ -582,7 +587,7 @@
         <button class="btn" id="mcNone" type="button">Clear</button>
       </div>
       <div class="note" style="margin-top:12px"><b>The two rows we grade hardest.</b>
-      <em class="hi">Configs</em> — the honest count, including the ones you deleted, because week 7's
+      <em class="hi">Configs</em> — the honest count, including the ones you deleted, because week 7’s
       deflated-Sharpe argument applies to AUC too: if you tried nine feature sets and reported the best,
       your 0.52 is the maximum of nine draws and its distribution is not that of one draw. And
       <em class="hi">Falsifiable</em> — the test that would change your mind, written down before you run
@@ -601,12 +606,12 @@
     <div class="body">
       <p>Shuffling puts AAPL-on-Tuesday in train and MSFT-on-Tuesday in test. They moved together because
       the market moved, so the model needs no signal at all — only the ability to recognise the day. Counted
-      on the lab's panel: <strong>1,033,740</strong> training rows share a date with a row in their own test
+      on the lab’s panel: <strong>1,033,740</strong> training rows share a date with a row in their own test
       fold, which is every training row, five times over. The AUC comes out at 0.5164 with five folds inside
-      &#177;0.0019, and people trade 0.52.</p>
+      ±0.0019, and people trade 0.52.</p>
       <p>The tell is not the mean, it is the agreement. Leakage lets every fold see the same days, so the
       folds concur, and false agreement reads as precision. The honest estimate on the same data is
-      <strong>5.7&#215; less precise</strong>: you got to be confident and wrong at once.</p>
+      <strong>5.7× less precise</strong>: you got to be confident and wrong at once.</p>
       <p class="fix">Fix: split by <em class="hi">date</em>, never by row, and print a leak audit next to
       every score — <code>same_time</code>, <code>label_overlap</code>, <code>embargoed</code>. A number
       with a zeroed audit beside it is a result; a number alone is a claim.</p>
@@ -614,9 +619,9 @@
 
   <details class="pit"><summary>Reaching for a bigger model when the honest AUC collapses</summary>
     <div class="body">
-      <p>Everyone's first instinct. Take the capacity from 50 iterations at depth 3 to 1,000 with unlimited
+      <p>Everyone’s first instinct. Take the capacity from 50 iterations at depth 3 to 1,000 with unlimited
       depth and 255 leaves, and the two columns move in opposite directions: the leaky score climbs
-      0.5148 &#8594; 0.5182 while the purged one falls 0.5039 &#8594; 0.4997. The gap — the thing you are
+      0.5148 → 0.5182 while the purged one falls 0.5039 → 0.4997. The gap — the thing you are
       actually growing — widens from +0.0109 to +0.0183.</p>
       <p>Capacity buys memory, and on a leaked split memory is rewarded. The diagnostic is general:
       <strong>if validation improves while out-of-sample degrades as you add capacity, the split is
@@ -632,7 +637,7 @@
       hands you <em class="hi">all eight</em> real features with positive importance in a plausible order,
       and the plausible order is what gets written up.</p>
       <p>Honestly measured on each walk-forward test block, the best feature (<code>rev1</code>, at
-      0.00154 &#177; 0.00664) helps in two of five folds, and four features have <strong>negative</strong>
+      0.00154 ± 0.00664) helps in two of five folds, and four features have <strong>negative</strong>
       mean importance — the model would score better if we destroyed them. The correct sentence is: we have
       not established that any of these eight features carries next-day information.</p>
       <p class="fix">Fix: permutation importance, per test block, with a standard deviation and a
@@ -657,12 +662,12 @@
   <details class="pit"><summary>A result carried by two calendar years, sized as though it were nine</summary>
     <div class="body">
       <p>+11.73 bps/day on 2,238 days, with a standard deviation of 362.5, is a t-stat of
-      <strong>1.53</strong> and a Sharpe of 0.514 &#177; 0.66 — an interval that contains zero. Then the
+      <strong>1.53</strong> and a Sharpe of 0.514 ± 0.66 — an interval that contains zero. Then the
       calendar: 2018 gives +59.9 bps/day and 2025 gives +57.4, while the other eight years run between
-      &#8722;11.5 and +3.8. <strong>Two years of ten carry the entire result</strong>, and they are the two
+      −11.5 and +3.8. <strong>Two years of ten carry the entire result</strong>, and they are the two
       volatility regimes — exactly when short-term reversal pays.</p>
-      <p>The exposure check confirms it: decile 9 holds yesterday's losers (&#8722;76.1 bps), decile 0
-      yesterday's winners (+116.7 bps), and both tails sit in the high-vol names. This is a bet on realised
+      <p>The exposure check confirms it: decile 9 holds yesterday’s losers (−76.1 bps), decile 0
+      yesterday’s winners (+116.7 bps), and both tails sit in the high-vol names. This is a bet on realised
       volatility wearing an ML costume, and it must be sized and described as one.</p>
       <p class="fix">Fix: three refusals before you believe your own number — significance (t-stat and a
       Sharpe interval), exposure (regress on the factors you already know about, from week 2), and stability
@@ -676,9 +681,9 @@
   <h2><span class="secnum">5</span>Check yourself</h2>
   <p class="lead">Three questions, instant feedback, nothing recorded.</p>
 
-  <div class="mcq" data-a="1" data-exp="<b>Leakage narrows the error bar as well as raising the mean.</b> Shuffling puts rows from the same date in train and test, so every fold sees essentially the same days and the folds agree with each other &#8212; which is why the leaky spread is &#177;0.0019 and the honest one is 5.7&#215; wider at &#177;0.0111. The tight interval is a symptom, not evidence of a stable model, and it is not a sample-size effect: both regimes fit the same 258,435 rows. Averaging more folds cannot repair a split that shares dates across the boundary.">
-    <p class="q"><span>Q1</span>Leaky <code>KFold</code> gives AUC 0.5164 <b>&#177;0.0019</b>; the purged
-    walk-forward gives 0.5021 <b>&#177;0.0111</b>. Which reading of the error bars is correct?</p>
+  <div class="mcq" data-a="1" data-exp="<b>Leakage narrows the error bar as well as raising the mean.</b> Shuffling puts rows from the same date in train and test, so every fold sees essentially the same days and the folds agree with each other — which is why the leaky spread is ±0.0019 and the honest one is 5.7× wider at ±0.0111. The tight interval is a symptom, not evidence of a stable model, and it is not a sample-size effect: both regimes fit the same 258,435 rows. Averaging more folds cannot repair a split that shares dates across the boundary.">
+    <p class="q"><span>Q1</span>Leaky <code>KFold</code> gives AUC 0.5164 <b>±0.0019</b>; the purged
+    walk-forward gives 0.5021 <b>±0.0111</b>. Which reading of the error bars is correct?</p>
     <div class="opts">
       <button class="opt" type="button">The leaky estimate is more stable, so it should be preferred as the point estimate</button>
       <button class="opt" type="button">The tight interval is part of the leak: shared dates make the folds agree, and false agreement reads as confidence</button>
@@ -688,8 +693,8 @@
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="3" data-exp="<b>It sorts by magnitude, not by sign.</b> The decile long-short earns +11.73 bps/day gross even though the top decile is right slightly less often than chance, because P&amp;L is sign &#215; magnitude: being wrong on many small moves and right on a few large ones is profitable and lowers the hit rate at the same time. There is no contradiction to resolve with a bug hunt, the AUC is not mis-signed (0.5016 is barely above chance either way), and the gross figure is real &#8212; what kills it is the cost ladder, which turns +29.56%/yr into &#8722;20.84%/yr at 10 bps a side.">
-    <p class="q"><span>Q2</span>Pooled out-of-sample AUC is <b>0.5016</b> and the top decile's hit rate
+  <div class="mcq" data-a="3" data-exp="<b>It sorts by magnitude, not by sign.</b> The decile long-short earns +11.73 bps/day gross even though the top decile is right slightly less often than chance, because P&amp;L is sign × magnitude: being wrong on many small moves and right on a few large ones is profitable and lowers the hit rate at the same time. There is no contradiction to resolve with a bug hunt, the AUC is not mis-signed (0.5016 is barely above chance either way), and the gross figure is real — what kills it is the cost ladder, which turns +29.56%/yr into −20.84%/yr at 10 bps a side.">
+    <p class="q"><span>Q2</span>Pooled out-of-sample AUC is <b>0.5016</b> and the top decile’s hit rate
     (0.5146) is <b>below</b> the base rate (0.5187) — yet the decile long-short earns
     <b>+29.56%/yr gross</b>. What is going on?</p>
     <div class="opts">
@@ -701,7 +706,7 @@
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="0" data-exp="<b>The shuffle was the leak; the purge is insurance.</b> On the lab's panel the shared cross-section contributed 1,033,740 contaminated training rows while label overlap in the walk-forward contributed 467 &#8212; three orders of magnitude apart &#8212; and purging a 1-day label costs 0.0024 AUC, with a 21-day label actually improving the score by 0.0010 (i.e. noise). So the purge is worth keeping at a near-zero premium, and it becomes essential the moment your splits have training data on both sides of a test block; but claiming it rescued the result misattributes the fix. The 21-day row is evidence about noise, not about a bigger label being safer.">
+  <div class="mcq" data-a="0" data-exp="<b>The shuffle was the leak; the purge is insurance.</b> On the lab's panel the shared cross-section contributed 1,033,740 contaminated training rows while label overlap in the walk-forward contributed 467 — three orders of magnitude apart — and purging a 1-day label costs 0.0024 AUC, with a 21-day label actually improving the score by 0.0010 (i.e. noise). So the purge is worth keeping at a near-zero premium, and it becomes essential the moment your splits have training data on both sides of a test block; but claiming it rescued the result misattributes the fix. The 21-day row is evidence about noise, not about a bigger label being safer.">
     <p class="q"><span>Q3</span>You fix a leaky pipeline by switching to walk-forward <em>and</em> adding a
     purge, and the AUC falls from 0.5164 to 0.5021. Which change did the work?</p>
     <div class="opts">
@@ -725,11 +730,11 @@
       <li>Build the eight features and the label, state the horizon, and point at the code that purges
       it.</li>
       <li>Run all four split regimes with the leak audit printed beside each AUC, and explain the +0.0144
-      shuffle premium <em class="hi">and</em> the 5.7&#215; wider honest error bar.</li>
+      shuffle premium <em class="hi">and</em> the 5.7× wider honest error bar.</li>
       <li>Sweep capacity and watch the two columns diverge; then measure the purge cost and be honest that
       it is a rounding error.</li>
       <li>Permutation importance per test block, contrasted with the leaky ranking.</li>
-      <li>AUC &#8594; deciles &#8594; bps/day &#8594; %/yr &#8594; the cost ladder that kills it.</li>
+      <li>AUC → deciles → bps/day → %/yr → the cost ladder that kills it.</li>
     </ul></div>
     <div class="panel"><h4>Homework 7 · purged-CV model card</h4><ul class="plain">
       <li>Your own features, on your own universe. State the label and horizon <strong>before</strong> you
@@ -745,13 +750,13 @@
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
       <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — the purged splitter self-tests before you trust it.</div></a>
     <a class="nextcard" href="week7.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 7 · Backtesting &amp; Attribution</div><div class="nd">The same leak in its simplest form: one missing <code>.shift(1)</code>, and a Sharpe that flips from +3.10 to &#8722;3.48.</div></a>
+      <div class="nt">← Week 7 · Backtesting &amp; Attribution</div><div class="nd">The same leak in its simplest form: one missing <code>.shift(1)</code>, and a Sharpe that flips from +3.10 to −3.48.</div></a>
     <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/week7.html"><div class="nl">See also</div>
       <div class="nt">Systematic Trading Arena · ML for trading</div><div class="nd">The same discipline pointed at a live venue: features from a book, labels from fills, and what a model costs to run in production.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">The 10-week map</div><div class="nd">Where week 8 sits, and the Phase-2 section it fills in.</div></a>
     <a class="nextcard" href="week9.html"><div class="nl">Next</div>
-      <div class="nt">Week 9 · Microstructure &amp; Execution Analytics &#8594;</div><div class="nd">Where the costs in this week's ladder come from, measured on a live tape: spreads, depth, imbalance, implementation shortfall, and three surveillance detectors that accuse the innocent.</div></a>
+      <div class="nt">Week 9 · Microstructure &amp; Execution Analytics →</div><div class="nd">Where the costs in this week’s ladder come from, measured on a live tape: spreads, depth, imbalance, implementation shortfall, and three surveillance detectors that accuse the innocent.</div></a>
   </div>
 </section>
 

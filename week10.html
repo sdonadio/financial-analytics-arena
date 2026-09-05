@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -307,7 +312,7 @@
   <div class="grid2" style="margin-top:16px">
     <div class="panel">
       <h3>Widget 1 · the ten-second pre-flight</h3>
-      <p class="sub">Six assertions, each printing what it actually did rather than "connected". Break
+      <p class="sub">Six assertions, each printing what it actually did rather than “connected”. Break
       things with the buttons and watch which checks notice.</p>
       <div class="chk" id="pfList" style="margin-top:12px"></div>
       <div class="row" style="margin-top:12px">
@@ -330,21 +335,21 @@
       platform.</b> The socket is up. <strong>547 messages arrive in twelve seconds.</strong> Ten of eleven
       books are two-sided, <code>best_bid</code> and <code>best_ask</code> are populated, the spreads are
       sane. Every health check a student writes on the first attempt passes — and the market has been dead
-      for thirty-seven seconds, because a disconnected participant's resting orders are never cancelled.
-      Your bot will keep trading against a corpse, and its fills will be real. <strong>Liveness is not "the
-      data is arriving", it is "the data is changing"</strong>, and the only way to know is to compare two
+      for thirty-seven seconds, because a disconnected participant’s resting orders are never cancelled.
+      Your bot will keep trading against a corpse, and its fills will be real. <strong>Liveness is not “the
+      data is arriving”, it is “the data is changing”</strong>, and the only way to know is to compare two
       snapshots.</div>
       <div class="panel tight"><h3>The session run sheet</h3>
         <div class="tablewrap"><table class="t">
           <thead><tr><th>When</th><th>Your team</th></tr></thead>
           <tbody>
-            <tr><td class="n">T&#8722;15</td><td><code>git pull</code>, install, pre-flight → READY</td></tr>
-            <tr><td class="n">T&#8722;10</td><td>dry-run against localhost 60 s; confirm one fill</td></tr>
-            <tr><td class="n">T&#8722;5</td><td>set position and loss limits; write down the P&amp;L you <em>expect</em></td></tr>
-            <tr><td class="n">T&#8722;0</td><td>connect, log <code>TEAM_ID</code>, keep your own order log</td></tr>
+            <tr><td class="n">T−15</td><td><code>git pull</code>, install, pre-flight → READY</td></tr>
+            <tr><td class="n">T−10</td><td>dry-run against localhost 60 s; confirm one fill</td></tr>
+            <tr><td class="n">T−5</td><td>set position and loss limits; write down the P&amp;L you <em>expect</em></td></tr>
+            <tr><td class="n">T−0</td><td>connect, log <code>TEAM_ID</code>, keep your own order log</td></tr>
             <tr><td class="n">T+X</td><td>shocks injected — do not intervene by hand</td></tr>
             <tr><td class="n">T+25</td><td>flatten, save logs, copy the tape path into your report</td></tr>
-            <tr><td class="n">T+30</td><td>run week 9's four tools on your own tape, immediately</td></tr>
+            <tr><td class="n">T+30</td><td>run week 9’s four tools on your own tape, immediately</td></tr>
           </tbody></table></div>
         <p class="sub" style="margin-top:9px">Two rules that are not negotiable. <strong>Keep your own
         order log</strong> — the recording is broadcast-only, so cancels, rejects and decision prices exist
@@ -362,7 +367,7 @@
   <h2><span class="secnum">2</span>How it works: review by re-running, and close out Phase 2</h2>
   <p class="lead">A review that only reads the PDF is worth nothing — the whole point of the reproducibility
   policy is that you can check. Three commands against their repo before you write a word: their
-  performance metrics at <em class="hi">their</em> claimed trial count, their tape's microstructure
+  performance metrics at <em class="hi">their</em> claimed trial count, their tape’s microstructure
   statistics, and the surveillance rules with the market maker exempted.</p>
 
   <h3 style="margin-top:22px">Widget 2 · score the sample tearsheet, then meet the consensus</h3>
@@ -374,20 +379,20 @@
         <div class="stat"><div class="sl">Your total</div><div class="sv acc" id="trMine">0 / 24</div></div>
         <div class="stat"><div class="sl">Consensus</div><div class="sv" id="trCons">13 / 24</div></div>
         <div class="stat"><div class="sl">Mean deviation</div><div class="sv" id="trDev">—</div></div>
-        <div class="stat"><div class="sl">Rows &#8805;2 apart</div><div class="sv" id="trBig">—</div></div>
+        <div class="stat"><div class="sl">Rows ≥2 apart</div><div class="sv" id="trBig">—</div></div>
       </div>
       <div class="verdict" id="trVerdict"></div>
       <div class="note" style="margin-top:12px"><b>The row we grade hardest is the last one.</b> Every
       tearsheet contains one number its authors cannot fully defend. A good reviewer finds it, says so
       plainly, and is specific about what evidence would change their mind. And if your reproduced Sharpe
       differs from theirs, you have found either a different data vintage or a different definition — both
-      are review findings, and <em class="hi">"which of us is right?"</em> is the most useful sentence in
+      are review findings, and <em class="hi">“which of us is right?”</em> is the most useful sentence in
       the room.</div>
     </div>
     <div class="panel">
       <h3>Team Kestrel · tearsheet v3 · momentum reproduction</h3>
       <p class="sub"><code>make tearsheet</code> ran on the third attempt after a manual data download.
-      Claims: Sharpe <strong>1.94</strong> on a 2015–2026 walk-forward, "costs applied", one live session
+      Claims: Sharpe <strong>1.94</strong> on a 2015–2026 walk-forward, “costs applied”, one live session
       attended, attribution table present, no trial count stated, tape path not in the report.</p>
       <div id="trRows" style="margin-top:12px"></div>
       <div class="row" style="margin-top:10px">
@@ -430,7 +435,7 @@
       <div class="note"><b>The rubric that grades you is the one you just used on someone else.</b> That
       symmetry is deliberate. In one sentence, what we are looking for: <em class="hi">a strategy whose
       every number we can re-derive from your repo, whose backtest-to-live gap you have decomposed rather
-      than excused, and whose overfitting section tells us how many things you tried.</em> Bring week 9's
+      than excused, and whose overfitting section tells us how many things you tried.</em> Bring week 9’s
       three numbers — backtest P&amp;L, live P&amp;L, and the split of the difference — on the first
       page.</div>
     </div>
@@ -463,7 +468,7 @@
         <div class="k">Fails if</div><div class="v" id="ctFail">—</div>
       </div>
       <div class="note" style="margin-top:14px"><b>Two questions the exam asks in some form, because they
-      are the course's spine.</b> <em class="hi">Where does the number come from?</em> — every figure must
+      are the course’s spine.</b> <em class="hi">Where does the number come from?</em> — every figure must
       be traceable to a script and a data vintage. And <em class="hi">how many things did you try?</em>
       — the honest answer changes the significance of everything else.</div>
     </div>
@@ -510,17 +515,17 @@
       nothing has changed for thirty-seven seconds because the market maker died and its resting orders were
       never cancelled. Your fills against that book are real, and so is the P&amp;L.</p>
       <p>The generalisation: every liveness check that counts <em class="hi">arrivals</em> rather than
-      <em class="hi">changes</em> passes on a dead market. That includes "the websocket is open", "we
-      received a book_snapshot", and "best_bid is not None".</p>
+      <em class="hi">changes</em> passes on a dead market. That includes “the websocket is open”, “we
+      received a book_snapshot”, and “best_bid is not None”.</p>
       <p class="fix">Fix: compare two snapshots and assert something moved, per symbol, and gate the launch
       on it — <code>w10_preflight.py</code> exits non-zero when anything WARNs or FAILs, so wire it into
       your launch script. Then add a seventh check: the age of your <em class="hi">own</em> last fill, so a
       bot that has stopped trading while the market moves flags itself.</p>
     </div></details>
 
-  <details class="pit"><summary>Dialling the hosted arena from a "local" run</summary>
+  <details class="pit"><summary>Dialling the hosted arena from a “local” run</summary>
     <div class="body">
-      <p><code>make register</code> wrote the class arena's address into <code>.env</code>, and
+      <p><code>make register</code> wrote the class arena’s address into <code>.env</code>, and
       <code>shared/envfile.load_env()</code> feeds it to every config module. So a run you believe is local
       quietly connects to the shared venue — with a 32-character <code>ARENA_TOKEN</code> attached, which
       the local venue would have ignored because it runs with <code>AUTH_REQUIRED=false</code>. In week 9
@@ -528,16 +533,16 @@
       <p>Its cousin: <code>make kill</code> is port-blind. It <code>pkill</code>s every
       <code>exchange.server</code> on the machine, so on a shared lab machine agree who runs it.</p>
       <p class="fix">Fix: print the URL you actually connected to, in every process, at startup — that is
-      why the pre-flight's first line is the URL and whether it is local. Set
+      why the pre-flight’s first line is the URL and whether it is local. Set
       <code>EXCHANGE_HOST=localhost</code> explicitly on every client in a local run rather than relying on
       the absence of a variable.</p>
     </div></details>
 
   <details class="pit"><summary>Reviewing the PDF instead of the repo</summary>
     <div class="body">
-      <p>A review that paraphrases someone's abstract back at them is worth no marks and helps nobody. The
+      <p>A review that paraphrases someone’s abstract back at them is worth no marks and helps nobody. The
       reproducibility policy exists precisely so that a reviewer can re-run three commands and compare: the
-      performance metrics at the team's own claimed trial count, the microstructure statistics of their
+      performance metrics at the team’s own claimed trial count, the microstructure statistics of their
       tape, and the surveillance rules with the known market maker exempted.</p>
       <p>The most common finding is not fraud, it is <em class="hi">definition drift</em> — a different
       annualisation, a different data vintage, a Sharpe computed on marks rather than days. Both parties
@@ -550,7 +555,7 @@
 
   <details class="pit"><summary>Excusing the backtest-to-live gap instead of decomposing it</summary>
     <div class="body">
-      <p>"Live underperformed because of latency and market conditions" is not a Phase-2 report. The gap has
+      <p>“Live underperformed because of latency and market conditions” is not a Phase-2 report. The gap has
       four measurable parts and you have the tools for all of them: <strong>fees</strong> from the TCA
       report, <strong>spread</strong> from the effective-versus-quoted comparison, <strong>impact</strong>
       from the implementation shortfall against your decision price, and <strong>unfilled intent</strong>
@@ -559,7 +564,7 @@
       naming it honestly is worth more than making it small.</p>
       <p class="fix">Fix: one table, four rows plus a residual, reconciling to the difference between the
       backtested P&amp;L and the live P&amp;L. Put it on page one. If the components do not sum to the gap,
-      that is a reconciliation failure and week 7's rule applies: nothing after it is graded.</p>
+      that is a reconciliation failure and week 7’s rule applies: nothing after it is graded.</p>
     </div></details>
 </section>
 
@@ -569,31 +574,31 @@
   <h2><span class="secnum">5</span>Check yourself</h2>
   <p class="lead">Three questions, instant feedback, nothing recorded.</p>
 
-  <div class="mcq" data-a="2" data-exp="<b>Compare two snapshots.</b> Message arrivals, two-sidedness and spread sanity all pass on a book that has not changed for half a minute, because a disconnected maker's resting orders are never cancelled &#8212; so the only check that distinguishes a calm market from a dead one is whether any field moved between two observations. A higher message count proves nothing, order acknowledgements do not tell you about the market, and a token check answers a different question (which venue you are on).">
+  <div class="mcq" data-a="2" data-exp="<b>Compare two snapshots.</b> Message arrivals, two-sidedness and spread sanity all pass on a book that has not changed for half a minute, because a disconnected maker's resting orders are never cancelled — so the only check that distinguishes a calm market from a dead one is whether any field moved between two observations. A higher message count proves nothing, order acknowledgements do not tell you about the market, and a token check answers a different question (which venue you are on).">
     <p class="q"><span>Q1</span>You need one check that distinguishes a calm market from a dead one. Which
     is it?</p>
     <div class="opts">
       <button class="opt" type="button">Message rate above a threshold — a dead venue stops sending</button>
       <button class="opt" type="button">Every symbol has a non-null best bid and best ask</button>
-      <button class="opt" type="button">At least one symbol's book changed between two snapshots taken seconds apart</button>
+      <button class="opt" type="button">At least one symbol’s book changed between two snapshots taken seconds apart</button>
       <button class="opt" type="button">The token was accepted and the role came back as trader</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
 
   <div class="mcq" data-a="1" data-exp="<b>Reconcile to net worth and note the restart.</b> realized_pnl is assigned from the exchange, whose ledger was genuinely reset when it restarted, so the field is telling the truth about a source that forgot; cash plus mark-to-mid is unaffected and remains the number every decomposition in this course reconciles to. Debugging your own counter mid-session burns the run, restarting your bot does not restore the venue's ledger, and reporting +0.00 as a result would be reporting a known artefact.">
-    <p class="q"><span>Q2</span>The venue restarts mid-session and your bot's <code>realized_pnl</code>
+    <p class="q"><span>Q2</span>The venue restarts mid-session and your bot’s <code>realized_pnl</code>
     reads <b>+0.00</b> for the rest of the run. What do you do?</p>
     <div class="opts">
       <button class="opt" type="button">Stop and debug your P&amp;L counter — a zero after fills is a bug in your bot</button>
       <button class="opt" type="button">Keep trading; reconcile to net worth instead, and note the restart in the report</button>
-      <button class="opt" type="button">Restart your bot so it re-syncs the exchange's ledger</button>
+      <button class="opt" type="button">Restart your bot so it re-syncs the exchange’s ledger</button>
       <button class="opt" type="button">Report +0.00 as the session result, since that is what the venue says</button>
     </div>
     <div class="fb" role="status"></div>
   </div>
 
-  <div class="mcq" data-a="3" data-exp="<b>Decompose the gap, do not explain it away.</b> The four measurable terms are fees (from the TCA report), spread (effective versus quoted), impact (implementation shortfall against your decision price) and unfilled intent (the opportunity-cost term) &#8212; and whatever remains is the part of the market your model does not contain, which you name rather than minimise. Attributing the gap to latency without measuring it, re-fitting on the live tape, or averaging two sessions all replace a measurement with a story.">
+  <div class="mcq" data-a="3" data-exp="<b>Decompose the gap, do not explain it away.</b> The four measurable terms are fees (from the TCA report), spread (effective versus quoted), impact (implementation shortfall against your decision price) and unfilled intent (the opportunity-cost term) — and whatever remains is the part of the market your model does not contain, which you name rather than minimise. Attributing the gap to latency without measuring it, re-fitting on the live tape, or averaging two sessions all replace a measurement with a story.">
     <p class="q"><span>Q3</span>Your live P&amp;L is 40% below the backtest. What belongs on page one of
     the Phase-2 report?</p>
     <div class="opts">
@@ -614,7 +619,7 @@
     <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
       <li>Pre-flight green, then the second live scored session. Keep your own order log; copy the tape path
       into the report before you leave.</li>
-      <li>Two peer reviews, filed in the reviewed teams' repos, with a score and evidence in every rubric
+      <li>Two peer reviews, filed in the reviewed teams’ repos, with a score and evidence in every rubric
       row and the commit SHA you reproduced from.</li>
       <li>Complete the Phase-2 checklist for your track, including the track-specific row and the
       <code>AI-USE</code> note.</li>
@@ -638,7 +643,7 @@
     <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
       <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — the pre-flight and the four analytics tools all self-test.</div></a>
     <a class="nextcard" href="week9.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 9 · Microstructure &amp; Execution Analytics</div><div class="nd">Where the four tools came from, and the three numbers you bring to review day.</div></a>
+      <div class="nt">← Week 9 · Microstructure &amp; Execution Analytics</div><div class="nd">Where the four tools came from, and the three numbers you bring to review day.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">Home · start again</div><div class="nd">The 10-week map, from a return panel you fetched yourself to a live tape you surveilled.</div></a>
     <a class="nextcard" href="week1.html"><div class="nl">Where it began</div>

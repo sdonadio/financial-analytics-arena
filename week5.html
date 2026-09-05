@@ -248,9 +248,14 @@
   .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
   /* ── mobile guard (identical on every page): single column under 720px,
         no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+    html{scroll-behavior:auto}
+  }
   @media (max-width:720px){
     .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
-    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack,
+    .brow,.loopgrid,.qgrid{
       grid-template-columns:minmax(0,1fr)}
     [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
     pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
@@ -297,7 +302,7 @@
 <section id="what">
   <div class="kicker">Part 1</div>
   <h2><span class="secnum">1</span>What is it? Four representations of exactly one thing</h2>
-  <p class="lead">"The yield curve" is a single object with four faces, and every mistake in this week's
+  <p class="lead">“The yield curve” is a single object with four faces, and every mistake in this week’s
   homework comes from using one where another was meant. The <strong>par curve</strong> is what gets
   quoted. The <strong>discount-factor curve</strong> is what you actually multiply cash flows by. The
   <strong>zero curve</strong> is the same information expressed as a rate. The <strong>forward curve</strong>
@@ -313,11 +318,11 @@
     object you should store and interpolate: no compounding convention, no day count, nothing to get
     wrong.</p></div>
     <div class="panel"><h4>Zero rate <code>z(t)</code></h4><p class="sub"><code>DF(t) =
-    (1+z(t))<sup>&#8722;t</sup></code>. The yield on a bond with one cash flow. Every valuation in the
-    course discounts with these, not with par yields — discounting a ten-year bond's five-year coupon at
+    (1+z(t))<sup>−t</sup></code>. The yield on a bond with one cash flow. Every valuation in the
+    course discounts with these, not with par yields — discounting a ten-year bond’s five-year coupon at
     the ten-year par yield is simply wrong.</p></div>
-    <div class="panel"><h4>Forward rate <code>f(t&#8321;,t&#8322;)</code></h4><p class="sub">The rate you can
-    lock in today for a future period: <code>DF(t&#8321;)/DF(t&#8322;) &#8722; 1</code>. It is an
+    <div class="panel"><h4>Forward rate <code>f(t₁,t₂)</code></h4><p class="sub">The rate you can
+    lock in today for a future period: <code>DF(t₁)/DF(t₂) − 1</code>. It is an
     <em class="hi">arbitrage</em> relationship, not an expectation. A steep forward curve means carry, not
     a prediction that rates will rise.</p></div>
   </div>
@@ -350,18 +355,18 @@
     </div>
     <div class="stack">
       <div class="panel tight">
-        <div class="ctl"><label for="ycL">Level &#946;&#8320; <b id="ycLV">4.40%</b></label>
+        <div class="ctl"><label for="ycL">Level β₀ <b id="ycLV">4.40%</b></label>
           <input type="range" id="ycL" min="50" max="800" value="440" step="10" aria-label="Nelson-Siegel level parameter in basis points" /></div>
-        <div class="ctl"><label for="ycS">Slope &#946;&#8321; <b id="ycSV">&#8722;2.00%</b></label>
+        <div class="ctl"><label for="ycS">Slope β₁ <b id="ycSV">−2.00%</b></label>
           <input type="range" id="ycS" min="-300" max="300" value="-200" step="10" aria-label="Nelson-Siegel slope parameter in basis points" /></div>
-        <div class="ctl"><label for="ycC">Curvature &#946;&#8322; <b id="ycCV">&#8722;0.50%</b></label>
+        <div class="ctl"><label for="ycC">Curvature β₂ <b id="ycCV">−0.50%</b></label>
           <input type="range" id="ycC" min="-300" max="300" value="-50" step="10" aria-label="Nelson-Siegel curvature parameter in basis points" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">2s10s slope</div><div class="sv acc" id="ycSlope">&#8212;</div></div>
-        <div class="stat"><div class="sl">10-year DF</div><div class="sv" id="ycDf10">&#8212;</div></div>
-        <div class="stat"><div class="sl">PV of $1m in 10y</div><div class="sv" id="ycPv">&#8212;</div></div>
-        <div class="stat"><div class="sl">Shape</div><div class="sv" id="ycShape">&#8212;</div></div>
+        <div class="stat"><div class="sl">2s10s slope</div><div class="sv acc" id="ycSlope">—</div></div>
+        <div class="stat"><div class="sl">10-year DF</div><div class="sv" id="ycDf10">—</div></div>
+        <div class="stat"><div class="sl">PV of $1m in 10y</div><div class="sv" id="ycPv">—</div></div>
+        <div class="stat"><div class="sl">Shape</div><div class="sv" id="ycShape">—</div></div>
       </div>
       <div class="tablewrap"><table class="t" aria-label="Bootstrapped discount factors, zero rates and forward rates by tenor">
         <thead><tr><th>t</th><th>par %</th><th>DF(t)</th><th>zero %</th><th>fwd %</th></tr></thead>
@@ -417,7 +422,7 @@ C  = (t * (t + <span class="n">1</span>) * cf * d).sum() / (
 
 dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</span></pre>
       <p class="sub" style="margin-top:9px">Modified duration is the percentage price move per 1% yield
-      move; <code>DV01 = MD &#215; P / 10000</code> is the same thing in dollars per basis point, and it is
+      move; <code>DV01 = MD × P / 10000</code> is the same thing in dollars per basis point, and it is
       the unit every rates desk speaks in. Convexity is the correction that makes a 200&#8239;bp move
       hedgeable.</p>
     </div>
@@ -425,7 +430,7 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
 
   <h3 style="margin-top:30px">Interactive · duration, convexity and the error you can measure</h3>
   <p class="sub" style="margin-bottom:12px">One annual-coupon bond, revalued exactly, against the two
-  Taylor approximations a risk system might use. Drag the parallel shift out to &#177;200&#8239;bp and watch
+  Taylor approximations a risk system might use. Drag the parallel shift out to ±200&#8239;bp and watch
   the <b>duration-only</b> estimate fall away while <b>duration + convexity</b> tracks. The error column is
   in cents per $100 face — small enough to ignore on a 10&#8239;bp move, and the reason for a
   convexity hedge on a 200&#8239;bp one.</p>
@@ -443,12 +448,12 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
           <input type="range" id="dcS" min="-200" max="200" value="100" step="5" aria-label="Parallel yield shift in basis points" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Price now</div><div class="sv" id="dcP0">&#8212;</div></div>
-        <div class="stat"><div class="sl">Macaulay D</div><div class="sv" id="dcD">&#8212;</div></div>
-        <div class="stat"><div class="sl">Modified D</div><div class="sv acc" id="dcMd">&#8212;</div></div>
-        <div class="stat"><div class="sl">Convexity</div><div class="sv" id="dcCx">&#8212;</div></div>
-        <div class="stat"><div class="sl">DV01 per $100</div><div class="sv" id="dcDv">&#8212;</div></div>
-        <div class="stat"><div class="sl">DV01 on $10m</div><div class="sv acc" id="dcDvm">&#8212;</div></div>
+        <div class="stat"><div class="sl">Price now</div><div class="sv" id="dcP0">—</div></div>
+        <div class="stat"><div class="sl">Macaulay D</div><div class="sv" id="dcD">—</div></div>
+        <div class="stat"><div class="sl">Modified D</div><div class="sv acc" id="dcMd">—</div></div>
+        <div class="stat"><div class="sl">Convexity</div><div class="sv" id="dcCx">—</div></div>
+        <div class="stat"><div class="sl">DV01 per $100</div><div class="sv" id="dcDv">—</div></div>
+        <div class="stat"><div class="sl">DV01 on $10m</div><div class="sv acc" id="dcDvm">—</div></div>
       </div>
     </div>
     <div class="stack">
@@ -456,7 +461,7 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
         <svg id="dcSvg" viewBox="0 0 660 290" role="img" aria-label="Bond price against yield, with the duration-only tangent and the duration plus convexity parabola"></svg>
       </div>
       <div class="tablewrap"><table class="t" aria-label="Exact revaluation against duration and convexity approximations">
-        <thead><tr><th>Method</th><th>New price</th><th>&#916;P per $100</th><th>Error</th></tr></thead>
+        <thead><tr><th>Method</th><th>New price</th><th>ΔP per $100</th><th>Error</th></tr></thead>
         <tbody id="dcTbody"></tbody>
       </table></div>
       <div class="panel tight"><p class="sub" id="dcNote"></p></div>
@@ -491,10 +496,10 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
           <input type="range" id="beQ" min="0" max="120" value="15" step="5" aria-label="TIPS liquidity premium in basis points" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Breakeven (exact)</div><div class="sv acc" id="beBe">&#8212;</div></div>
-        <div class="stat"><div class="sl">Naive n &#8722; r</div><div class="sv" id="beNaive">&#8212;</div></div>
-        <div class="stat"><div class="sl">Fisher correction</div><div class="sv" id="beGap">&#8212;</div></div>
-        <div class="stat"><div class="sl">Expected inflation</div><div class="sv" id="beExp">&#8212;</div></div>
+        <div class="stat"><div class="sl">Breakeven (exact)</div><div class="sv acc" id="beBe">—</div></div>
+        <div class="stat"><div class="sl">Naive n − r</div><div class="sv" id="beNaive">—</div></div>
+        <div class="stat"><div class="sl">Fisher correction</div><div class="sv" id="beGap">—</div></div>
+        <div class="stat"><div class="sl">Expected inflation</div><div class="sv" id="beExp">—</div></div>
       </div>
       <div class="row">
         <button class="btn" type="button" id="beMar20">Set to 2020-03-19</button>
@@ -557,10 +562,10 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
           <button class="btn" type="button" id="pcZero">Zero the scores</button></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">RMS residual</div><div class="sv" id="pcRms">&#8212;</div></div>
+        <div class="stat"><div class="sl">RMS residual</div><div class="sv" id="pcRms">—</div></div>
         <div class="stat"><div class="sl">Variance explained</div><div class="sv acc" id="pcVar">98.0%</div></div>
-        <div class="stat"><div class="sl">Worst tenor miss</div><div class="sv" id="pcWorst">&#8212;</div></div>
-        <div class="stat"><div class="sl">P&amp;L on a $10m 10y</div><div class="sv" id="pcPnl">&#8212;</div></div>
+        <div class="stat"><div class="sl">Worst tenor miss</div><div class="sv" id="pcWorst">—</div></div>
+        <div class="stat"><div class="sl">P&amp;L on a $10m 10y</div><div class="sv" id="pcPnl">—</div></div>
       </div>
       <div class="tablewrap"><table class="t" aria-label="Variance explained by each principal component">
         <thead><tr><th>PC</th><th>Meaning</th><th>Var %</th><th>Cum %</th></tr></thead>
@@ -573,12 +578,12 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
   <div class="note" style="margin-top:20px"><b>What the hedger buys with this.</b> If three factors explain
   98% of curve variance, a book with zero PC1, PC2 and PC3 exposure has almost no curve risk — so you hedge
   three numbers instead of thirty, using three liquid instruments. The residual 2% is basis risk, and you
-  size it rather than ignore it. Week 4's discipline applies unchanged: report the residual, do not assume
+  size it rather than ignore it. Week 4’s discipline applies unchanged: report the residual, do not assume
   it away.</div>
 
   <h3 style="margin-top:32px">Interactive · a credit spread as an implied default probability</h3>
-  <p class="sub" style="margin-bottom:12px">The credit triangle: <code>spread &#8776; PD &#215;
-  (1&#8722;recovery)</code>. Invert it and a quoted spread becomes an implied annual default probability —
+  <p class="sub" style="margin-bottom:12px">The credit triangle: <code>spread ≈ PD ×
+  (1−recovery)</code>. Invert it and a quoted spread becomes an implied annual default probability —
   under an assumption about recovery that nobody can observe until it is too late. Compare the implied
   number to the realised historical default rate for that rating and the gap is the risk premium you are
   being paid, which for investment grade is most of the spread.</p>
@@ -588,13 +593,13 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
       <div class="panel tight">
         <div class="ctl"><label for="crRating">Rating</label>
           <select id="crRating" aria-label="Credit rating">
-            <option value="AAA">AAA &#183; 45 bp</option>
-            <option value="AA">AA &#183; 60 bp</option>
-            <option value="A">A &#183; 90 bp</option>
-            <option value="BBB" selected="selected">BBB &#183; 145 bp</option>
-            <option value="BB">BB &#183; 290 bp</option>
-            <option value="B">B &#183; 460 bp</option>
-            <option value="CCC">CCC &#183; 900 bp</option>
+            <option value="AAA">AAA · 45 bp</option>
+            <option value="AA">AA · 60 bp</option>
+            <option value="A">A · 90 bp</option>
+            <option value="BBB" selected="selected">BBB · 145 bp</option>
+            <option value="BB">BB · 290 bp</option>
+            <option value="B">B · 460 bp</option>
+            <option value="CCC">CCC · 900 bp</option>
           </select></div>
         <div class="ctl"><label for="crSpread">Spread override <b id="crSpreadV">145 bp</b></label>
           <input type="range" id="crSpread" min="10" max="1200" value="145" step="5" aria-label="Credit spread in basis points" /></div>
@@ -604,12 +609,12 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
           <input type="range" id="crH" min="1" max="10" value="5" step="1" aria-label="Horizon in years" /></div>
       </div>
       <div class="stats">
-        <div class="stat"><div class="sl">Implied annual PD</div><div class="sv acc" id="crPd">&#8212;</div></div>
-        <div class="stat"><div class="sl">Cumulative PD</div><div class="sv" id="crCum">&#8212;</div></div>
-        <div class="stat"><div class="sl">Historical 1y rate</div><div class="sv" id="crHist">&#8212;</div></div>
-        <div class="stat"><div class="sl">Implied / realised</div><div class="sv warn" id="crMult">&#8212;</div></div>
-        <div class="stat"><div class="sl">Expected loss</div><div class="sv" id="crEl">&#8212;</div></div>
-        <div class="stat"><div class="sl">Risk premium</div><div class="sv ok" id="crRp">&#8212;</div></div>
+        <div class="stat"><div class="sl">Implied annual PD</div><div class="sv acc" id="crPd">—</div></div>
+        <div class="stat"><div class="sl">Cumulative PD</div><div class="sv" id="crCum">—</div></div>
+        <div class="stat"><div class="sl">Historical 1y rate</div><div class="sv" id="crHist">—</div></div>
+        <div class="stat"><div class="sl">Implied / realised</div><div class="sv warn" id="crMult">—</div></div>
+        <div class="stat"><div class="sl">Expected loss</div><div class="sv" id="crEl">—</div></div>
+        <div class="stat"><div class="sl">Risk premium</div><div class="sv ok" id="crRp">—</div></div>
       </div>
     </div>
     <div class="stack">
@@ -634,15 +639,15 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
       curve. On a steep curve the error on a long bond is 40–90&#8239;bp of price, which is an order of
       magnitude larger than any bid-ask you will ever cross.</p>
       <p>The same error in relative-value form is worse: two bonds with the same maturity and different
-      coupons have different yields on a sloped curve, and a "cheap/rich" screen built on yield differences
+      coupons have different yields on a sloped curve, and a “cheap/rich” screen built on yield differences
       is measuring the coupon, not value.</p>
       <p class="fix">Fix: bootstrap once, store <code>DF(t)</code>, and price everything as
       <code>cf @ DF</code>. Then quote yields as an output, never use them as an input.</p>
     </div></details>
 
-  <details class="pit"><summary><code>DGS10</code> is not a zero rate, and FRED's <code>NaN</code>s are holidays</summary>
+  <details class="pit"><summary><code>DGS10</code> is not a zero rate, and FRED’s <code>NaN</code>s are holidays</summary>
     <div class="body">
-      <p>FRED's <code>DGS*</code> series are constant-maturity <em class="hi">par</em> yields interpolated
+      <p>FRED’s <code>DGS*</code> series are constant-maturity <em class="hi">par</em> yields interpolated
       by Treasury from the on-the-run curve — semi-annual, bond-equivalent, and not a zero. Treating them as
       zeros skips the bootstrap altogether and mis-states long discount factors by tens of basis points.</p>
       <p>And every one of those series has <code>.</code> on market holidays, which
@@ -661,7 +666,7 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
       long the convex leg and against you if you are short it.</p>
       <p>And curve risk: a portfolio long the 2-year and short the 10-year can be perfectly
       duration-neutral and still lose money on every flattening, because PC2 exposure is not PC1
-      exposure. A "duration-hedged" barbell is a leveraged bet on curvature.</p>
+      exposure. A “duration-hedged” barbell is a leveraged bet on curvature.</p>
       <p class="fix">Fix: report key-rate durations or PC1/PC2/PC3 exposures, not one duration number, and
       include the convexity term whenever the scenario exceeds about 50&#8239;bp. The widget in Part 2
       shows you exactly where the linear approximation crosses your tolerance.</p>
@@ -674,24 +679,24 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
       liquidity event they do not: in March 2020 the 5-year breakeven fell from 1.7% to under 0.2% in three
       weeks, and most of that was TIPS being dumped by funds that needed cash, not the market forecasting
       deflation.</p>
-      <p>Its cousin: the naive subtraction. <code>n &#8722; r</code> is a first-order approximation to
-      <code>(1+n)/(1+r) &#8722; 1</code>; at a 4% nominal and 1.8% real the difference is only about
+      <p>Its cousin: the naive subtraction. <code>n − r</code> is a first-order approximation to
+      <code>(1+n)/(1+r) − 1</code>; at a 4% nominal and 1.8% real the difference is only about
       4&#8239;bp, but it is a free correction and graders notice.</p>
       <p class="fix">Fix: use the exact Fisher ratio, and whenever you quote a breakeven, quote it as
-      "breakeven, not expected inflation" and say which way the premia are likely to be pushing. Cross-check
-      against FRED's own <code>T5YIE</code>.</p>
+      “breakeven, not expected inflation” and say which way the premia are likely to be pushing. Cross-check
+      against FRED’s own <code>T5YIE</code>.</p>
     </div></details>
 
   <details class="pit"><summary>Inverting the credit triangle and forgetting that recovery is an assumption</summary>
     <div class="body">
-      <p><code>PD = s/(1&#8722;R)</code> is exact under a flat-hazard, risk-neutral model, and every term on
+      <p><code>PD = s/(1−R)</code> is exact under a flat-hazard, risk-neutral model, and every term on
       the right is a choice. Move recovery from 40% to 25% and the implied PD falls by a fifth; the market
       quote did not change at all. Reporting an implied PD without the recovery assumption next to it is
       reporting half a number.</p>
-      <p>Second, the implied PD is <em class="hi">risk-neutral</em>. For investment grade it runs 3–8&#215;
+      <p>Second, the implied PD is <em class="hi">risk-neutral</em>. For investment grade it runs 3–8×
       the realised historical default rate, because the spread also pays for liquidity, ratings-migration
       risk and the fact that defaults cluster in bad states of the world. Comparing an implied PD to a
-      historical table and concluding "the market is wrong" is the classic first-year error.</p>
+      historical table and concluding “the market is wrong” is the classic first-year error.</p>
       <p class="fix">Fix: always publish the triple — spread, recovery assumption, implied PD — and show the
       implied/realised multiple alongside. Then say which part you think is default compensation and which
       is premium, and size accordingly.</p>
@@ -749,14 +754,14 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
       <li>Bootstrap discount factors and zero rates for one date; check that
       <code>cf @ DF == 100</code> for each par bond to <code>1e-8</code>.</li>
       <li>Compute duration, modified duration, convexity and DV01 for a 10-year 4% bond; verify the
-      approximation error at &#177;25, &#177;100 and &#177;200&#8239;bp.</li>
+      approximation error at ±25, ±100 and ±200&#8239;bp.</li>
       <li>Plot the 5-year breakeven since 2003 and mark 2008-11, 2020-03 and 2022-06.</li>
       <li>PCA ten years of daily curve <em class="hi">changes</em>; report the three loadings, the variance
       explained, and reconstruct the largest single-day move from three scores.</li>
     </ul></div>
     <div class="panel"><h4>Homework 5 · curve &amp; breakeven notebook</h4><ul class="plain">
-      <li>A reproducible curve builder: FRED &#8594; par yields &#8594; discount factors &#8594; zeros
-      &#8594; forwards, with the round-trip assertion in a test.</li>
+      <li>A reproducible curve builder: FRED → par yields → discount factors → zeros
+      → forwards, with the round-trip assertion in a test.</li>
       <li>Duration and convexity for three bonds, with a table of approximation error against exact
       revaluation at five shift sizes.</li>
       <li>The breakeven series with its decomposition discussed in two paragraphs — and an explicit
@@ -771,11 +776,11 @@ dP = -MD * P * dy + <span class="n">0.5</span> * C * P * dy**<span class="n">2</
     <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/assets.html"><div class="nl">See also</div>
       <div class="nt">Financial Markets Arena · Asset Classes</div><div class="nd">What a bond actually is before you discount it: coupons, accrual, the primary/secondary split, and why a Treasury and a corporate are not the same instrument.</div></a>
     <a class="nextcard" href="week4.html"><div class="nl">Previous</div>
-      <div class="nt">&#8592; Week 4 · Risk Analytics</div><div class="nd">VaR, ES, GARCH and the exceedance backtest — the discipline you now apply to a curve instead of an equity book.</div></a>
+      <div class="nt">← Week 4 · Risk Analytics</div><div class="nd">VaR, ES, GARCH and the exceedance backtest — the discipline you now apply to a curve instead of an equity book.</div></a>
     <a class="nextcard" href="index.html"><div class="nl">Course home</div>
       <div class="nt">The 10-week map</div><div class="nd">Where week 5 sits, and which later weeks import the macro panel.</div></a>
     <a class="nextcard" href="week6.html"><div class="nl">Next</div>
-      <div class="nt">Week 6 · Derivatives Analytics &#8594;</div><div class="nd">Now put the discount curve to work: payoffs, Black-Scholes, the Greeks, implied vol, and the smile that says the model is wrong.</div></a>
+      <div class="nt">Week 6 · Derivatives Analytics →</div><div class="nd">Now put the discount curve to work: payoffs, Black-Scholes, the Greeks, implied vol, and the smile that says the model is wrong.</div></a>
   </div>
 </section>
 
