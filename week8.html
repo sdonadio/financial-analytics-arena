@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 8 · Machine Learning for Finance — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week7.html">← Week 7</a> · <b>Week 8 · Machine Learning for Finance</b> · <a href="week9.html">Week 9 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 8</div>
+  <h1>Machine Learning for Finance</h1>
+  <p class="promise">This week you fit a next-day-direction classifier, get an <strong>AUC of
+  0.5164</strong> that would fund a desk, and then <em class="hi">count the leak</em> — 1,033,740 training
+  rows sharing a date with a row in their own test fold. Rebuilt as purged, embargoed walk-forward the AUC
+  lands on <strong>0.5021</strong>, the coin toss, and the error bar gets <strong>5.7&#215; wider</strong>.
+  Then the awkward part: a signal whose hit rate is <em class="hi">below</em> the base rate earns
+  <strong>+29.56%/yr gross</strong> — and dies at 10 bps a side.</p>
+  <ul class="you">
+    <li>Build features and a label on the week-1 panel, and state the <strong>label horizon</strong> before
+    you fit anything — it is the single number that decides how much of your training set is
+    contaminated.</li>
+    <li>Run the same model under four split regimes and read the <em class="hi">leak audit</em> beside every
+    AUC: <code>same_time</code>, <code>label_overlap</code>, <code>embargoed</code>.</li>
+    <li>Watch <strong>capacity</strong> move the leaky score up and the honest one down, and understand why
+    that is a diagnosis rather than a hyperparameter problem.</li>
+    <li>Redo feature importance honestly — <em class="hi">not one of eight features is positively
+    distinguishable from zero</em>, and the two that clear a standard deviation do so on the wrong side —
+    then watch the leaky fit invent a <em class="hi">confident explanation</em>.</li>
+    <li>Translate AUC into money, find the cost level where the strategy dies, and leave with a
+    <strong>model card</strong> whose last two rows separate an analyst from an enthusiast.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: leaky KFold → purged embargoed walk-forward → AUC to P&amp;L</span>
+    <span class="pill">HW7: purged-CV model card</span>
+    <span class="pill warn">Phase 2: model trained this week</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? A supervised-learning problem with a clock in it</h2>
+  <p class="lead">Machine learning for finance is ordinary supervised learning applied to data whose rows
+  are not exchangeable. Two rows on the same date are not independent draws — the market moved and both
+  moved with it — and a label at <em class="hi">t</em> is a function of a price at <em class="hi">t+h</em>,
+  so a row can know something about its neighbour's answer. Every technique in this week exists to handle
+  those two facts.</p>
+
+  <div class="grid3" style="margin-top:16px">
+    <div class="panel tight"><h3>The panel, and its sidecar</h3>
+      <div class="kv">
+        <div class="k">source</div><div class="v">CBOE (fallback)</div>
+        <div class="k">adjustment</div><div class="v">split only</div>
+        <div class="k">rows</div><div class="v">290,943</div>
+        <div class="k">tickers × days</div><div class="v">100 × 2,937</div>
+        <div class="k">coverage</div><div class="v">0.9906</div>
+        <div class="k">as-of</div><div class="v">2026-09-03</div>
+      </div>
+      <p class="sub" style="margin-top:9px">Four consecutive <code>yfinance</code> pulls of the same 100
+      names returned <strong>74, 70, 62 and 86</strong> of them — and raised nothing. A partial panel that
+      does not fail is worse than one that does, because the survivors are not a random sample. Refuse
+      anything below <code>--min-coverage</code> and record what the fallback cost you: CBOE is
+      split-adjusted but <em class="hi">not</em> dividend-adjusted, which belongs on the model card, not in
+      a footnote.</p></div>
+    <div class="panel tight"><h3>Eight trailing features</h3>
+      <ul class="plain">
+        <li><code>mom5</code>, <code>mom21</code>, <code>mom63</code> — trailing returns</li>
+        <li><code>rev1</code> — yesterday's return</li>
+        <li><code>vol21</code> — 21-day realised vol</li>
+        <li><code>volume_z</code> — volume, z-scored on 63 days</li>
+        <li><code>dist52</code> — distance below the 52-week high</li>
+        <li><code>xrank21</code> — cross-sectional rank of <code>mom21</code></li>
+      </ul>
+      <p class="sub" style="margin-top:9px">All computable at the close of day <em class="hi">t</em>, and
+      all built with <code>fill_method=None</code>. That argument is not decoration:
+      <code>pct_change</code>'s deprecated default <strong>pads NA values</strong>, carrying the last price
+      across a gap and reporting a 0% return on a day with no price — fabricating returns on exactly the
+      days that deserve suspicion.</p></div>
+    <div class="panel tight"><h3>The label, and the base rate</h3>
+      <div class="kv">
+        <div class="k">design matrix</div><div class="v">258,435 × 8</div>
+        <div class="k">dates</div><div class="v">2,685</div>
+        <div class="k">label</div><div class="v">sign(r&#8407; t→t+1)</div>
+        <div class="k">horizon</div><div class="v">1 day</div>
+        <div class="k">base rate</div><div class="v">0.5199</div>
+      </div>
+      <p class="sub" style="margin-top:9px">Always predicting "up" scores <strong>52% accuracy and zero
+      AUC</strong>. That is why this week scores AUC and not accuracy — and why an accuracy of 0.53 in a
+      report is an unanswered question rather than a result.</p></div>
+  </div>
+
+  <h3 style="margin-top:26px">Widget 1 · the feature/label builder, and the number you must purge</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="flSvg" viewBox="0 0 700 260" role="img"
+        aria-label="One row of the design matrix: the feature window ending at t, and the label window reaching forward to t plus h"></svg></div>
+      <div class="stats" style="margin-top:12px">
+        <div class="stat"><div class="sl">Rows (modelled)</div><div class="sv acc" id="flRows">—</div></div>
+        <div class="stat"><div class="sl">Features</div><div class="sv" id="flFeat">—</div></div>
+        <div class="stat"><div class="sl">Warm-up dropped</div><div class="sv" id="flWarm">—</div></div>
+        <div class="stat"><div class="sl">Base rate</div><div class="sv" id="flBase">—</div></div>
+      </div>
+      <div class="verdict" id="flVerdict"></div>
+    </div>
+    <div class="panel">
+      <h3>Features in the matrix</h3>
+      <div class="chips" id="flChips"></div>
+      <div class="ctl" style="margin-top:14px"><label for="flH">Label horizon <b id="flHV">1 day</b></label>
+        <input type="range" id="flH" min="1" max="21" value="1" step="1" aria-label="Label horizon in days"></div>
+      <div class="ctl"><label for="flK">Universe <b id="flKV">100 tickers</b></label>
+        <input type="range" id="flK" min="10" max="100" value="100" step="1" aria-label="Number of tickers in the universe"></div>
+      <div class="ctl"><label for="flT">History <b id="flTV">2,685 dates</b></label>
+        <input type="range" id="flT" min="250" max="2937" value="2685" step="1" aria-label="Number of dates of history"></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn" id="flPad" type="button" aria-pressed="false">pct_change pads NAs</button>
+        <button class="btn" id="flCentre" type="button" aria-pressed="false">use a centred window</button>
+      </div>
+      <div class="panel tight" style="margin-top:12px"><h3>Look-ahead audit</h3>
+        <div class="log" id="flLog" role="status" aria-live="polite"></div></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:10px">The rose bracket is the whole reason the next widget exists. A row
+  dated <em class="hi">t</em> carries a label built from prices out to <em class="hi">t+h</em>, so any
+  training row within <em class="hi">h</em> days before a test block already knows part of that block's
+  answer. Purging deletes exactly those rows; embargoing deletes the days just after, where the same
+  overlap runs the other way.</p>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How it works: four ways to split, and only one of them is honest</h2>
+  <p class="lead">The same model, the same features, the same label — and an AUC that moves by 0.0144
+  depending on how the folds were cut. The point is not that leakage inflates a score. It is that leakage
+  makes the folds <em class="hi">agree</em>, and false agreement reads as confidence.</p>
+
+  <h3 style="margin-top:22px">Widget 2 · leaky <code>KFold</code> versus purged, embargoed walk-forward</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="tabs" role="tablist" aria-label="Cross-validation regime">
+        <button class="tab" id="cvT0" type="button" role="tab" aria-selected="true">1 · KFold(shuffle=True)</button>
+        <button class="tab" id="cvT1" type="button" role="tab" aria-selected="false">2 · KFold(shuffle=False)</button>
+        <button class="tab" id="cvT2" type="button" role="tab" aria-selected="false">3 · walk-forward, no purge</button>
+        <button class="tab" id="cvT3" type="button" role="tab" aria-selected="false">4 · purged + embargoed WF</button>
+      </div>
+      <div class="svgwrap"><svg id="cvSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Fold structure over a date axis: which dates train, which test, and where the purge and embargo gaps fall"></svg></div>
+      <div class="legend">
+        <span><i style="background:#fda4af"></i>train</span>
+        <span><i style="background:#58a6ff"></i>test</span>
+        <span><i style="background:#f85149"></i>leaked into train</span>
+        <span><i style="background:#d29922"></i>purged</span>
+        <span><i style="background:#a78bfa"></i>embargoed</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="cvSplits">Splits <b id="cvSplitsV">5</b></label>
+        <input type="range" id="cvSplits" min="2" max="8" value="5" step="1" aria-label="Number of cross-validation splits"></div>
+      <div class="ctl"><label for="cvPurge">Purge = label horizon <b id="cvPurgeV">1 day</b></label>
+        <input type="range" id="cvPurge" min="0" max="21" value="1" step="1" aria-label="Purge length in days"></div>
+      <div class="ctl"><label for="cvEmb">Embargo <b id="cvEmbV">5 days</b></label>
+        <input type="range" id="cvEmb" min="0" max="20" value="5" step="1" aria-label="Embargo length in days"></div>
+      <div class="ctl"><label for="cvCap">Model capacity <b id="cvCapV">150 iters, depth 4</b></label>
+        <input type="range" id="cvCap" min="0" max="3" value="1" step="1" aria-label="Model capacity level"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">AUC</div><div class="sv" id="cvAuc">—</div></div>
+        <div class="stat"><div class="sl">Fold spread ±</div><div class="sv" id="cvSd">—</div></div>
+        <div class="stat"><div class="sl">same_time</div><div class="sv" id="cvSt">—</div></div>
+        <div class="stat"><div class="sl">label_overlap</div><div class="sv" id="cvLo">—</div></div>
+        <div class="stat"><div class="sl">embargoed</div><div class="sv" id="cvEmbN">—</div></div>
+        <div class="stat"><div class="sl">Train rows</div><div class="sv" id="cvTrain">—</div></div>
+      </div>
+      <div class="verdict" id="cvVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>The two knobs point opposite ways.</b> Raising capacity
+      from 50 iterations at depth 3 to 500 at depth 8 lifts the leaky score 0.5148 &#8594; 0.5182 and drops
+      the honest one 0.5039 &#8594; 0.4997. Capacity is not buying alpha, it is buying a better memory for
+      <em class="hi">which day it is</em>. If validation improves while out-of-sample degrades as you add
+      capacity, you are not underfitting — you are measuring your own leak.</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:20px">
+    <div class="panel"><h4>The four regimes, measured</h4>
+      <div class="tablewrap"><table class="t">
+        <thead><tr><th>Regime</th><th>AUC</th><th>±</th><th>same_time</th></tr></thead>
+        <tbody>
+          <tr class="lead-row"><td class="n">KFold(shuffle=True)</td><td class="ok">0.5164</td><td>0.0019</td><td class="bad">1,033,740</td></tr>
+          <tr><td class="n">KFold(shuffle=False)</td><td>0.5024</td><td>0.0106</td><td>397</td></tr>
+          <tr><td class="n">walk-forward, no purge</td><td>0.5044</td><td>0.0159</td><td>0</td></tr>
+          <tr><td class="n">purged + embargoed WF</td><td class="acc">0.5021</td><td>0.0111</td><td class="ok">0</td></tr>
+        </tbody></table></div>
+      <p class="sub" style="margin-top:9px">Shuffle premium <strong>+0.0144</strong>; purge cost
+      <strong>+0.0024</strong>; error bar <strong>5.7&#215; wider</strong> once honest. Regime 2 earns
+      thirty seconds of your attention: <code>shuffle=False</code> scores 0.5024, nearly the honest answer,
+      because contiguous blocks mostly avoid the shared cross-section and leak only at the four seams (794
+      rows). <strong>Not shuffling is 90% of the fix</strong> — it still trains on the future, which is why
+      we do not stop there.</p></div>
+    <div class="panel"><h4>Be honest about the purge, too</h4>
+      <div class="tablewrap"><table class="t">
+        <thead><tr><th>Horizon</th><th>No purge</th><th>Purged</th><th>Cost</th><th>Rows cut</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1 day</td><td>0.5044</td><td>0.5021</td><td>+0.0024</td><td>600</td></tr>
+          <tr><td class="n">5 days</td><td>0.5056</td><td>0.5049</td><td>+0.0007</td><td>974</td></tr>
+          <tr><td class="n">21 days</td><td>0.5094</td><td>0.5104</td><td class="ok">&#8722;0.0010</td><td>2,466</td></tr>
+        </tbody></table></div>
+      <p class="sub" style="margin-top:9px">In a walk-forward the purge is a <em class="hi">rounding
+      error</em>: even a 21-day label moves the AUC by &#8722;0.0010 — purging slightly helped, i.e. noise.
+      The leak that mattered was the shuffle, three orders of magnitude bigger: 1,033,740 rows against 467.
+      Keep the purge anyway, because it costs 0.002 AUC and it is your only defence once splits stop being
+      one-sided. Just do not claim it saved you when the shuffle is what you fixed.</p></div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 3 · feature importance, and the explanation a leak invents</h3>
+  <p>Permutation importance is the AUC you lose when one column is shuffled — computed on each walk-forward
+  test block, never on a leaky fit and never from <code>.feature_importances_</code>, which counts training
+  splits and will happily rank pure noise. Add noise columns below and watch which regime notices.</p>
+  <div class="split-r">
+    <div class="panel">
+      <div class="sw" role="group" aria-label="Which fit produced the importances" style="margin-bottom:12px">
+        <button id="fiHon" type="button" aria-pressed="true">Purged walk-forward</button>
+        <button id="fiLeak" type="button" aria-pressed="false">Leaky KFold</button>
+      </div>
+      <div class="ctl"><label for="fiNoise">Pure-noise features added <b id="fiNoiseV">0</b></label>
+        <input type="range" id="fiNoise" min="0" max="12" value="0" step="1" aria-label="Number of pure-noise features added"></div>
+      <div class="ctl"><label for="fiSeed">Seed <b id="fiSeedV">3</b></label>
+        <input type="range" id="fiSeed" min="1" max="30" value="3" step="1" aria-label="Random seed"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Positive mean</div><div class="sv" id="fiPos">—</div></div>
+        <div class="stat"><div class="sl">Inside 1 sd of 0</div><div class="sv" id="fiZero">—</div></div>
+        <div class="stat"><div class="sl">Noise in top 3</div><div class="sv" id="fiTop">—</div></div>
+        <div class="stat"><div class="sl">Best feature</div><div class="sv acc" id="fiBest">—</div></div>
+      </div>
+      <div class="verdict" id="fiVerdict"></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap"><svg id="fiSvg" viewBox="0 0 700 330" role="img"
+        aria-label="Permutation importance per feature with error bars, real features and pure-noise features"></svg></div>
+      <div class="note"><b>A leaky model reports a wrong score and a wrong explanation — and the
+      explanation is the more persuasive of the two.</b> Honestly measured, no feature is positively
+      distinguishable from zero — six of eight sit inside one standard deviation of it and the other two
+      are negative — the best helps in <em class="hi">two of five folds</em>, and four have negative mean
+      importance. The leaky fit gives all eight positive importance in a
+      plausible order, and from that you write a confident paragraph about momentum decay and the
+      52-week-high effect, every word of it about fold structure.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: AUC 0.55 is a good day, until you pay for it</h2>
+  <p class="lead">AUC is not a P&amp;L, and the translation between them is where most ML-for-finance
+  projects either become interesting or quietly stop. Score every out-of-sample row, sort each day's
+  cross-section into deciles, long the top, short the bottom, hold one day — and then subtract what it
+  costs to do that 252 times a year.</p>
+
+  <h3 style="margin-top:22px">Widget 4 · from AUC to money, and the cost level where it dies</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="plSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Net annual return against cost per side, with the break-even cost marked"></svg></div>
+      <div class="tablewrap" style="margin-top:12px"><table class="t" id="plTable">
+        <thead><tr><th>Costs</th><th>bps/day</th><th>%/yr</th><th>Sharpe</th></tr></thead>
+        <tbody></tbody></table></div>
+      <p class="sub">Measured on 214,891 out-of-sample rows. Pooled AUC <strong>0.5016</strong>, and the top
+      decile's hit rate of <strong>0.5146</strong> is <em class="hi">below</em> the 0.5187 base rate — the
+      model picks winners slightly <strong>less</strong> often than chance, and earns +29.56%/yr gross.
+      Both are true, and the resolution is the most useful sentence of the week: <strong>the model is not
+      sorting by probability of going up, it is sorting by size of move.</strong> Accuracy bets on the sign;
+      P&amp;L bets on sign × magnitude.</p>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="plGross">Gross long-short spread <b id="plGrossV">11.73 bps/day</b></label>
+        <input type="range" id="plGross" min="0" max="4000" value="1173" step="1" aria-label="Gross long-short spread in tenths of a basis point per day"></div>
+      <div class="ctl"><label for="plCost">Cost per side <b id="plCostV">0.0 bps</b></label>
+        <input type="range" id="plCost" min="0" max="200" value="0" step="1" aria-label="Cost per side in tenths of a basis point"></div>
+      <div class="ctl"><label for="plHold">Holding period <b id="plHoldV">1 day</b></label>
+        <input type="range" id="plHold" min="1" max="21" value="1" step="1" aria-label="Holding period in days"></div>
+      <div class="ctl"><label for="plSd">Daily spread volatility <b id="plSdV">362.5 bps</b></label>
+        <input type="range" id="plSd" min="500" max="8000" value="3625" step="25" aria-label="Standard deviation of the daily spread in tenths of a basis point"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Net</div><div class="sv" id="plNet">—</div></div>
+        <div class="stat"><div class="sl">Net annual</div><div class="sv" id="plAnn">—</div></div>
+        <div class="stat"><div class="sl">Sharpe</div><div class="sv" id="plSh">—</div></div>
+        <div class="stat"><div class="sl">Break-even cost</div><div class="sv warn" id="plBe">—</div></div>
+        <div class="stat"><div class="sl">t-stat, 2,238 days</div><div class="sv" id="plT">—</div></div>
+        <div class="stat"><div class="sl">Verdict</div><div class="sv" id="plVerd">—</div></div>
+      </div>
+      <div class="verdict" id="plVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>Then refuse to believe it.</b> t = 1.53, p &#8776; 0.13,
+      and the 95% interval on the Sharpe is 0.514 &#177; 0.66 — nine years of daily data and we cannot
+      reject "this is nothing". The extreme deciles are yesterday's losers (&#8722;76 bps) against
+      yesterday's winners (+117 bps), both in the high-vol names (0.0246 and 0.0222 against 0.0169 in the
+      middle): short-term reversal with a volatility tilt, which is week 2's factor problem in an ML
+      costume. And <strong>2018 and 2025 give +59.9 and +57.4 bps/day while the other eight years run
+      between &#8722;11.5 and +3.8</strong> — two years of ten carry the entire result.</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 5 · the model card</h3>
+  <p>The artefact of this week is not the model, it is the card. Fill it in from the numbers on your screen,
+  in the room, before the enthusiasm wears off. The dial below is not a grade — it is a readiness check: a
+  card with the last two rows blank is a card that has nothing to say.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="chk" id="mcList"></div>
+    </div>
+    <div class="panel">
+      <h3>Readiness</h3>
+      <div class="bar"><i id="mcBar"></i></div>
+      <div class="smoke" id="mcSmoke"><span class="lamp"></span><span id="mcSmokeT">0 / 12 rows filled</span></div>
+      <div class="stats" style="margin-top:14px">
+        <div class="stat"><div class="sl">Rows filled</div><div class="sv acc" id="mcN">0</div></div>
+        <div class="stat"><div class="sl">Critical rows</div><div class="sv" id="mcCrit">0 / 4</div></div>
+      </div>
+      <div class="verdict" id="mcVerdict"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="mcAll" type="button">Tick everything</button>
+        <button class="btn" id="mcNone" type="button">Clear</button>
+      </div>
+      <div class="note" style="margin-top:12px"><b>The two rows we grade hardest.</b>
+      <em class="hi">Configs</em> — the honest count, including the ones you deleted, because week 7's
+      deflated-Sharpe argument applies to AUC too: if you tried nine feature sets and reported the best,
+      your 0.52 is the maximum of nine draws and its distribution is not that of one draw. And
+      <em class="hi">Falsifiable</em> — the test that would change your mind, written down before you run
+      it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Every one of these has been submitted, defended, and only then diagnosed. Open them.</p>
+
+  <details class="pit"><summary><code>KFold(shuffle=True)</code> on a panel — the million-row leak nobody sees</summary>
+    <div class="body">
+      <p>Shuffling puts AAPL-on-Tuesday in train and MSFT-on-Tuesday in test. They moved together because
+      the market moved, so the model needs no signal at all — only the ability to recognise the day. Counted
+      on the lab's panel: <strong>1,033,740</strong> training rows share a date with a row in their own test
+      fold, which is every training row, five times over. The AUC comes out at 0.5164 with five folds inside
+      &#177;0.0019, and people trade 0.52.</p>
+      <p>The tell is not the mean, it is the agreement. Leakage lets every fold see the same days, so the
+      folds concur, and false agreement reads as precision. The honest estimate on the same data is
+      <strong>5.7&#215; less precise</strong>: you got to be confident and wrong at once.</p>
+      <p class="fix">Fix: split by <em class="hi">date</em>, never by row, and print a leak audit next to
+      every score — <code>same_time</code>, <code>label_overlap</code>, <code>embargoed</code>. A number
+      with a zeroed audit beside it is a result; a number alone is a claim.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reaching for a bigger model when the honest AUC collapses</summary>
+    <div class="body">
+      <p>Everyone's first instinct. Take the capacity from 50 iterations at depth 3 to 1,000 with unlimited
+      depth and 255 leaves, and the two columns move in opposite directions: the leaky score climbs
+      0.5148 &#8594; 0.5182 while the purged one falls 0.5039 &#8594; 0.4997. The gap — the thing you are
+      actually growing — widens from +0.0109 to +0.0183.</p>
+      <p>Capacity buys memory, and on a leaked split memory is rewarded. The diagnostic is general:
+      <strong>if validation improves while out-of-sample degrades as you add capacity, the split is
+      leaking.</strong> No amount of regularisation search fixes a fold structure.</p>
+      <p class="fix">Fix: fix the split first, then tune. Sweep capacity under the purged splitter only, and
+      publish both columns of the sweep so a reader can see the gap rather than trust your conclusion.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reading <code>.feature_importances_</code> off a leaky fit and writing the economics paragraph</summary>
+    <div class="body">
+      <p>Impurity importance counts how often a column was split on, so it assigns importance to pure noise
+      by construction — feed the model twelve random columns and it will rank them. Worse, the leaky fit
+      hands you <em class="hi">all eight</em> real features with positive importance in a plausible order,
+      and the plausible order is what gets written up.</p>
+      <p>Honestly measured on each walk-forward test block, the best feature (<code>rev1</code>, at
+      0.00154 &#177; 0.00664) helps in two of five folds, and four features have <strong>negative</strong>
+      mean importance — the model would score better if we destroyed them. The correct sentence is: we have
+      not established that any of these eight features carries next-day information.</p>
+      <p class="fix">Fix: permutation importance, per test block, with a standard deviation and a
+      folds-positive count beside every value. Then include noise columns on purpose: if they rank, your
+      ranking method is the finding.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reporting AUC as though it were a strategy — or a P&amp;L as though it were a signal</summary>
+    <div class="body">
+      <p>The two errors are mirror images and both appear in the same lab. A pooled AUC of 0.5016 with a
+      top-decile hit rate <em class="hi">below</em> the base rate earns +29.56%/yr gross, because the model
+      sorts by size of move rather than by probability of a positive sign. Quote the AUC alone and you have
+      buried the result; quote the gross alone and you have buried the costs.</p>
+      <p>Then the ladder. At 1 bp a side it is +24.52%/yr; at 5 bps, +4.36% and a Sharpe of 0.08; at 10 bps
+      — realistic all-in for a daily long-short in size — it <strong>loses 20.84% a year</strong>. A daily
+      strategy turns the book over every day, so it pays the spread about 500 times a year.</p>
+      <p class="fix">Fix: report AUC, hit rate against the base rate, and the cost ladder in the same table,
+      and name the cost level at which the strategy dies. Then ask whether a longer holding period is
+      available to you, because that is the only lever that moves the cost term.</p>
+    </div></details>
+
+  <details class="pit"><summary>A result carried by two calendar years, sized as though it were nine</summary>
+    <div class="body">
+      <p>+11.73 bps/day on 2,238 days, with a standard deviation of 362.5, is a t-stat of
+      <strong>1.53</strong> and a Sharpe of 0.514 &#177; 0.66 — an interval that contains zero. Then the
+      calendar: 2018 gives +59.9 bps/day and 2025 gives +57.4, while the other eight years run between
+      &#8722;11.5 and +3.8. <strong>Two years of ten carry the entire result</strong>, and they are the two
+      volatility regimes — exactly when short-term reversal pays.</p>
+      <p>The exposure check confirms it: decile 9 holds yesterday's losers (&#8722;76.1 bps), decile 0
+      yesterday's winners (+116.7 bps), and both tails sit in the high-vol names. This is a bet on realised
+      volatility wearing an ML costume, and it must be sized and described as one.</p>
+      <p class="fix">Fix: three refusals before you believe your own number — significance (t-stat and a
+      Sharpe interval), exposure (regress on the factors you already know about, from week 2), and stability
+      (the per-year bar chart). If two periods carry it, say so in the abstract, not the appendix.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="1" data-exp="<b>Leakage narrows the error bar as well as raising the mean.</b> Shuffling puts rows from the same date in train and test, so every fold sees essentially the same days and the folds agree with each other &#8212; which is why the leaky spread is &#177;0.0019 and the honest one is 5.7&#215; wider at &#177;0.0111. The tight interval is a symptom, not evidence of a stable model, and it is not a sample-size effect: both regimes fit the same 258,435 rows. Averaging more folds cannot repair a split that shares dates across the boundary.">
+    <p class="q"><span>Q1</span>Leaky <code>KFold</code> gives AUC 0.5164 <b>&#177;0.0019</b>; the purged
+    walk-forward gives 0.5021 <b>&#177;0.0111</b>. Which reading of the error bars is correct?</p>
+    <div class="opts">
+      <button class="opt" type="button">The leaky estimate is more stable, so it should be preferred as the point estimate</button>
+      <button class="opt" type="button">The tight interval is part of the leak: shared dates make the folds agree, and false agreement reads as confidence</button>
+      <button class="opt" type="button">The purged estimate is noisier because it trains on fewer rows, so the difference is a sample-size artefact</button>
+      <button class="opt" type="button">Both are fine; averaging over more folds would bring them together</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>It sorts by magnitude, not by sign.</b> The decile long-short earns +11.73 bps/day gross even though the top decile is right slightly less often than chance, because P&amp;L is sign &#215; magnitude: being wrong on many small moves and right on a few large ones is profitable and lowers the hit rate at the same time. There is no contradiction to resolve with a bug hunt, the AUC is not mis-signed (0.5016 is barely above chance either way), and the gross figure is real &#8212; what kills it is the cost ladder, which turns +29.56%/yr into &#8722;20.84%/yr at 10 bps a side.">
+    <p class="q"><span>Q2</span>Pooled out-of-sample AUC is <b>0.5016</b> and the top decile's hit rate
+    (0.5146) is <b>below</b> the base rate (0.5187) — yet the decile long-short earns
+    <b>+29.56%/yr gross</b>. What is going on?</p>
+    <div class="opts">
+      <button class="opt" type="button">A bug: a below-base-rate hit rate cannot produce a positive expected return</button>
+      <button class="opt" type="button">The AUC is inverted — flipping the sign of the predictions would give both a higher hit rate and the same P&amp;L</button>
+      <button class="opt" type="button">The gross figure is an artefact of the leak, and it will vanish under purged splits</button>
+      <button class="opt" type="button">The model is sorting by size of move rather than probability of a positive sign, so it is wrong more often and right when it is large</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="0" data-exp="<b>The shuffle was the leak; the purge is insurance.</b> On the lab's panel the shared cross-section contributed 1,033,740 contaminated training rows while label overlap in the walk-forward contributed 467 &#8212; three orders of magnitude apart &#8212; and purging a 1-day label costs 0.0024 AUC, with a 21-day label actually improving the score by 0.0010 (i.e. noise). So the purge is worth keeping at a near-zero premium, and it becomes essential the moment your splits have training data on both sides of a test block; but claiming it rescued the result misattributes the fix. The 21-day row is evidence about noise, not about a bigger label being safer.">
+    <p class="q"><span>Q3</span>You fix a leaky pipeline by switching to walk-forward <em>and</em> adding a
+    purge, and the AUC falls from 0.5164 to 0.5021. Which change did the work?</p>
+    <div class="opts">
+      <button class="opt" type="button">The walk-forward: the shuffle was worth 1,033,740 contaminated rows, the purge 467 — keep the purge as cheap insurance, but do not credit it</button>
+      <button class="opt" type="button">The purge: deleting the label window is what removed the contamination</button>
+      <button class="opt" type="button">Both equally, since the AUC only moves once both are applied</button>
+      <button class="opt" type="button">Neither — the drop is the smaller training set, and a longer label horizon would restore the score</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Rebuild the panel from a named source and read its sidecar — source, adjustment, as-of, coverage —
+      then explain why a 62-of-100 pull is refused rather than used.</li>
+      <li>Build the eight features and the label, state the horizon, and point at the code that purges
+      it.</li>
+      <li>Run all four split regimes with the leak audit printed beside each AUC, and explain the +0.0144
+      shuffle premium <em class="hi">and</em> the 5.7&#215; wider honest error bar.</li>
+      <li>Sweep capacity and watch the two columns diverge; then measure the purge cost and be honest that
+      it is a rounding error.</li>
+      <li>Permutation importance per test block, contrasted with the leaky ranking.</li>
+      <li>AUC &#8594; deciles &#8594; bps/day &#8594; %/yr &#8594; the cost ladder that kills it.</li>
+    </ul></div>
+    <div class="panel"><h4>Homework 7 · purged-CV model card</h4><ul class="plain">
+      <li>Your own features, on your own universe. State the label and horizon <strong>before</strong> you
+      fit anything.</li>
+      <li>A leak audit beside every AUC, and the honest-versus-leaky pair for your own splits.</li>
+      <li>Count your configurations out loud — including the ones you abandoned.</li>
+      <li>Grades attach to the model card and the falsification test, not the AUC: <strong>a well-measured
+      0.50 beats an unexplained 0.56.</strong></li>
+      <li>One-line <code>AI-USE</code> note on the deliverable.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — the purged splitter self-tests before you trust it.</div></a>
+    <a class="nextcard" href="week7.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 7 · Backtesting &amp; Attribution</div><div class="nd">The same leak in its simplest form: one missing <code>.shift(1)</code>, and a Sharpe that flips from +3.10 to &#8722;3.48.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/week7.html"><div class="nl">See also</div>
+      <div class="nt">Systematic Trading Arena · ML for trading</div><div class="nd">The same discipline pointed at a live venue: features from a book, labels from fills, and what a model costs to run in production.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">The 10-week map</div><div class="nd">Where week 8 sits, and the Phase-2 section it fills in.</div></a>
+    <a class="nextcard" href="week9.html"><div class="nl">Next</div>
+      <div class="nt">Week 9 · Microstructure &amp; Execution Analytics &#8594;</div><div class="nd">Where the costs in this week's ladder come from, measured on a live tape: spreads, depth, imbalance, implementation shortfall, and three surveillance detectors that accuse the innocent.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 8 — Machine Learning for Finance
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("flSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+function moments(a) {
+  var m = mean(a), n = a.length, s2 = 0, s3 = 0, s4 = 0, i, d;
+  for (i = 0; i < n; i++) { d = a[i] - m; s2 += d * d; s3 += d * d * d; s4 += d * d * d * d; }
+  var v = s2 / n, s = Math.sqrt(v);
+  return { mean: m, sd: Math.sqrt(s2 / (n - 1)), skew: s3 / n / (s * s * s), kurt: s4 / n / (v * v) - 3 };
+}
+function money(x) {
+  var a = Math.abs(x);
+  if (a >= 1e6) return "$" + (x / 1e6).toFixed(2) + "m";
+  if (a >= 1e3) return "$" + Math.round(x / 1e3) + "k";
+  return "$" + Math.round(x);
+}
+/* standard normal cdf — Hart's double-precision rational approximation */
+function cnd(x) {
+  var a = Math.abs(x), cum;
+  if (a > 37) cum = 0;
+  else {
+    var e = Math.exp(-a * a / 2);
+    if (a < 7.07106781186547) {
+      var b = 0.0352624965998911 * a + 0.700383064443688;
+      b = b * a + 6.37396220353165; b = b * a + 33.912866078383;
+      b = b * a + 112.079291497871; b = b * a + 221.213596169931;
+      b = b * a + 220.206867912376;
+      var c = 0.0883883476483184 * a + 1.75566716318264;
+      c = c * a + 16.064177579207; c = c * a + 86.7807322029461;
+      c = c * a + 296.564248779674; c = c * a + 637.333633378831;
+      c = c * a + 793.826512519948; c = c * a + 440.413735824752;
+      cum = e * b / c;
+    } else {
+      var f = a + 1 / (a + 2 / (a + 3 / (a + 4 / (a + 0.65))));
+      cum = e / (f * 2.506628274631);
+    }
+  }
+  return x > 0 ? 1 - cum : cum;
+}
+function npdf(x) { return Math.exp(-x * x / 2) / 2.5066282746310002; }
+/* inverse standard normal cdf — Acklam */
+function invnorm(p) {
+  var A = [-3.969683028665376e+1, 2.209460984245205e+2, -2.759285104469687e+2,
+    1.383577518672690e+2, -3.066479806614716e+1, 2.506628277459239e+0];
+  var B = [-5.447609879822406e+1, 1.615858368580409e+2, -1.556989798598866e+2,
+    6.680131188771972e+1, -1.328068155288572e+1];
+  var C = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838e+0,
+    -2.549732539343734e+0, 4.374664141464968e+0, 2.938163982698783e+0];
+  var D = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996e+0, 3.754408661907416e+0];
+  var pl = 0.02425, q, r, x;
+  if (p <= 0) return -38; if (p >= 1) return 38;
+  if (p < pl) {
+    q = Math.sqrt(-2 * Math.log(p));
+    x = (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  } else if (p <= 1 - pl) {
+    q = p - 0.5; r = q * q;
+    x = (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q /
+        (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    x = -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  }
+  return x;
+}
+function quantile(sorted, p) {
+  var n = sorted.length; if (!n) return 0;
+  var h = (n - 1) * p, lo = Math.floor(h), hi = Math.min(lo + 1, n - 1);
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
+}
+
+/* ── generic axis + line helpers shared by every chart on the page ── */
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7,
+    "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function hline(svg, v, W, H, pad, y0, y1, color, dash, label, left) {
+  var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+  var l = mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: color, "stroke-width": 1.5 });
+  if (dash) l.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(l);
+  if (label) svg.appendChild(left
+    ? txt(pad.l + 4, yy - 4, label, 9.5, color, "start", "700")
+    : txt(W - pad.r - 3, yy - 4, label, 9.5, color, "end", "700"));
+}
+
+
+function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function sgn(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
+
+/* ══════════════ WIDGET 1 · feature / label builder ══════════════ */
+(function () {
+  var FEATS = [
+    { id: "mom5", warm: 5 }, { id: "mom21", warm: 21 }, { id: "mom63", warm: 63 },
+    { id: "rev1", warm: 1 }, { id: "vol21", warm: 21 }, { id: "volume_z", warm: 63 },
+    { id: "dist52", warm: 252 }, { id: "xrank21", warm: 21 }
+  ];
+  var st = { on: {}, h: 1, K: 100, T: 2685, pad: false, centre: false };
+  var i;
+  for (i = 0; i < FEATS.length; i++) st.on[FEATS[i].id] = true;
+
+  (function chips() {
+    var box = $("flChips"), k;
+    for (k = 0; k < FEATS.length; k++) {
+      (function (f) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "chip on"; b.textContent = f.id;
+        b.setAttribute("aria-pressed", "true");
+        b.setAttribute("aria-label", "toggle feature " + f.id);
+        b.addEventListener("click", function () {
+          st.on[f.id] = !st.on[f.id];
+          b.classList.toggle("on", st.on[f.id]);
+          b.setAttribute("aria-pressed", st.on[f.id] ? "true" : "false");
+          draw();
+        });
+        box.appendChild(b);
+      })(FEATS[k]);
+    }
+  })();
+
+  function log(msg, cls) {
+    var d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = msg;
+    var L = $("flLog");
+    L.insertBefore(d, L.firstChild);
+    while (L.childNodes.length > 8) L.removeChild(L.lastChild);
+  }
+  function state() {
+    var warm = 0, n = 0, k;
+    for (k = 0; k < FEATS.length; k++) if (st.on[FEATS[k].id]) { n++; warm = Math.max(warm, FEATS[k].warm); }
+    var usable = Math.max(0, st.T - warm - st.h);
+    return { warm: warm, n: n, rows: usable * st.K, dropped: (warm + st.h) * st.K };
+  }
+  function draw() {
+    var s = state();
+    $("flRows").textContent = s.n ? fmt(s.rows) : "0";
+    $("flFeat").textContent = String(s.n);
+    $("flWarm").textContent = fmt(s.dropped) + " rows";
+    var base = Math.min(0.545, 0.5199 + 0.0009 * (st.h - 1));
+    $("flBase").textContent = s.n ? base.toFixed(4) : "—";
+    var v = $("flVerdict");
+    if (st.centre) {
+      v.className = "verdict miss";
+      v.textContent = "LOOK-AHEAD · a centred window at t reads prices at t+" +
+        Math.floor(s.warm / 2) + " — this row knows its own answer";
+    } else if (st.pad) {
+      v.className = "verdict miss";
+      v.textContent = "FABRICATED · " + fmt(Math.round(st.T * st.K * 0.0094)) +
+        " padded returns of exactly 0% on days with no price";
+    } else if (!s.n) {
+      v.className = "verdict miss";
+      v.textContent = "no features selected";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "CLEAN · every feature computable at the close of t · purge " + st.h + " day" +
+        (st.h === 1 ? "" : "s") + " before each test block";
+    }
+    /* timeline */
+    var svg = $("flSvg"), W = 700, H = 260, pad = { l: 20, r: 20, t: 34, b: 40 };
+    clear(svg);
+    var y = 118, span = 300, x0 = pad.l + 30;
+    var xw = (W - pad.l - pad.r - 60) / span;
+    var tx = x0 + 252 * xw;                    /* t sits after the longest warm-up */
+    svg.appendChild(txt(pad.l, pad.t - 12, "one row of the design matrix, on a date axis", 10, "#5f6673"));
+    /* feature window */
+    var fx = tx - s.warm * xw;
+    svg.appendChild(mk("rect", { x: fx.toFixed(1), y: (y - 40).toFixed(1),
+      width: Math.max(2, (tx - fx)).toFixed(1), height: 40,
+      fill: "rgba(253,164,175,.18)", stroke: "#fda4af", "stroke-width": 1 }));
+    svg.appendChild(txt((fx + tx) / 2, y - 48, "feature window · " + s.warm + " days", 10, "#fda4af", "middle", "700"));
+    /* label window */
+    var lx = tx + st.h * xw;
+    svg.appendChild(mk("rect", { x: tx.toFixed(1), y: (y - 40).toFixed(1),
+      width: Math.max(2, (lx - tx)).toFixed(1), height: 40,
+      fill: "rgba(248,81,73,.26)", stroke: "#f85149", "stroke-width": 1 }));
+    svg.appendChild(txt(Math.min(lx + 6, W - pad.r), y - 48,
+      "label window · " + st.h + "d → PURGE THIS", 10, "#f85149", "start", "700"));
+    /* centred-window overlay */
+    if (st.centre) {
+      var cx = tx + Math.floor(s.warm / 2) * xw;
+      svg.appendChild(mk("rect", { x: tx.toFixed(1), y: (y - 56).toFixed(1),
+        width: Math.max(2, cx - tx).toFixed(1), height: 72, fill: "rgba(248,81,73,.16)",
+        stroke: "#f85149", "stroke-dasharray": "3 3" }));
+      svg.appendChild(txt(tx + 4, y + 30, "centred window also reads forward", 10, "#f85149", "start", "700"));
+    }
+    /* axis */
+    svg.appendChild(mk("line", { x1: pad.l, y1: y, x2: W - pad.r, y2: y, stroke: "#333a47" }));
+    svg.appendChild(mk("line", { x1: tx.toFixed(1), y1: (y - 62).toFixed(1),
+      x2: tx.toFixed(1), y2: (y + 16).toFixed(1), stroke: "#e11d48", "stroke-width": 2 }));
+    svg.appendChild(txt(tx, y + 30, "t · decision", 10.5, "#e11d48", "middle", "700"));
+    svg.appendChild(txt(pad.l + 2, y + 16, "earlier", 9.5, "#5f6673"));
+    svg.appendChild(txt(W - pad.r - 2, y + 16, "later", 9.5, "#5f6673", "end"));
+    /* row counter bar */
+    var by = H - pad.b + 4, full = st.T * st.K, keep = s.rows;
+    svg.appendChild(mk("rect", { x: pad.l, y: by, width: (W - pad.l - pad.r), height: 12,
+      fill: "#2b313d", rx: 3 }));
+    svg.appendChild(mk("rect", { x: pad.l, y: by,
+      width: Math.max(1, (W - pad.l - pad.r) * (full ? keep / full : 0)).toFixed(1),
+      height: 12, fill: "#e11d48", rx: 3 }));
+    svg.appendChild(txt(pad.l, by - 6, fmt(keep) + " of " + fmt(full) +
+      " panel rows survive warm-up and label horizon", 9.5, "#9aa0a6"));
+  }
+  $("flH").addEventListener("input", function () {
+    st.h = +this.value; $("flHV").textContent = st.h + (st.h === 1 ? " day" : " days");
+    log("label horizon = " + st.h + "d → purge " + st.h + " day(s) before every test block", "hl");
+    draw();
+  });
+  $("flK").addEventListener("input", function () {
+    st.K = +this.value; $("flKV").textContent = st.K + " tickers"; draw();
+  });
+  $("flT").addEventListener("input", function () {
+    st.T = +this.value; $("flTV").textContent = fmt(st.T) + " dates"; draw();
+  });
+  $("flPad").addEventListener("click", function () {
+    st.pad = !st.pad; this.setAttribute("aria-pressed", st.pad ? "true" : "false");
+    this.classList.toggle("on", st.pad);
+    log(st.pad ? "pct_change() default pads NAs → 0% returns fabricated on missing days"
+               : "pct_change(fill_method=None) → gaps stay NaN, as they should",
+        st.pad ? "bad" : "ok");
+    draw();
+  });
+  $("flCentre").addEventListener("click", function () {
+    st.centre = !st.centre; this.setAttribute("aria-pressed", st.centre ? "true" : "false");
+    this.classList.toggle("on", st.centre);
+    log(st.centre ? "rolling(center=True): the feature at t averages prices after t"
+                  : "trailing windows only — feature at t uses data up to t",
+        st.centre ? "bad" : "ok");
+    draw();
+  });
+  log("8 trailing features, label = sign of the t → t+1 return, base rate 0.5199", "hl");
+  draw();
+})();
+
+/* ══════════════ WIDGET 2 · leaky KFold vs purged embargoed WF ══════════════ */
+(function () {
+  var ROWS = 258435, DATES = 2685, RPD = ROWS / DATES;
+  var CAP = ["50 iters, depth 3", "150 iters, depth 4", "500 iters, depth 8", "1000 iters, leaf 255"];
+  var HON = [0.5039, 0.5021, 0.4998, 0.4997];
+  var LEAK = [0.5148, 0.5164, 0.5182, 0.5170];
+  var st = { r: 0, n: 5, purge: 1, emb: 5, cap: 1 };
+
+  function calc() {
+    var n = st.n, sameT = 0, lo = 0, embN = 0, auc, sdv, train;
+    if (st.r === 0) {
+      sameT = Math.round(ROWS * (n - 1)); lo = sameT; embN = 0;
+      auc = LEAK[st.cap]; sdv = 0.0019; train = Math.round(ROWS * (n - 1) / n);
+    } else if (st.r === 1) {
+      sameT = Math.round(RPD * (n - 1) * 1.03); lo = Math.round(RPD * (n - 1) * 2 * st.purge);
+      embN = Math.round(RPD * (n - 1) * st.emb);
+      auc = HON[st.cap] + 0.0003; sdv = 0.0106; train = Math.round(ROWS * (n - 1) / n);
+    } else if (st.r === 2) {
+      sameT = 0; lo = Math.round(RPD * (n - 1) * st.purge * 1.21); embN = 0;
+      auc = HON[st.cap] + 0.0023; sdv = 0.0159; train = Math.round(ROWS * 0.5 * (n - 1) / n);
+    } else {
+      sameT = 0; lo = 0; embN = 0;
+      auc = HON[st.cap]; sdv = 0.0111;
+      train = Math.round(ROWS * 0.5 * (n - 1) / n - RPD * (st.purge + st.emb) * (n - 1) * 0.5);
+    }
+    return { sameT: sameT, lo: lo, embN: embN, auc: auc, sd: sdv, train: Math.max(0, train) };
+  }
+  function draw() {
+    var c = calc(), i, f;
+    $("cvAuc").textContent = c.auc.toFixed(4);
+    $("cvAuc").className = "sv " + (st.r === 0 ? "bad" : (c.auc > 0.505 ? "warn" : "acc"));
+    $("cvSd").textContent = "±" + c.sd.toFixed(4);
+    $("cvSt").textContent = fmt(c.sameT);
+    $("cvSt").className = "sv " + (c.sameT ? "bad" : "ok");
+    $("cvLo").textContent = fmt(c.lo);
+    $("cvLo").className = "sv " + (c.lo ? "warn" : "ok");
+    $("cvEmbN").textContent = fmt(c.embN);
+    $("cvEmbN").className = "sv " + (c.embN ? "warn" : "ok");
+    $("cvTrain").textContent = fmt(c.train);
+    var v = $("cvVerdict");
+    if (st.r === 0) {
+      v.className = "verdict miss";
+      v.textContent = "LEAKING · " + fmt(c.sameT) + " train rows share a date with their own test fold";
+    } else if (st.r === 3) {
+      v.className = "verdict met";
+      v.textContent = "AUDIT CLEAN · same_time 0 · label_overlap 0 · error bar " +
+        (0.0111 / 0.0019).toFixed(1) + "× wider than the leaky one";
+    } else {
+      v.className = "verdict miss";
+      v.textContent = st.r === 1
+        ? "still trains on the future; leaks only at the " + (st.n - 1) + " seams"
+        : "no shared cross-section, but the label window still overlaps the test block";
+    }
+    /* fold diagram */
+    var svg = $("cvSvg"), W = 700, H = 300, pad = { l: 62, r: 16, t: 34, b: 34 };
+    clear(svg);
+    var rowH = Math.min(30, (H - pad.t - pad.b) / st.n), gap = 5;
+    var aw = W - pad.l - pad.r;
+    svg.appendChild(txt(pad.l, pad.t - 14, "date axis → · one lane per split", 10, "#5f6673"));
+    for (f = 0; f < st.n; f++) {
+      var y = pad.t + f * (rowH + gap);
+      if (y + rowH > H - pad.b) break;
+      svg.appendChild(txt(pad.l - 8, y + rowH * 0.68, "split " + (f + 1), 9.5, "#5f6673", "end"));
+      /* base = train */
+      svg.appendChild(mk("rect", { x: pad.l, y: y.toFixed(1), width: aw, height: (rowH - 2).toFixed(1),
+        fill: "rgba(253,164,175,.30)", rx: 2 }));
+      var bw = aw / st.n;
+      if (st.r === 0) {
+        /* interleaved random test stripes + leak overlay everywhere */
+        var rnd = lcg(991 + f * 37), k;
+        for (k = 0; k < 26; k++) {
+          if (rnd() < 1 / st.n) {
+            svg.appendChild(mk("rect", { x: (pad.l + k * aw / 26).toFixed(1), y: y.toFixed(1),
+              width: (aw / 26).toFixed(1), height: (rowH - 2).toFixed(1), fill: "#58a6ff", opacity: 0.9 }));
+          }
+        }
+        svg.appendChild(mk("rect", { x: pad.l, y: y.toFixed(1), width: aw, height: (rowH - 2).toFixed(1),
+          fill: "rgba(248,81,73,.34)", rx: 2 }));
+      } else if (st.r === 1) {
+        svg.appendChild(mk("rect", { x: (pad.l + f * bw).toFixed(1), y: y.toFixed(1),
+          width: bw.toFixed(1), height: (rowH - 2).toFixed(1), fill: "#58a6ff", opacity: 0.9 }));
+        var sm = Math.max(2, bw * 0.04);
+        if (f > 0) svg.appendChild(mk("rect", { x: (pad.l + f * bw - sm).toFixed(1), y: y.toFixed(1),
+          width: sm.toFixed(1), height: (rowH - 2).toFixed(1), fill: "#f85149" }));
+        if (f < st.n - 1) svg.appendChild(mk("rect", { x: (pad.l + (f + 1) * bw).toFixed(1), y: y.toFixed(1),
+          width: sm.toFixed(1), height: (rowH - 2).toFixed(1), fill: "#f85149" }));
+      } else {
+        /* walk-forward: train = prefix, test = next block */
+        var tstart = pad.l + (f + 1) * bw;
+        svg.appendChild(mk("rect", { x: pad.l, y: y.toFixed(1), width: ((f + 1) * bw).toFixed(1),
+          height: (rowH - 2).toFixed(1), fill: "rgba(253,164,175,.62)", rx: 2 }));
+        svg.appendChild(mk("rect", { x: (tstart + bw > W - pad.r ? W - pad.r - bw : tstart).toFixed(1),
+          y: y.toFixed(1), width: bw.toFixed(1), height: (rowH - 2).toFixed(1),
+          fill: "#58a6ff", opacity: 0.9 }));
+        var pw = Math.max(1.5, st.purge / 60 * bw);
+        if (st.r === 3) {
+          svg.appendChild(mk("rect", { x: (tstart - pw).toFixed(1), y: y.toFixed(1),
+            width: pw.toFixed(1), height: (rowH - 2).toFixed(1), fill: "#d29922" }));
+          var ew = Math.max(1.5, st.emb / 60 * bw), q;
+          for (q = 0; q < f; q++) {
+            svg.appendChild(mk("rect", { x: (pad.l + (q + 2) * bw).toFixed(1), y: y.toFixed(1),
+              width: ew.toFixed(1), height: (rowH - 2).toFixed(1), fill: "#a78bfa" }));
+          }
+        } else {
+          svg.appendChild(mk("rect", { x: (tstart - pw).toFixed(1), y: y.toFixed(1),
+            width: pw.toFixed(1), height: (rowH - 2).toFixed(1), fill: "#f85149" }));
+        }
+      }
+    }
+    var lbl = ["KFold(shuffle=True) — every lane is contaminated",
+               "KFold(shuffle=False) — contiguous, leaks at the seams",
+               "walk-forward — trains on the past, label window still overlaps",
+               "purged + embargoed walk-forward — the honest one"][st.r];
+    svg.appendChild(txt(pad.l, H - pad.b + 18, lbl, 10.5,
+      st.r === 3 ? "#3fb950" : (st.r === 0 ? "#f85149" : "#d29922"), "start", "700"));
+  }
+  function setR(r) {
+    st.r = r;
+    var k;
+    for (k = 0; k < 4; k++) $("cvT" + k).setAttribute("aria-selected", k === r ? "true" : "false");
+    draw();
+  }
+  for (i = 0; i < 4; i++) {
+    (function (k) { $("cvT" + k).addEventListener("click", function () { setR(k); }); })(i);
+  }
+  $("cvSplits").addEventListener("input", function () {
+    st.n = +this.value; $("cvSplitsV").textContent = String(st.n); draw();
+  });
+  $("cvPurge").addEventListener("input", function () {
+    st.purge = +this.value;
+    $("cvPurgeV").textContent = st.purge + (st.purge === 1 ? " day" : " days"); draw();
+  });
+  $("cvEmb").addEventListener("input", function () {
+    st.emb = +this.value;
+    $("cvEmbV").textContent = st.emb + (st.emb === 1 ? " day" : " days"); draw();
+  });
+  $("cvCap").addEventListener("input", function () {
+    st.cap = +this.value; $("cvCapV").textContent = CAP[st.cap]; draw();
+  });
+  var i;
+  draw();
+})();
+
+/* ══════════════ WIDGET 3 · permutation importance vs noise ══════════════ */
+(function () {
+  var REAL = [
+    { id: "rev1", h: 0.00154, sd: 0.00664, k: 2, l: 0.00956 },
+    { id: "mom5", h: 0.00083, sd: 0.00371, k: 3, l: 0.00464 },
+    { id: "vol21", h: 0.00000, sd: 0.00244, k: 2, l: 0.00310 },
+    { id: "volume_z", h: -0.00024, sd: 0.00140, k: 2, l: 0.00397 },
+    { id: "mom63", h: -0.00064, sd: 0.00099, k: 2, l: 0.00194 },
+    { id: "xrank21", h: -0.00077, sd: 0.00072, k: 1, l: 0.00459 },
+    { id: "mom21", h: -0.00090, sd: 0.00395, k: 2, l: 0.00455 },
+    { id: "dist52", h: -0.00216, sd: 0.00117, k: 0, l: 0.00487 }
+  ];
+  var st = { leak: false, noise: 0, seed: 3 };
+  function build() {
+    var rnd = lcg(st.seed * 4099 + 7), out = [], i;
+    for (i = 0; i < REAL.length; i++) {
+      out.push({ id: REAL[i].id, noise: false, sd: REAL[i].sd, folds: REAL[i].k,
+                 v: st.leak ? REAL[i].l : REAL[i].h });
+    }
+    for (i = 0; i < st.noise; i++) {
+      var g = gauss(rnd);
+      out.push({ id: "noise_" + (i + 1), noise: true, sd: 0.0016 + Math.abs(gauss(rnd)) * 0.0007,
+                 folds: Math.round(1 + Math.abs(g)),
+                 v: st.leak ? 0.0010 + Math.abs(g) * 0.0031 : g * 0.0013 });
+    }
+    out.sort(function (a, b) { return b.v - a.v; });
+    return out;
+  }
+  function draw() {
+    var F = build(), i, svg = $("fiSvg"), W = 700, H = 330, pad = { l: 82, r: 74, t: 30, b: 30 };
+    clear(svg);
+    var lo = 0, hi = 0;
+    for (i = 0; i < F.length; i++) {
+      lo = Math.min(lo, F[i].v - F[i].sd); hi = Math.max(hi, F[i].v + F[i].sd);
+    }
+    var pd = (hi - lo) * 0.1 + 1e-5; lo -= pd; hi += pd;
+    var rowH = (H - pad.t - pad.b) / F.length, aw = W - pad.l - pad.r;
+    var px = function (v) { return pad.l + (v - lo) / (hi - lo) * aw; };
+    svg.appendChild(txt(pad.l, pad.t - 12,
+      "permutation importance — AUC lost when the column is shuffled", 10, "#5f6673"));
+    svg.appendChild(mk("line", { x1: px(0).toFixed(1), y1: pad.t, x2: px(0).toFixed(1),
+      y2: (H - pad.b).toFixed(1), stroke: "#333a47" }));
+    for (i = 0; i < F.length; i++) {
+      var f = F[i], y = pad.t + i * rowH, h = Math.max(3, rowH - 4);
+      var x0 = px(Math.min(0, f.v)), x1 = px(Math.max(0, f.v));
+      svg.appendChild(mk("rect", { x: x0.toFixed(1), y: y.toFixed(1),
+        width: Math.max(1, x1 - x0).toFixed(1), height: h.toFixed(1),
+        fill: f.noise ? "#a78bfa" : (f.v >= 0 ? "#3fb950" : "#f85149"), opacity: 0.78, rx: 2 }));
+      var ex0 = px(f.v - f.sd), ex1 = px(f.v + f.sd), cy = y + h / 2;
+      svg.appendChild(mk("line", { x1: ex0.toFixed(1), y1: cy.toFixed(1), x2: ex1.toFixed(1),
+        y2: cy.toFixed(1), stroke: "#6f757f", "stroke-width": 1.2 }));
+      svg.appendChild(mk("line", { x1: ex0.toFixed(1), y1: (cy - 3).toFixed(1), x2: ex0.toFixed(1),
+        y2: (cy + 3).toFixed(1), stroke: "#6f757f" }));
+      svg.appendChild(mk("line", { x1: ex1.toFixed(1), y1: (cy - 3).toFixed(1), x2: ex1.toFixed(1),
+        y2: (cy + 3).toFixed(1), stroke: "#6f757f" }));
+      svg.appendChild(txt(pad.l - 8, cy + 3.5, f.id, 9.5,
+        f.noise ? "#a78bfa" : "#c6c3bf", "end", f.noise ? "700" : null));
+      svg.appendChild(txt(W - pad.r + 6, cy + 3.5,
+        (f.v >= 0 ? "+" : "−") + Math.abs(f.v).toFixed(5) + "  " + f.folds + "/5", 9,
+        "#6f757f", "start"));
+    }
+    var pos = 0, inside = 0, top = 0;
+    for (i = 0; i < F.length; i++) {
+      if (F[i].v > 0) pos++;
+      if (Math.abs(F[i].v) <= F[i].sd) inside++;
+      if (i < 3 && F[i].noise) top++;
+    }
+    $("fiPos").textContent = pos + " / " + F.length;
+    $("fiPos").className = "sv " + (st.leak ? "bad" : "acc");
+    $("fiZero").textContent = inside + " / " + F.length;
+    $("fiTop").textContent = String(top);
+    $("fiTop").className = "sv " + (top ? "bad" : "ok");
+    $("fiBest").textContent = F[0].id;
+    var v = $("fiVerdict");
+    if (st.leak) {
+      v.className = "verdict miss";
+      v.textContent = "EVERY column gets positive importance — including the noise. This is a ranking of nothing.";
+    } else if (inside === F.length) {
+      v.className = "verdict met";
+      v.textContent = "no feature is distinguishable from zero — the honest reading, and the one to publish";
+    } else {
+      v.className = "verdict met";
+      v.textContent = (F.length - inside) + " feature(s) outside one sd of zero — check them on a new fold before believing it";
+    }
+  }
+  $("fiHon").addEventListener("click", function () {
+    st.leak = false; this.setAttribute("aria-pressed", "true");
+    $("fiLeak").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("fiLeak").addEventListener("click", function () {
+    st.leak = true; this.setAttribute("aria-pressed", "true");
+    $("fiHon").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("fiNoise").addEventListener("input", function () {
+    st.noise = +this.value; $("fiNoiseV").textContent = String(st.noise); draw();
+  });
+  $("fiSeed").addEventListener("input", function () {
+    st.seed = +this.value; $("fiSeedV").textContent = String(st.seed); draw();
+  });
+  draw();
+})();
+
+/* ══════════════ WIDGET 4 · AUC → money ══════════════ */
+(function () {
+  var st = { gross: 11.73, cost: 0.0, hold: 1, sdv: 362.5 };
+  var NDAYS = 2238;
+  function net(cost, hold) { return st.gross - 2 * cost / hold; }
+  function ann(nd) { return nd / 1e4 * 252 * 100; }
+  function shp(nd) { return st.sdv > 0 ? nd / st.sdv * Math.sqrt(252) : 0; }
+  function rows() {
+    var out = [], cs = [0, 1, 5, 10], i;
+    for (i = 0; i < cs.length; i++) {
+      var nd = net(cs[i], 1);
+      out.push([cs[i] === 0 ? "gross" : cs[i] + " bps/side",
+                (nd >= 0 ? "+" : "−") + Math.abs(nd).toFixed(2),
+                (ann(nd) >= 0 ? "+" : "−") + Math.abs(ann(nd)).toFixed(2) + "%",
+                (shp(nd) >= 0 ? "+" : "−") + Math.abs(shp(nd)).toFixed(2)]);
+    }
+    return out;
+  }
+  function draw() {
+    var nd = net(st.cost, st.hold), a = ann(nd), s = shp(nd);
+    $("plNet").textContent = (nd >= 0 ? "+" : "−") + Math.abs(nd).toFixed(2) + " bps/d";
+    $("plNet").className = "sv " + (nd >= 0 ? "ok" : "bad");
+    $("plAnn").textContent = (a >= 0 ? "+" : "−") + Math.abs(a).toFixed(2) + "%/yr";
+    $("plAnn").className = "sv " + (a >= 0 ? "ok" : "bad");
+    $("plSh").textContent = (s >= 0 ? "+" : "−") + Math.abs(s).toFixed(2);
+    var be = st.gross * st.hold / 2;
+    $("plBe").textContent = be.toFixed(2) + " bps";
+    var t = st.sdv > 0 ? nd / st.sdv * Math.sqrt(NDAYS) : 0;
+    $("plT").textContent = (t >= 0 ? "+" : "−") + Math.abs(t).toFixed(2);
+    $("plVerd").textContent = nd <= 0 ? "dead" : (Math.abs(t) < 2 ? "not proven" : "arguable");
+    $("plVerd").className = "sv " + (nd <= 0 ? "bad" : (Math.abs(t) < 2 ? "warn" : "ok"));
+    var v = $("plVerdict");
+    if (nd <= 0) {
+      v.className = "verdict miss";
+      v.textContent = "COSTS EXCEED THE EDGE · break-even is " + be.toFixed(2) + " bps a side";
+    } else if (Math.abs(t) < 2) {
+      v.className = "verdict miss";
+      v.textContent = "t = " + t.toFixed(2) + " on " + fmt(NDAYS) +
+        " days · nine years of data cannot reject “this is nothing”";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "t = " + t.toFixed(2) + " · significant, and still only " +
+        a.toFixed(1) + "%/yr before capacity limits";
+    }
+    /* table */
+    var tb = $("plTable").getElementsByTagName("tbody")[0];
+    while (tb.firstChild) tb.removeChild(tb.firstChild);
+    var R = rows(), i, j, tr, td;
+    for (i = 0; i < R.length; i++) {
+      tr = document.createElement("tr");
+      for (j = 0; j < R[i].length; j++) {
+        td = document.createElement("td");
+        td.textContent = R[i][j];
+        td.className = j === 0 ? "n" : (R[i][j].charAt(0) === "−" ? "bad" : "ok");
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+    /* curve */
+    var svg = $("plSvg"), W = 700, H = 300, pad = { l: 56, r: 18, t: 28, b: 42 };
+    clear(svg);
+    var xs = [], ys = [], c;
+    for (c = 0; c <= 200; c++) { xs.push(c / 10); ys.push(ann(net(c / 10, st.hold))); }
+    var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys);
+    lo = Math.min(lo, -5); hi = Math.max(hi, 5);
+    var pd = (hi - lo) * 0.08; lo -= pd; hi += pd;
+    axes(svg, W, H, pad, lo, hi, function (x) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(0) + "%"; }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "net return, % a year, against cost per side", 10, "#5f6673"));
+    polyline(svg, ys, W, H, pad, 0, 20, lo, hi, "#fda4af", 2.2, null, xs);
+    hline(svg, 0, W, H, pad, lo, hi, "#333a47", "3 3", null, false);
+    var bex = pad.l + Math.min(20, be) / 20 * (W - pad.l - pad.r);
+    svg.appendChild(mk("line", { x1: bex.toFixed(1), y1: pad.t, x2: bex.toFixed(1),
+      y2: (H - pad.b).toFixed(1), stroke: "#d29922", "stroke-dasharray": "3 3" }));
+    svg.appendChild(txt(Math.min(bex + 6, W - pad.r - 96), pad.t + 12,
+      "break-even " + be.toFixed(2) + " bps", 10, "#d29922", "start", "700"));
+    var cx = pad.l + Math.min(20, st.cost) / 20 * (W - pad.l - pad.r);
+    var cy = H - pad.b - (ann(nd) - lo) / (hi - lo) * (H - pad.t - pad.b);
+    svg.appendChild(mk("circle", { cx: cx.toFixed(1), cy: cy.toFixed(1), r: 4.5, fill: "#e11d48" }));
+    var i2;
+    for (i2 = 0; i2 <= 4; i2++) {
+      svg.appendChild(txt(pad.l + i2 / 4 * (W - pad.l - pad.r), H - pad.b + 18,
+        (i2 * 5) + " bps", 9.5, "#5f6673", "middle"));
+    }
+    svg.appendChild(txt(W - pad.r - 2, H - pad.b + 32, "cost per side", 9.5, "#5f6673", "end"));
+  }
+  function bind(id, vid, f, fmtf) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).textContent = fmtf(); draw(); });
+  }
+  bind("plGross", "plGrossV", function (v) { st.gross = v / 100; },
+    function () { return st.gross.toFixed(2) + " bps/day"; });
+  bind("plCost", "plCostV", function (v) { st.cost = v / 10; },
+    function () { return st.cost.toFixed(1) + " bps"; });
+  bind("plHold", "plHoldV", function (v) { st.hold = v; },
+    function () { return st.hold + (st.hold === 1 ? " day" : " days"); });
+  bind("plSd", "plSdV", function (v) { st.sdv = v / 10; },
+    function () { return st.sdv.toFixed(1) + " bps"; });
+  draw();
+})();
+
+/* ══════════════ WIDGET 5 · the model card ══════════════ */
+(function () {
+  var ROWS = [
+    ["Data", "panel source + adjustment + as-of + coverage — read the sidecar", 0],
+    ["Universe", "100 names, today's membership → survivorship bias, stated", 0],
+    ["Label", "sign of the t → t+1 close-to-close return; base rate 0.5199", 0],
+    ["Horizon", "1 day — the number you purge", 0],
+    ["Features", "8 trailing, computable at the close of t; no pct_change padding", 0],
+    ["Split", "PurgedWalkForward(n_splits=5, horizon=1, embargo=5), by date", 0],
+    ["Leak audit", "same_time 0 · label_overlap 0 · embargoed 0", 1],
+    ["Metric", "AUC 0.5021 ± 0.0111 over 5 folds (leaky KFold said 0.5164 ± 0.0019)", 1],
+    ["Economics", "+11.73 bps/day gross, t = 1.53; negative net of 10 bps/side", 0],
+    ["Exposures", "short-term reversal + high-vol tilt; 2 of 10 years carry it", 0],
+    ["Falsifiable", "fails if the t-stat stays < 2 out of sample, or the return vanishes once regressed on a reversal factor", 1],
+    ["Configs", "the honest count, including the ones you deleted", 1]
+  ];
+  var state = [], i;
+  for (i = 0; i < ROWS.length; i++) state.push(false);
+  var boxes = [];
+  (function build() {
+    var box = $("mcList"), k;
+    for (k = 0; k < ROWS.length; k++) {
+      (function (idx) {
+        var item = document.createElement("div");
+        item.className = "item";
+        var cb = document.createElement("input");
+        cb.type = "checkbox"; cb.id = "mc" + idx;
+        cb.setAttribute("aria-label", "model card row: " + ROWS[idx][0]);
+        var txtw = document.createElement("div");
+        txtw.className = "txt";
+        var t1 = document.createElement("div");
+        t1.className = "t";
+        t1.textContent = ROWS[idx][0] + (ROWS[idx][2] ? "  ★" : "");
+        var t2 = document.createElement("div");
+        t2.className = "c";
+        t2.textContent = ROWS[idx][1];
+        txtw.appendChild(t1); txtw.appendChild(t2);
+        item.appendChild(cb); item.appendChild(txtw);
+        box.appendChild(item);
+        boxes.push(cb);
+        cb.addEventListener("change", function () {
+          state[idx] = cb.checked;
+          item.classList.toggle("done", cb.checked);
+          draw();
+        });
+      })(k);
+    }
+  })();
+  function draw() {
+    var n = 0, crit = 0, k;
+    for (k = 0; k < state.length; k++) {
+      if (state[k]) { n++; if (ROWS[k][2]) crit++; }
+    }
+    $("mcN").textContent = String(n);
+    $("mcCrit").textContent = crit + " / 4";
+    $("mcCrit").className = "sv " + (crit === 4 ? "ok" : (crit >= 2 ? "warn" : "bad"));
+    $("mcBar").style.width = (n / ROWS.length * 100).toFixed(0) + "%";
+    $("mcSmokeT").textContent = n + " / " + ROWS.length + " rows filled";
+    var sm = $("mcSmoke");
+    sm.className = "smoke" + (n === ROWS.length && crit === 4 ? " green" : (n >= 6 ? " amber" : ""));
+    var v = $("mcVerdict");
+    if (n === ROWS.length && crit === 4) {
+      v.className = "verdict met";
+      v.textContent = "SUBMITTABLE · the card, not the model, is the deliverable";
+    } else if (crit < 4) {
+      v.className = "verdict miss";
+      v.textContent = "★ rows missing · a card without a leak audit, a metric, a falsification test and a config count says nothing";
+    } else {
+      v.className = "verdict miss";
+      v.textContent = (ROWS.length - n) + " row(s) to go";
+    }
+  }
+  $("mcAll").addEventListener("click", function () {
+    var k;
+    for (k = 0; k < boxes.length; k++) {
+      if (!boxes[k].checked) { boxes[k].checked = true; boxes[k].dispatchEvent(new Event("change")); }
+    }
+  });
+  $("mcNone").addEventListener("click", function () {
+    var k;
+    for (k = 0; k < boxes.length; k++) {
+      if (boxes[k].checked) { boxes[k].checked = false; boxes[k].dispatchEvent(new Event("change")); }
+    }
+  });
+  draw();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>

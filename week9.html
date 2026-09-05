@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 9 · Market Microstructure &amp; Execution Analytics — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week8.html">← Week 8</a> · <b>Week 9 · Market Microstructure &amp; Execution Analytics</b> · <a href="week10.html">Week 10 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 9</div>
+  <h1>Market Microstructure &amp; Execution Analytics</h1>
+  <p class="promise">You stand up a real market, trade into it, and then measure the same 200-share order
+  two ways. TCA against the prevailing mid says your execution cost <strong>&#8722;2.49 bps</strong>.
+  Implementation shortfall against the price you <em class="hi">decided</em> at says
+  <strong>&#8722;24.62 bps</strong>. Both are computed correctly, and the ten-times gap is the whole
+  lesson: <em class="hi">a benchmark you move is a benchmark that flatters you.</em> Then three
+  surveillance rules that catch a wash pair perfectly on a live tape accuse two innocent bots on a clean
+  one.</p>
+  <ul class="you">
+    <li>Read a limit order book properly: <strong>spread, depth, touch imbalance, microprice</strong>, and
+    what price-time priority does to a passive order you just posted.</li>
+    <li>Split a shortfall into <strong>delay, impact-plus-spread and opportunity cost</strong> — and say
+    which desk owns each term.</li>
+    <li>Read the maker column of a TCA report and explain why retail flow paid <strong>6.07 bps</strong>
+    while the market maker was <em class="hi">paid</em> 4.51.</li>
+    <li>Run <strong>three surveillance detectors</strong>, name the abuser all three miss, and explain why
+    a measured precision of 1.00 is not a precision.</li>
+    <li>Distinguish a quoted spread from an effective one from a trade-weighted one, and know what
+    <code>stale_pct = 95%</code> means for a consumer that assumes a message is news.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: live scored session · tca_report.py · shortfall · three detectors</span>
+    <span class="pill">Project week — no homework</span>
+    <span class="pill warn">Phase 2: live session 1</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? The price is not a number, it is a queue</h2>
+  <p class="lead">Every price you have used for nine weeks was a summary of a queue: a list of resting
+  limit orders on both sides, sorted by price and then by arrival time. Microstructure is the study of that
+  queue, and execution analytics is the business of measuring what it cost you to get through it.</p>
+
+  <div class="grid3" style="margin-top:16px">
+    <div class="panel tight"><h3>Four numbers off one snapshot</h3>
+      <ul class="plain">
+        <li><strong>Spread</strong> — best ask minus best bid, always quoted in bps of the mid, because a
+        30-cent spread is 6 bps on MSFT and 27 bps on INTC.</li>
+        <li><strong>Depth</strong> — size at the touch, and cumulative size over five levels. The first
+        number decides whether your child order fills; the second decides what your parent costs.</li>
+        <li><strong>Imbalance</strong> — <code>(bid_sz &#8722; ask_sz)/(bid_sz + ask_sz)</code>, the only
+        free directional information in a book.</li>
+        <li><strong>Microprice</strong> — the size-weighted mid, which sits off the arithmetic mid by
+        roughly <em class="hi">imbalance &#215; half-spread</em>.</li>
+      </ul></div>
+    <div class="panel tight"><h3>Price-time priority</h3>
+      <ul class="plain">
+        <li>An incoming order scans the opposite side from the best price inward.</li>
+        <li>If prices cross, the trade executes at the <strong>resting</strong> order's price — the
+        aggressor pays the spread, the passive side earns it.</li>
+        <li>At the same price, earlier orders fill first. Post at the touch behind 40 shares and 40 shares
+        must trade before you do.</li>
+        <li>A market order never rests; the remainder is cancelled. That is why a slicing algorithm exists
+        at all.</li>
+      </ul></div>
+    <div class="panel tight"><h3>What a recording contains</h3>
+      <div class="kv">
+        <div class="k">in the tape</div><div class="v">book_snapshot</div>
+        <div class="k"></div><div class="v">trade_execution</div>
+        <div class="k"></div><div class="v">session_event</div>
+        <div class="k">not in the tape</div><div class="v">order acks</div>
+        <div class="k"></div><div class="v">cancels, rejects</div>
+        <div class="k"></div><div class="v">per-team ladder</div>
+      </div>
+      <p class="sub" style="margin-top:9px">A recording is a <em class="hi">broadcast</em> log, so of the
+      three surveillance rules below only self-match can be computed from it. The other two need each
+      participant's own audit trail — the self-declared order log a firm owes a regulator. <strong>Pick
+      your detector after you know what you are entitled to observe.</strong></p></div>
+  </div>
+
+  <h3 style="margin-top:26px">Widget 1 · the book, live</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="obSvg" viewBox="0 0 700 320" role="img"
+        aria-label="A five-level limit order book ladder with bid and ask depth, your resting order, and the queue ahead of it"></svg></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="obBuy" type="button" aria-label="Send a market buy that walks the ask side">Market buy 60 &#9656;</button>
+        <button class="btn" id="obPost" type="button" aria-label="Post a passive bid at the touch">Post 20 at the bid</button>
+        <button class="btn" id="obReset" type="button" aria-label="Reset the book">Reset</button>
+      </div>
+      <div class="log" id="obLog" role="status" aria-live="polite" style="margin-top:12px"></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="obSpread">Quoted spread <b id="obSpreadV">30&#162;</b></label>
+        <input type="range" id="obSpread" min="2" max="80" value="30" step="1" aria-label="Quoted spread in cents"></div>
+      <div class="ctl"><label for="obPrice">Price level <b id="obPriceV">$309.50</b></label>
+        <input type="range" id="obPrice" min="20" max="600" value="310" step="1" aria-label="Price level in dollars"></div>
+      <div class="ctl"><label for="obDepth">Depth at the touch <b id="obDepthV">10 shares</b></label>
+        <input type="range" id="obDepth" min="1" max="60" value="10" step="1" aria-label="Displayed size at the touch"></div>
+      <div class="ctl"><label for="obImb">Touch imbalance <b id="obImbV">0.00</b></label>
+        <input type="range" id="obImb" min="-90" max="90" value="0" step="1" aria-label="Touch imbalance from minus one to plus one"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Spread</div><div class="sv acc" id="obSprBps">—</div></div>
+        <div class="stat"><div class="sl">Mid</div><div class="sv" id="obMid">—</div></div>
+        <div class="stat"><div class="sl">Microprice dev</div><div class="sv" id="obMicro">—</div></div>
+        <div class="stat"><div class="sl">Depth 5 levels</div><div class="sv" id="obD5">—</div></div>
+        <div class="stat"><div class="sl">Queue ahead</div><div class="sv" id="obQ">—</div></div>
+        <div class="stat"><div class="sl">Last cost</div><div class="sv" id="obCost">—</div></div>
+      </div>
+      <div class="verdict" id="obVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>Imbalance is a property of the participant mix, not of
+      the formula.</b> With one market maker quoting symmetrically, touch imbalance is identically zero and
+      useless — the lab measures <code>imb_sd</code> of 0.05–0.17 on the quiet symbols. On the one symbol
+      where six participants competed at the touch, <code>imb_sd</code> was <strong>0.302</strong> and a
+      fully bid-heavy book predicted <strong>+2.1 bps</strong> of move over the next five snapshots. Same
+      code, opposite conclusion.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How it works: two measurements of the same trade</h2>
+  <p class="lead">A parent order of 200 shares, sliced into ten children, each crossing the spread. The
+  print prices walked from 309.75 to 310.69 in seven seconds — our own footprint. Then the arithmetic that
+  a portfolio manager actually reads.</p>
+
+  <h3 style="margin-top:22px">Widget 2 · implementation shortfall, decomposed</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="tcSvg" viewBox="0 0 700 320" role="img"
+        aria-label="Mid price path with the decision price, each child fill, and the final mid; below it the shortfall decomposition"></svg></div>
+      <div class="tablewrap" style="margin-top:12px"><table class="t" id="tcTable">
+        <thead><tr><th>Component</th><th>$</th><th>bps</th><th>Owner</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="tcSlices">Child orders <b id="tcSlicesV">10</b></label>
+        <input type="range" id="tcSlices" min="2" max="40" value="10" step="1" aria-label="Number of child orders"></div>
+      <div class="ctl"><label for="tcEvery">Interval <b id="tcEveryV">2 ticks</b></label>
+        <input type="range" id="tcEvery" min="1" max="20" value="2" step="1" aria-label="Ticks between child orders"></div>
+      <div class="ctl"><label for="tcImp">Impact per 100 shares <b id="tcImpV">86&#162;</b></label>
+        <input type="range" id="tcImp" min="0" max="140" value="86" step="1" aria-label="Permanent impact in cents per hundred shares"></div>
+      <div class="ctl"><label for="tcDrift">Market drift <b id="tcDriftV">&#8722;0.27&#162;/tick</b></label>
+        <input type="range" id="tcDrift" min="-100" max="100" value="-27" step="1" aria-label="Market drift in tenths of a cent per tick"></div>
+      <div class="sw" role="group" aria-label="Order style" style="margin-bottom:12px">
+        <button id="tcCross" type="button" aria-pressed="true">Cross the spread</button>
+        <button id="tcPost" type="button" aria-pressed="false">Post at the touch</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Filled</div><div class="sv acc" id="tcFilled">—</div></div>
+        <div class="stat"><div class="sl">VWAP</div><div class="sv" id="tcVwap">—</div></div>
+        <div class="stat"><div class="sl">Shortfall</div><div class="sv" id="tcTotal">—</div></div>
+        <div class="stat"><div class="sl">TCA vs prevailing mid</div><div class="sv" id="tcSlip">—</div></div>
+      </div>
+      <div class="verdict" id="tcVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>The lab's measured run.</b> Buy 200 AAPL, filled 146 in
+      10.0 s. Decision mid 309.5150, first child mid 309.4350, final mid 310.7650, execution VWAP
+      310.0967. Delay <strong>+11.68</strong> ($, +1.89 bps, and it is <em class="hi">luck</em> — the mid
+      drifted 8 cents our way between deciding and sending). Impact plus spread
+      <strong>&#8722;96.61</strong> (&#8722;15.61 bps). Shortfall &#8722;84.93. Opportunity cost on the 54
+      shares we never got, marked at the final mid, <strong>&#8722;67.50</strong> (&#8722;10.90 bps) — over
+      half the total. <strong>Total &#8722;152.43, or &#8722;24.62 bps.</strong></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:10px">Push the slice count up and the interval out: the impact term falls
+  and the opportunity term rises, because a slower schedule leaks less information and misses more of the
+  move. Finding that crossover is the entire content of execution-algorithm design — and switching from
+  crossing to posting trades one cost for another, with a fill rate you must report rather than average
+  away.</p>
+
+  <h3 style="margin-top:28px">Widget 3 · the maker/taker mix decides your fee bill</h3>
+  <p>Under maker/taker pricing your <em class="hi">fee bill is a consequence of your urgency</em>, not of
+  your idea. The taker pays 15 bps of notional in full; the maker is credited a 10 bps rebate. The entire
+  gap between the two extremes below is one design decision: cross, or wait.</p>
+  <div class="split-r">
+    <div class="panel">
+      <div class="ctl"><label for="mtMix">Passive share of your fills <b id="mtMixV">0%</b></label>
+        <input type="range" id="mtMix" min="0" max="100" value="0" step="1" aria-label="Percentage of fills that were passive"></div>
+      <div class="ctl"><label for="mtNot">Notional traded <b id="mtNotV">$49,180</b></label>
+        <input type="range" id="mtNot" min="5000" max="300000" value="49180" step="500" aria-label="Notional traded in dollars"></div>
+      <div class="ctl"><label for="mtTaker">Taker fee <b id="mtTakerV">15.0 bps</b></label>
+        <input type="range" id="mtTaker" min="0" max="400" value="150" step="1" aria-label="Taker fee in tenths of a basis point"></div>
+      <div class="ctl"><label for="mtReb">Maker rebate <b id="mtRebV">10.0 bps</b></label>
+        <input type="range" id="mtReb" min="0" max="300" value="100" step="1" aria-label="Maker rebate in tenths of a basis point"></div>
+      <div class="ctl"><label for="mtHalf">Half-spread on this venue <b id="mtHalfV">5.0 bps</b></label>
+        <input type="range" id="mtHalf" min="0" max="200" value="50" step="1" aria-label="Half-spread in tenths of a basis point"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Fees paid</div><div class="sv bad" id="mtFee">—</div></div>
+        <div class="stat"><div class="sl">Rebates earned</div><div class="sv ok" id="mtRebate">—</div></div>
+        <div class="stat"><div class="sl">Net fee</div><div class="sv" id="mtNet">—</div></div>
+        <div class="stat"><div class="sl">All-in cost</div><div class="sv" id="mtAll">—</div></div>
+        <div class="stat"><div class="sl">Break-even passive</div><div class="sv warn" id="mtBe">—</div></div>
+        <div class="stat"><div class="sl">Cost / notional</div><div class="sv" id="mtBps">—</div></div>
+      </div>
+      <div class="verdict" id="mtVerdict"></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap"><svg id="mtSvg" viewBox="0 0 700 300" role="img"
+        aria-label="All-in cost in basis points against the passive share of fills, with the lab's six participants marked"></svg></div>
+      <div class="panel tight"><h3>TCA — the lab's session, 162 trades in 3.2 minutes</h3>
+        <div class="tablewrap"><table class="t">
+          <thead><tr><th>Team</th><th>Mkr%</th><th>Net fee</th><th>Slip</th><th>Cap</th></tr></thead>
+          <tbody>
+            <tr><td class="n">broker_1</td><td class="ok">100%</td><td class="ok">+138.91</td><td>—</td><td class="ok">+4.51</td></tr>
+            <tr><td class="n">rogue_3</td><td>53%</td><td class="bad">&#8722;27.82</td><td class="bad">&#8722;3.74</td><td>+3.39</td></tr>
+            <tr><td class="n">rogue_4</td><td>49%</td><td class="bad">&#8722;65.52</td><td class="bad">&#8722;3.37</td><td>+3.65</td></tr>
+            <tr><td class="n">exec_1</td><td>17%</td><td class="bad">&#8722;63.27</td><td class="bad">&#8722;2.49</td><td>+2.61</td></tr>
+            <tr><td class="n">rogue_1</td><td>5%</td><td class="bad">&#8722;85.13</td><td class="bad">&#8722;4.44</td><td>+2.35</td></tr>
+            <tr class="lead-row"><td class="n">retail_1</td><td class="bad">0%</td><td class="bad">&#8722;73.77</td><td class="bad">&#8722;6.07</td><td>—</td></tr>
+          </tbody></table></div>
+        <p class="sub" style="margin-top:9px">121 / 36 / 37 / 12 / 40 / 78 fills respectively. Slip is
+        measured on taker fills against the prevailing mid; capture on maker fills. The market maker is 100% passive, pays nothing, collects $138.91 of rebates
+        and captures 4.51 bps of spread. Retail flow is 0% passive and pays 6.07 bps of slippage on top of
+        its fee.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: measuring the market, and policing it</h2>
+  <p class="lead">Two things stand between a tape and a defensible liquidity section. The first is knowing
+  which spread you quoted. The second is knowing whether the volume you measured was real.</p>
+
+  <h3 style="margin-top:22px">Widget 4 · quoted, effective, and trade-weighted spread</h3>
+  <p>The lab's broker quotes a fixed 30 cents on every name, which is 6.4 bps on MSFT at $485 and
+  <strong>26.6 bps on INTC</strong> near $90. <em class="hi">A spread in cents is not a spread.</em> And the
+  effective spread — what takers actually paid, 7.44 bps on AAPL — sits <strong>below</strong> the quoted
+  10.02 bps, which is not a discount but a weighting: trades cluster when the spread is tight.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="spSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Quoted spread in basis points by symbol at a fixed cent spread, with time-weighted and trade-weighted medians marked"></svg></div>
+      <div class="legend">
+        <span><i style="background:#fda4af"></i>quoted, time-weighted</span>
+        <span><i style="background:#3fb950"></i>effective / trade-weighted</span>
+      </div>
+      <p class="sub" style="margin-top:10px">On AAPL the time-weighted median quoted spread was 10.021 bps
+      over 444 snapshots and the trade-weighted median was <strong>7.444 bps</strong> over 93 prints — to
+      three decimals the effective spread, so every AAPL trade happened at the touch and the entire gap is
+      clustering. <strong>A time-weighted spread describes the screen; a trade-weighted one describes what
+      was paid</strong>, and quoting one while calling it the other is the commonest error in a liquidity
+      section.</p>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="spCents">Broker spread <b id="spCentsV">30&#162;</b></label>
+        <input type="range" id="spCents" min="1" max="90" value="30" step="1" aria-label="Broker quoted spread in cents"></div>
+      <div class="ctl"><label for="spClust">Trade clustering at tight spreads <b id="spClustV">0.26</b></label>
+        <input type="range" id="spClust" min="0" max="80" value="26" step="1" aria-label="How strongly trades cluster when the spread is tight"></div>
+      <div class="ctl"><label for="spStale">Stale snapshots <b id="spStaleV">95%</b></label>
+        <input type="range" id="spStale" min="0" max="99" value="95" step="1" aria-label="Percentage of snapshots identical to the previous one"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Widest name</div><div class="sv bad" id="spWide">—</div></div>
+        <div class="stat"><div class="sl">Tightest name</div><div class="sv ok" id="spTight">—</div></div>
+        <div class="stat"><div class="sl">Ratio</div><div class="sv" id="spRatio">—</div></div>
+        <div class="stat"><div class="sl">Effective / quoted</div><div class="sv" id="spEff">—</div></div>
+        <div class="stat"><div class="sl">Fresh snapshots</div><div class="sv" id="spFresh">—</div></div>
+        <div class="stat"><div class="sl">Messages that are news</div><div class="sv" id="spNews">—</div></div>
+      </div>
+      <div class="verdict" id="spVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>Liveness is not "the data is arriving".</b> In the lab
+      <code>stale_pct</code> was 92–97% on every symbol except the one the bots were fighting over, where
+      it was 59.7%. An event-driven feed goes quiet, and a consumer written to assume "a message means
+      news" will mistake a dead market for a calm one. Separately: 32 of AAPL's 93 prints were the wash
+      pair, so a third of its volume transferred no risk. <strong>Never use share volume as a liquidity
+      proxy on a tape you have not surveilled.</strong></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 5 · three detectors, and the innocent they accuse</h3>
+  <p>The regulator's view. Three post-trade rules over one session: <strong>cancel-to-fill</strong> and
+  <strong>quote-stuffing</strong> from the participants' audit trails, <strong>self-match</strong> from the
+  tape. Move the thresholds and watch precision and recall move — then switch to the clean control, a tape
+  with no abuse in it at all.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div class="sw" role="group" aria-label="Which tape to run the detectors on">
+          <button id="svLive" type="button" aria-pressed="true">Live tape (4 rogues)</button>
+          <button id="svClean" type="button" aria-pressed="false">Clean control</button>
+        </div>
+        <button class="btn" id="svExempt" type="button" aria-pressed="false"
+          aria-label="Exempt the known market maker from the self-match rule">Exempt the market maker</button>
+      </div>
+      <div class="tablewrap"><table class="t" id="svTable">
+        <thead><tr><th>Actor</th><th>C/F</th><th>Pk/s</th><th>Rcp</th><th>Cnc</th><th>N/G</th><th>Hit</th></tr></thead>
+        <tbody></tbody></table></div>
+      <div class="stats" style="margin-top:12px">
+        <div class="stat"><div class="sl">Alerts</div><div class="sv acc" id="svAlerts">—</div></div>
+        <div class="stat"><div class="sl">TP / FP / FN</div><div class="sv" id="svCounts">—</div></div>
+        <div class="stat"><div class="sl">Precision</div><div class="sv" id="svPrec">—</div></div>
+        <div class="stat"><div class="sl">Recall</div><div class="sv" id="svRec">—</div></div>
+      </div>
+      <div class="verdict" id="svVerdict"></div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="svCf">R1 · cancel-to-fill threshold <b id="svCfV">10.0&#215;</b></label>
+        <input type="range" id="svCf" min="5" max="1000" value="100" step="5" aria-label="Cancel to fill ratio threshold"></div>
+      <div class="ctl"><label for="svRate">R3 · peak message rate <b id="svRateV">40 /s</b></label>
+        <input type="range" id="svRate" min="5" max="120" value="40" step="1" aria-label="Peak messages per second threshold"></div>
+      <div class="ctl"><label for="svRecip">R2 · reciprocity threshold <b id="svRecipV">0.90</b></label>
+        <input type="range" id="svRecip" min="50" max="100" value="90" step="1" aria-label="Reciprocity threshold"></div>
+      <div class="ctl"><label for="svConc">R2 · concentration threshold <b id="svConcV">0.50</b></label>
+        <input type="range" id="svConc" min="10" max="99" value="50" step="1" aria-label="Counterparty concentration threshold"></div>
+      <div class="ctl"><label for="svNg">R2 · net/gross ceiling <b id="svNgV">0.15</b></label>
+        <input type="range" id="svNg" min="1" max="60" value="15" step="1" aria-label="Net over gross ceiling"></div>
+      <div class="note" style="margin-top:6px"><b>Three findings, in increasing order of
+      importance.</b> The stuffer is unmissable: 2,565 orders, <em class="hi">zero</em> fills, a peak of 68
+      messages a second and 70 distinct seconds over the venue's quota. The wash pair is textbook:
+      reciprocity 0.938, 93% of each account's volume done with the other, net/gross 0.091. But the honest
+      market maker and the honest retail flow score reciprocity 0.868 and net/gross 0.258 — two of the
+      rule's three features — and are acquitted only by concentration, 0.336 against a 0.50 threshold. In a
+      market with one liquidity provider, <em class="hi">everyone's</em> concentration is high, so the
+      thinnest discriminator is the one carrying the whole rule.</div>
+      <div class="note" style="margin-top:10px"><b>And the genuine failure.</b> <code>rogue_1</code>, the
+      layerer, is flagged by none of the three: it fills often enough (40 times) that its cancel-to-fill
+      ratio is only 5.8, its message rate never trips the quota, and it never trades with itself. Lowering
+      the threshold catches it and tells you nothing about your precision, because the only firms in this
+      audit trail are the four guilty ones — nobody else was asked to file. <strong>A precision measured on
+      a dataset containing only suspects is not a precision.</strong> Layering needs the per-team resting
+      size at each price level, which is sent only to observer connections and is never recorded.</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:22px">
+    <div class="panel"><h4>Live session, or offline tape</h4>
+      <p class="sub">Everything in this week except standing up the venue runs offline, and Phase 2 must not
+      depend on the wifi. The offline recorder writes the same envelope the live server writes, so
+      <code>tca_report.py</code>, the microstructure statistics and the self-match rule work unchanged; the
+      two audit-trail rules need a local exchange and the rogue bots, which is still no internet. The only
+      thing a recorded tape cannot give you is the <em class="hi">live scored session</em> — and that is a
+      Phase-2 deliverable, not an analytics one.</p>
+      <p class="sub"><strong>Keep your own order log.</strong> The recording is broadcast-only, so your
+      cancels, your rejects and your decision prices exist nowhere else, and neither the shortfall nor the
+      cancel-to-fill number can be recovered afterwards.</p></div>
+    <div class="panel"><h4>The reconciliation line to read first</h4>
+      <pre class="code">EOD RECON PASS  bought=<span class="n">1134</span> sold=<span class="n">1134</span>
+market=<span class="n">1134</span>  pos_breaks=<span class="s">none</span>  cash_gap=<span class="n">$-0.00</span>
+SESSION CLOSED  trades=<span class="n">162</span></pre>
+      <p class="sub" style="margin-top:9px">The venue proving its own books balance: every share bought was
+      sold, no position breaks, no cash gap. An operations analyst reads that line before any P&amp;L, and
+      so should you — a tape whose recon failed is a tape whose numbers you cannot cite. Note too that the
+      broker in this session was quoting off the exchange's own mark, because Yahoo was unreachable: correct
+      engineering, but a market whose only price reference is itself has no outside anchor, and that is
+      worth one sentence in any report written off the tape.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Each of these produced a number that looked fine and meant something else. Open them.</p>
+
+  <details class="pit"><summary>Benchmarking your fills against a mid you moved</summary>
+    <div class="body">
+      <p>TCA measures every fill against the mid prevailing <em class="hi">at that moment</em>. By the
+      fourth child of our parent order that mid was already 30 cents higher, because we had bought the
+      first three. So the report says <strong>&#8722;2.49 bps</strong> while the shortfall against the
+      decision price says <strong>&#8722;24.62 bps</strong> — a ten-times difference, and neither number is
+      computed incorrectly.</p>
+      <p>The same trap in miniature: judging a child order against the arrival price of that child rather
+      than of the parent. Every slice looks excellent and the parent still cost 25 bps.</p>
+      <p class="fix">Fix: report both, and if you report only one, report the shortfall. Record the decision
+      mid at the instant the decision is made — no tape contains it — and mark the unfilled remainder at the
+      final mid rather than dropping it.</p>
+    </div></details>
+
+  <details class="pit"><summary>Quoting a spread in cents, or a time-weighted spread as though takers paid it</summary>
+    <div class="body">
+      <p>A fixed 30-cent quote is 6.4 bps on MSFT and 26.6 bps on INTC. Any cross-sectional statement about
+      liquidity built on cents is a statement about price levels. And on AAPL the time-weighted median
+      quoted spread was 10.021 bps while the trade-weighted median was 7.444 — because trades cluster when
+      the spread is tight, not because anyone got a discount.</p>
+      <p>Then the volume trap: 32 of AAPL's 93 prints were a wash pair, so a third of the "volume" moved no
+      risk at all.</p>
+      <p class="fix">Fix: always bps of the contemporaneous mid; state whether a spread is time-weighted,
+      trade-weighted or effective; and compute the realised spread too — the mid five seconds after the
+      trade against the trade price — because effective minus realised is adverse selection, the part of
+      the spread the maker does not keep.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reading a healthy socket as a healthy market</summary>
+    <div class="body">
+      <p>The most dangerous state in this platform: 547 messages arrive in twelve seconds, ten of eleven
+      books are two-sided, <code>best_bid</code> and <code>best_ask</code> are populated, the spreads are
+      sane — and the market has been dead for thirty-seven seconds, because a disconnected participant's
+      resting orders are never cancelled. Your bot keeps trading against a corpse, and its fills are
+      real.</p>
+      <p>Its analytic cousin is <code>stale_pct = 95%</code>: nine snapshots in ten were bit-identical to
+      the one before. Any statistic averaged over snapshots is then averaging over a book that is not
+      changing, which silently reweights everything towards the quiet symbols.</p>
+      <p class="fix">Fix: liveness means <em class="hi">the data is changing</em>. Compare two snapshots and
+      assert that something moved; report <code>stale_pct</code> beside every snapshot-averaged statistic;
+      and weight by trade time when you want to describe what was paid.</p>
+    </div></details>
+
+  <details class="pit"><summary>A surveillance rule shipped without a clean control</summary>
+    <div class="body">
+      <p>Run the self-match rule on a tape with no abuse in it at all and it fires: an honest
+      mean-reversion bot trades both ways by construction (reciprocity 0.992), ends flat by construction
+      (net/gross 0.017), and does 71% of its volume with the only market maker in the room. Every feature
+      the rule keys on is a property of legitimate mean reversion against a monopoly liquidity
+      provider.</p>
+      <p>The fix every real surveillance system uses is a known-entity list — and that list is the first
+      thing an abuser asks to be added to. State your exemptions, and state who may change them.</p>
+      <p class="fix">Fix: never quote a detection rate without a false-positive rate measured on a session
+      you know is clean, and never quote a precision computed on a population that contains only suspects.
+      Publish the threshold sweep, not the threshold you liked.</p>
+    </div></details>
+
+  <details class="pit"><summary>Choosing the detector before checking what you are entitled to observe</summary>
+    <div class="body">
+      <p>Of the three rules, only self-match can be computed from a recording, because a recording is a
+      broadcast log: no order acknowledgements, no cancels, no rejects, no per-team ladder. Cancel-to-fill
+      and quote-stuffing need each participant's own audit trail, which exists only because we asked the
+      bots to write one. Layering needs <code>ladder_snapshot</code> — per-team resting size at each price
+      level — which is sent to observer and teacher connections and never recorded at all.</p>
+      <p>So the abuser that all three miss is not a tuning failure. It is an evidence failure, and no
+      threshold fixes it.</p>
+      <p class="fix">Fix: write down your evidence set before your rule set. For each rule, name the field
+      it needs and the message type that carries it; if no recorded message carries it, either attach a
+      collector or admit the rule is unimplementable on your data.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="2" data-exp="<b>The mid you measured against is the mid you moved.</b> TCA scores each fill against the mid prevailing at that instant, and by the fourth child that mid had already risen because the first three had bought; implementation shortfall scores everything against the decision price and additionally charges the 54 unfilled shares at the final mid. Both calculations are correct, so neither is a bug and neither needs discarding &#8212; and the fees are a separate, explicit line, not the source of a ten-times gap. Report both; if you report only one, report the shortfall.">
+    <p class="q"><span>Q1</span>TCA reports your 200-share order cost <b>&#8722;2.49 bps</b>; implementation
+    shortfall reports <b>&#8722;24.62 bps</b>. Both are computed correctly. Why do they differ by ten
+    times?</p>
+    <div class="opts">
+      <button class="opt" type="button">One of them forgot the fees, which are 15 bps of notional on this venue</button>
+      <button class="opt" type="button">The shortfall is wrong: it double-counts the spread inside the impact term</button>
+      <button class="opt" type="button">TCA benchmarks each fill against the mid at that moment — a mid our own buying had already lifted — while the shortfall benchmarks against the decision price and charges the unfilled shares</button>
+      <button class="opt" type="button">TCA is per-fill and shortfall is per-share, so the two cannot be compared at all</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="0" data-exp="<b>It is a property of legitimate mean reversion against a monopoly liquidity provider.</b> A mean-reversion bot trades both directions by construction, so reciprocity is near one; it ends flat by construction, so net/gross is near zero; and with one market maker in the room its counterparty concentration is high for everyone. That is why a clean control is mandatory before a rule ships, and why the standard fix &#8212; a known-entity exemption list &#8212; creates its own liability: it is the first thing an abuser asks to be added to. Raising the reciprocity threshold would not separate them, since the innocent bot scores 0.992.">
+    <p class="q"><span>Q2</span>Your self-match rule fires on an honest mean-reversion bot on a tape you
+    know is clean: reciprocity 0.992, net/gross 0.017, concentration 0.706. What is the right
+    conclusion?</p>
+    <div class="opts">
+      <button class="opt" type="button">The rule keys on properties that legitimate mean reversion has by construction — you need a clean control and an exemption list, and the list is itself a liability</button>
+      <button class="opt" type="button">The bot is in fact washing trades; reciprocity that high has no innocent explanation</button>
+      <button class="opt" type="button">Raise the reciprocity threshold above 0.992 and the false positive disappears without cost</button>
+      <button class="opt" type="button">Self-match cannot be computed from a tape, so the alert is a data bug</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>The market has been dead for thirty-seven seconds.</b> A disconnected participant's resting orders are never cancelled, so the books stay two-sided and the spreads stay sane while nothing changes &#8212; and the message flow you are watching is other traffic, not quote updates. Liveness is 'the data is changing', which only a comparison of two snapshots can establish; message count, two-sidedness and spread sanity all pass on a frozen book. Trading into it produces real fills at stale prices.">
+    <p class="q"><span>Q3</span>Pre-flight: 547 messages in 12 s, 10 of 11 books two-sided, spreads sane,
+    session open. Your health check passes. What has it failed to detect?</p>
+    <div class="opts">
+      <button class="opt" type="button">Nothing — those four checks are exactly what liveness means</button>
+      <button class="opt" type="button">That the exchange is rejecting your orders, which a message count cannot show</button>
+      <button class="opt" type="button">That your token is for the hosted venue rather than localhost</button>
+      <button class="opt" type="button">That the book is frozen: nothing changed, because a disconnected maker's resting orders are never cancelled</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Bring up an exchange, a market maker and retail flow, then three abusive bots so the tape has
+      something to find. Every client gets <code>EXCHANGE_HOST=localhost</code> — without it your "local"
+      rogue attacks the hosted venue in front of the class.</li>
+      <li>Work a 200-share parent order through the book with a slicing algorithm that logs its own decision
+      price, and decompose the shortfall.</li>
+      <li>Close the session, read the recon line, then run <code>scripts/tca_report.py</code> and put its
+      &#8722;2.49 bps next to your &#8722;24.62.</li>
+      <li>Compute spread, depth, imbalance and <code>stale_pct</code> from <code>book_snapshot</code>
+      alone, then the time- versus trade-weighted spread.</li>
+      <li>Three detectors, a threshold sweep, and the clean control that accuses the innocent.</li>
+    </ul></div>
+    <div class="panel"><h4>Phase 2 · what this week owes the report</h4><ul class="plain">
+      <li>Maker/taker mix, fees against rebates, slippage against the prevailing mid, and implementation
+      shortfall against your decision price.</li>
+      <li><strong>Three numbers for week 10:</strong> the backtested P&amp;L, the live P&amp;L, and the
+      decomposition of the difference into fees, spread, impact and unfilled intent.</li>
+      <li>A surveillance check on your own tape plus one clean control, with any alert on your team
+      disclosed and explained.</li>
+      <li>Your own order log, kept for both live sessions — the tape cannot give it back to you.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — then run the offline recorder and point the four tools at your own tape.</div></a>
+    <a class="nextcard" href="week8.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 8 · Machine Learning for Finance</div><div class="nd">Where the cost ladder killed a +29%/yr signal at 10 bps a side — this week is where that 10 bps comes from.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/financial-markets-arena/microstructure.html"><div class="nl">See also</div>
+      <div class="nt">Financial Markets Arena · Microstructure</div><div class="nd">The primer: order types, matching, queue position and adverse selection, without the analytics.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">The 10-week map</div><div class="nd">Where week 9 sits, and the Phase-2 sections it fills in.</div></a>
+    <a class="nextcard" href="week10.html"><div class="nl">Next</div>
+      <div class="nt">Week 10 · Review Day &amp; Final &#8594;</div><div class="nd">The second live session, peer analyst reviews by re-running each other's numbers, and the concept list the closed-book exam draws from.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 9 — Market Microstructure & Execution Analytics
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("obSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+function moments(a) {
+  var m = mean(a), n = a.length, s2 = 0, s3 = 0, s4 = 0, i, d;
+  for (i = 0; i < n; i++) { d = a[i] - m; s2 += d * d; s3 += d * d * d; s4 += d * d * d * d; }
+  var v = s2 / n, s = Math.sqrt(v);
+  return { mean: m, sd: Math.sqrt(s2 / (n - 1)), skew: s3 / n / (s * s * s), kurt: s4 / n / (v * v) - 3 };
+}
+function money(x) {
+  var a = Math.abs(x);
+  if (a >= 1e6) return "$" + (x / 1e6).toFixed(2) + "m";
+  if (a >= 1e3) return "$" + Math.round(x / 1e3) + "k";
+  return "$" + Math.round(x);
+}
+/* standard normal cdf — Hart's double-precision rational approximation */
+function cnd(x) {
+  var a = Math.abs(x), cum;
+  if (a > 37) cum = 0;
+  else {
+    var e = Math.exp(-a * a / 2);
+    if (a < 7.07106781186547) {
+      var b = 0.0352624965998911 * a + 0.700383064443688;
+      b = b * a + 6.37396220353165; b = b * a + 33.912866078383;
+      b = b * a + 112.079291497871; b = b * a + 221.213596169931;
+      b = b * a + 220.206867912376;
+      var c = 0.0883883476483184 * a + 1.75566716318264;
+      c = c * a + 16.064177579207; c = c * a + 86.7807322029461;
+      c = c * a + 296.564248779674; c = c * a + 637.333633378831;
+      c = c * a + 793.826512519948; c = c * a + 440.413735824752;
+      cum = e * b / c;
+    } else {
+      var f = a + 1 / (a + 2 / (a + 3 / (a + 4 / (a + 0.65))));
+      cum = e / (f * 2.506628274631);
+    }
+  }
+  return x > 0 ? 1 - cum : cum;
+}
+function npdf(x) { return Math.exp(-x * x / 2) / 2.5066282746310002; }
+/* inverse standard normal cdf — Acklam */
+function invnorm(p) {
+  var A = [-3.969683028665376e+1, 2.209460984245205e+2, -2.759285104469687e+2,
+    1.383577518672690e+2, -3.066479806614716e+1, 2.506628277459239e+0];
+  var B = [-5.447609879822406e+1, 1.615858368580409e+2, -1.556989798598866e+2,
+    6.680131188771972e+1, -1.328068155288572e+1];
+  var C = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838e+0,
+    -2.549732539343734e+0, 4.374664141464968e+0, 2.938163982698783e+0];
+  var D = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996e+0, 3.754408661907416e+0];
+  var pl = 0.02425, q, r, x;
+  if (p <= 0) return -38; if (p >= 1) return 38;
+  if (p < pl) {
+    q = Math.sqrt(-2 * Math.log(p));
+    x = (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  } else if (p <= 1 - pl) {
+    q = p - 0.5; r = q * q;
+    x = (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q /
+        (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    x = -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  }
+  return x;
+}
+function quantile(sorted, p) {
+  var n = sorted.length; if (!n) return 0;
+  var h = (n - 1) * p, lo = Math.floor(h), hi = Math.min(lo + 1, n - 1);
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
+}
+
+/* ── generic axis + line helpers shared by every chart on the page ── */
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7,
+    "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function hline(svg, v, W, H, pad, y0, y1, color, dash, label, left) {
+  var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+  var l = mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: color, "stroke-width": 1.5 });
+  if (dash) l.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(l);
+  if (label) svg.appendChild(left
+    ? txt(pad.l + 4, yy - 4, label, 9.5, color, "start", "700")
+    : txt(W - pad.r - 3, yy - 4, label, 9.5, color, "end", "700"));
+}
+
+
+function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function bps(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === undefined ? 2 : d); }
+
+/* ══════════════ WIDGET 1 · the order book ══════════════ */
+(function () {
+  var st = { cents: 30, price: 310, depth: 10, imb: 0, mine: 0, queue: 0, cost: null };
+  var book = null;
+  function build() {
+    var half = st.cents / 200, step = Math.max(0.01, st.cents / 200);
+    var mid = st.price - 0.5, bids = [], asks = [], i;
+    var bs = st.depth * (1 + st.imb), as = st.depth * (1 - st.imb);
+    for (i = 0; i < 5; i++) {
+      bids.push({ p: mid - half - i * step, q: Math.max(1, Math.round(bs * (1 + 0.45 * i))) });
+      asks.push({ p: mid + half + i * step, q: Math.max(1, Math.round(as * (1 + 0.45 * i))) });
+    }
+    book = { mid: mid, bids: bids, asks: asks };
+    st.mine = 0; st.queue = 0; st.cost = null;
+  }
+  function bestIdx(side) {
+    var i;
+    for (i = 0; i < side.length; i++) if (side[i].q > 0) return i;
+    return -1;
+  }
+  function log(m, cls) {
+    var d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = m;
+    var L = $("obLog");
+    L.insertBefore(d, L.firstChild);
+    while (L.childNodes.length > 9) L.removeChild(L.lastChild);
+  }
+  function draw() {
+    var bi = bestIdx(book.bids), ai = bestIdx(book.asks);
+    var bb = bi < 0 ? book.bids[4] : book.bids[bi];
+    var ba = ai < 0 ? book.asks[4] : book.asks[ai];
+    var mid = (bb.p + ba.p) / 2;
+    var spr = ba.p - bb.p;
+    var sb = spr / mid * 1e4;
+    var bq = bb.q, aq = ba.q;
+    var imb = (bq - aq) / (bq + aq || 1);
+    var micro = imb * sb / 2;
+    var d5 = 0, i;
+    for (i = 0; i < 5; i++) d5 += book.bids[i].q + book.asks[i].q;
+    $("obSprBps").textContent = sb.toFixed(2) + " bps";
+    $("obMid").textContent = "$" + mid.toFixed(2);
+    $("obMicro").textContent = bps(micro) + " bps";
+    $("obMicro").className = "sv " + (Math.abs(micro) < 0.2 ? "" : (micro > 0 ? "ok" : "bad"));
+    $("obD5").textContent = fmt(d5) + " sh";
+    $("obQ").textContent = st.mine ? fmt(st.queue) + " sh" : "—";
+    $("obCost").textContent = st.cost === null ? "—" : bps(st.cost) + " bps";
+    $("obCost").className = "sv " + (st.cost === null ? "" : (st.cost < 0 ? "bad" : "ok"));
+    var v = $("obVerdict");
+    if (st.mine) {
+      v.className = st.queue > 0 ? "verdict miss" : "verdict met";
+      v.textContent = st.queue > 0
+        ? "PRICE-TIME PRIORITY · " + st.queue + " shares must trade before your " + st.mine + " do"
+        : "you are at the front of the queue at the touch";
+    } else if (st.cost !== null) {
+      v.className = "verdict miss";
+      v.textContent = "you crossed · paid " + Math.abs(st.cost).toFixed(2) +
+        " bps over the mid, of which " + (sb / 2).toFixed(2) + " was the half-spread";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "book two-sided · " + sb.toFixed(2) + " bps quoted · microprice " +
+        bps(micro) + " bps off the mid";
+    }
+    /* ladder */
+    var svg = $("obSvg"), W = 700, H = 320, pad = { l: 90, r: 90, t: 30, b: 26 };
+    clear(svg);
+    var rows = 10, rowH = (H - pad.t - pad.b) / rows, cx = W / 2, maxq = 1;
+    for (i = 0; i < 5; i++) maxq = Math.max(maxq, book.bids[i].q, book.asks[i].q);
+    var half = (cx - pad.l);
+    svg.appendChild(txt(pad.l, pad.t - 12, "bids", 10, "#3fb950", "start", "700"));
+    svg.appendChild(txt(W - pad.r, pad.t - 12, "asks", 10, "#f85149", "end", "700"));
+    svg.appendChild(txt(cx, pad.t - 12, "price", 10, "#5f6673", "middle"));
+    for (i = 0; i < 5; i++) {
+      /* asks: top rows, best ask nearest the middle */
+      var ay = pad.t + (4 - i) * rowH;
+      var aw = book.asks[i].q / maxq * (half - 12);
+      if (book.asks[i].q > 0) {
+        svg.appendChild(mk("rect", { x: cx + 8, y: (ay + 2).toFixed(1), width: Math.max(1, aw).toFixed(1),
+          height: (rowH - 5).toFixed(1), fill: "#f85149", opacity: i === ai ? 0.85 : 0.42, rx: 2 }));
+      }
+      svg.appendChild(txt(cx, ay + rowH * 0.68, book.asks[i].p.toFixed(2), 10.5,
+        book.asks[i].q > 0 ? "#c6c3bf" : "#3a4150", "middle"));
+      svg.appendChild(txt(cx + 12 + Math.max(2, aw), ay + rowH * 0.68,
+        book.asks[i].q > 0 ? book.asks[i].q + "" : "empty", 9.5,
+        book.asks[i].q > 0 ? "#9aa0a6" : "#5f6673", "start"));
+      /* bids: bottom rows */
+      var by = pad.t + (5 + i) * rowH;
+      var bw = book.bids[i].q / maxq * (half - 12);
+      if (book.bids[i].q > 0) {
+        svg.appendChild(mk("rect", { x: (cx - 8 - bw).toFixed(1), y: (by + 2).toFixed(1),
+          width: Math.max(1, bw).toFixed(1), height: (rowH - 5).toFixed(1),
+          fill: "#3fb950", opacity: i === bi ? 0.85 : 0.42, rx: 2 }));
+      }
+      svg.appendChild(txt(cx, by + rowH * 0.68, book.bids[i].p.toFixed(2), 10.5,
+        book.bids[i].q > 0 ? "#c6c3bf" : "#3a4150", "middle"));
+      svg.appendChild(txt(cx - 12 - Math.max(2, bw), by + rowH * 0.68,
+        book.bids[i].q > 0 ? book.bids[i].q + "" : "empty", 9.5,
+        book.bids[i].q > 0 ? "#9aa0a6" : "#5f6673", "end"));
+      if (i === Math.max(0, bi) && st.mine) {
+        var myw = st.mine / maxq * (half - 12);
+        svg.appendChild(mk("rect", { x: (cx - 8 - bw).toFixed(1), y: (by + 2).toFixed(1),
+          width: Math.max(1, myw).toFixed(1), height: (rowH - 5).toFixed(1), fill: "#e11d48", rx: 2 }));
+        svg.appendChild(txt(cx - 14 - bw - myw, by + rowH * 0.68, "you " + st.mine, 9.5, "#fda4af", "end", "700"));
+      }
+    }
+    var my = pad.t + 5 * rowH;
+    svg.appendChild(mk("line", { x1: pad.l - 20, y1: my, x2: W - pad.r + 20, y2: my,
+      stroke: "#fda4af", "stroke-dasharray": "4 3" }));
+    svg.appendChild(txt(pad.l - 24, my + 3.5, "mid " + mid.toFixed(2), 9.5, "#fda4af", "end", "700"));
+    svg.appendChild(txt(W - pad.r + 24, my + 3.5, sb.toFixed(1) + " bps", 9.5, "#fda4af", "start", "700"));
+  }
+  function marketBuy(qty) {
+    var b0 = bestIdx(book.bids), a0 = bestIdx(book.asks);
+    var mid0 = ((b0 < 0 ? book.bids[4] : book.bids[b0]).p +
+                (a0 < 0 ? book.asks[4] : book.asks[a0]).p) / 2;
+    var left = qty, notion = 0, got = 0, i, levels = 0;
+    for (i = 0; i < 5 && left > 0; i++) {
+      var take = Math.min(left, book.asks[i].q);
+      if (take <= 0) continue;
+      notion += take * book.asks[i].p; got += take; left -= take;
+      book.asks[i].q -= take;
+      levels++;
+      log("filled " + take + " @ " + book.asks[i].p.toFixed(2) + " (level " + (i + 1) + ")", "bad");
+    }
+    if (got) {
+      var vwap = notion / got;
+      st.cost = -(vwap - mid0) / mid0 * 1e4;
+      var na = bestIdx(book.asks), nb = bestIdx(book.bids);
+      var ns = ((na < 0 ? book.asks[4] : book.asks[na]).p -
+                (nb < 0 ? book.bids[4] : book.bids[nb]).p) / mid0 * 1e4;
+      log("bought " + got + " sh, VWAP " + vwap.toFixed(4) + " vs mid " + mid0.toFixed(4) +
+          " → " + bps(st.cost) + " bps; walked " + levels + " level(s); spread now " +
+          ns.toFixed(2) + " bps", "hl");
+      if (left > 0) log("market order cancelled with " + left + " shares unfilled — it never rests", "bad");
+    }
+    draw();
+  }
+  $("obBuy").addEventListener("click", function () { marketBuy(60); });
+  $("obPost").addEventListener("click", function () {
+    var b0 = Math.max(0, bestIdx(book.bids));
+    st.queue = book.bids[b0].q;
+    st.mine = 20;
+    book.bids[b0].q += 20;
+    log("posted 20 @ " + book.bids[b0].p.toFixed(2) + " — behind " + st.queue +
+        " shares already resting at that price", "ok");
+    draw();
+  });
+  $("obReset").addEventListener("click", function () {
+    build(); log("book rebuilt", "hl"); draw();
+  });
+  $("obSpread").addEventListener("input", function () {
+    st.cents = +this.value; $("obSpreadV").innerHTML = st.cents + "&#162;"; build(); draw();
+  });
+  $("obPrice").addEventListener("input", function () {
+    st.price = +this.value; $("obPriceV").textContent = "$" + (st.price - 0.5).toFixed(2); build(); draw();
+  });
+  $("obDepth").addEventListener("input", function () {
+    st.depth = +this.value; $("obDepthV").textContent = st.depth + " shares"; build(); draw();
+  });
+  $("obImb").addEventListener("input", function () {
+    st.imb = +this.value / 100; $("obImbV").textContent = bps(st.imb); build(); draw();
+  });
+  build();
+  log("AAPL book · broker quoting 30 cents · 10 shares a side", "hl");
+  draw();
+})();
+
+/* ══════════════ WIDGET 2 · implementation shortfall ══════════════ */
+(function () {
+  var DEC = 309.5150, TOTAL = 200, DEPTH = 10, LAG = 3;
+  var st = { slices: 10, every: 2, imp: 86, drift: -27, cross: true };
+  function run() {
+    var q = Math.max(1, Math.round(TOTAL / st.slices));
+    var half = 0.15, filled = 0, notion = 0, fills = [], slipNum = 0, i;
+    var firstMid = 0;
+    for (i = 0; i < st.slices; i++) {
+      var t = LAG + i * st.every;
+      var mid = DEC + st.drift / 10000 * t + st.imp * filled / 10000;
+      if (i === 0) firstMid = mid;
+      var want = Math.min(q, TOTAL - filled);
+      var refill = DEPTH * (0.75 + 0.35 * st.every);
+      var cap = st.cross ? refill : refill * (st.drift <= 0 ? 0.6 : 0.2);
+      var got = Math.max(0, Math.min(want, Math.floor(cap)));
+      if (got <= 0) { fills.push({ t: t, mid: mid, p: null, q: 0 }); continue; }
+      var px = st.cross ? mid + half : mid - half;
+      filled += got; notion += got * px;
+      slipNum += (mid - px) / mid * 1e4 * got;
+      fills.push({ t: t, mid: mid, p: px, q: got });
+    }
+    var endT = LAG + st.slices * st.every + 10;
+    var finalMid = DEC + st.drift / 10000 * endT + st.imp * filled / 10000;
+    var vwap = filled ? notion / filled : DEC;
+    var delay = (DEC - firstMid) * filled;
+    var impact = (firstMid - vwap) * filled;
+    var shortfall = delay + impact;
+    var opp = (DEC - finalMid) * (TOTAL - filled);
+    var total = shortfall + opp;
+    var denom = DEC * TOTAL / 1e4;
+    return { fills: fills, filled: filled, vwap: vwap, firstMid: firstMid, finalMid: finalMid,
+             delay: delay, impact: impact, shortfall: shortfall, opp: opp, total: total,
+             denom: denom, slip: filled ? slipNum / filled : 0, endT: endT };
+  }
+  function draw() {
+    var r = run();
+    $("tcFilled").textContent = r.filled + " / 200";
+    $("tcVwap").textContent = r.vwap.toFixed(4);
+    $("tcTotal").textContent = bps(r.total / r.denom) + " bps";
+    $("tcTotal").className = "sv " + (r.total >= 0 ? "ok" : "bad");
+    $("tcSlip").textContent = bps(r.slip) + " bps";
+    $("tcSlip").className = "sv " + (r.slip >= 0 ? "ok" : "warn");
+    var v = $("tcVerdict");
+    var ratio = Math.abs(r.slip) > 1e-6 ? Math.abs((r.total / r.denom) / r.slip) : 0;
+    v.className = ratio > 2 ? "verdict miss" : "verdict met";
+    v.textContent = ratio > 2
+      ? "TCA understates the decision cost by " + ratio.toFixed(1) + "× — a benchmark you move flatters you"
+      : "the two measurements agree here, because this schedule barely moved the mid";
+    /* table */
+    var rowsD = [
+      ["delay", r.delay, "portfolio manager"],
+      ["impact + spread", r.impact, "the algo"],
+      ["= shortfall", r.shortfall, "—"],
+      ["opportunity", r.opp, "the risk limit"],
+      ["TOTAL", r.total, "—"]
+    ];
+    var tb = $("tcTable").getElementsByTagName("tbody")[0];
+    while (tb.firstChild) tb.removeChild(tb.firstChild);
+    var i, j, tr, td, cells;
+    for (i = 0; i < rowsD.length; i++) {
+      cells = [rowsD[i][0], bps(rowsD[i][1]), bps(rowsD[i][1] / r.denom), rowsD[i][2]];
+      tr = document.createElement("tr");
+      for (j = 0; j < cells.length; j++) {
+        td = document.createElement("td");
+        td.textContent = cells[j];
+        if (j === 0 || j === 3) td.className = "n";
+        else td.className = cells[j].charAt(0) === "−" ? "bad" : "ok";
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+    /* chart */
+    var svg = $("tcSvg"), W = 700, H = 320, pad = { l: 62, r: 18, t: 26, b: 96 };
+    clear(svg);
+    var lo = Math.min(DEC, r.finalMid, r.firstMid), hi = Math.max(DEC, r.finalMid, r.firstMid);
+    for (i = 0; i < r.fills.length; i++) {
+      if (r.fills[i].p !== null) { lo = Math.min(lo, r.fills[i].p); hi = Math.max(hi, r.fills[i].p); }
+      lo = Math.min(lo, r.fills[i].mid); hi = Math.max(hi, r.fills[i].mid);
+    }
+    var pd = Math.max(0.05, (hi - lo) * 0.18); lo -= pd; hi += pd;
+    var cp = { l: pad.l, r: pad.r, t: pad.t, b: pad.b };
+    axes(svg, W, H, cp, lo, hi, function (x) { return x.toFixed(2); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "mid path and your fills, $", 10, "#5f6673"));
+    var xs = [], ys = [], k;
+    for (k = 0; k <= r.endT; k++) {
+      xs.push(k);
+      ys.push(DEC + st.drift / 10000 * k + st.imp * r.filled *
+        Math.min(1, Math.max(0, (k - LAG) / Math.max(1, st.slices * st.every))) / 10000);
+    }
+    polyline(svg, ys, W, H, cp, 0, r.endT, lo, hi, "#58a6ff", 1.8, null, xs);
+    hline(svg, DEC, W, H, cp, lo, hi, "#fda4af", "4 3", "decision mid " + DEC.toFixed(4), true);
+    hline(svg, r.finalMid, W, H, cp, lo, hi, "#d29922", "2 3", "final mid " + r.finalMid.toFixed(4), false);
+    for (i = 0; i < r.fills.length; i++) {
+      var f = r.fills[i];
+      if (f.p === null) continue;
+      var fx = pad.l + f.t / r.endT * (W - pad.l - pad.r);
+      var fy = H - pad.b - (f.p - lo) / (hi - lo) * (H - pad.t - pad.b);
+      svg.appendChild(mk("circle", { cx: fx.toFixed(1), cy: fy.toFixed(1),
+        r: Math.max(2, Math.min(6, f.q / 4)).toFixed(1), fill: "#e11d48", opacity: 0.9 }));
+    }
+    /* component strip */
+    var by = H - pad.b + 30, comp = [
+      { l: "delay", v: r.delay, c: "#3fb950" },
+      { l: "impact", v: r.impact, c: "#f85149" },
+      { l: "opportunity", v: r.opp, c: "#a78bfa" }
+    ];
+    var mag = Math.max(1e-6, Math.abs(r.delay) + Math.abs(r.impact) + Math.abs(r.opp));
+    var x = pad.l, aw = W - pad.l - pad.r;
+    svg.appendChild(txt(pad.l, by - 8, "where the " + Math.abs(r.total).toFixed(0) +
+      " dollars went (absolute shares of the total)", 10, "#5f6673"));
+    for (i = 0; i < comp.length; i++) {
+      var w = Math.abs(comp[i].v) / mag * aw;
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: by, width: Math.max(1, w).toFixed(1),
+        height: 16, fill: comp[i].c, opacity: 0.8 }));
+      if (w > 62) svg.appendChild(txt(x + w / 2, by + 12, comp[i].l + " " + bps(comp[i].v, 0),
+        9.5, "#0f1115", "middle", "700"));
+      x += w;
+    }
+    svg.appendChild(txt(pad.l, by + 34, "TCA vs prevailing mid " + bps(r.slip) +
+      " bps   ·   shortfall vs decision price " + bps(r.total / r.denom) + " bps", 10.5,
+      "#fda4af", "start", "700"));
+  }
+  function bind(id, vid, f, fm) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).innerHTML = fm(); draw(); });
+  }
+  bind("tcSlices", "tcSlicesV", function (v) { st.slices = v; }, function () { return String(st.slices); });
+  bind("tcEvery", "tcEveryV", function (v) { st.every = v; },
+    function () { return st.every + (st.every === 1 ? " tick" : " ticks"); });
+  bind("tcImp", "tcImpV", function (v) { st.imp = v; }, function () { return st.imp + "&#162;"; });
+  bind("tcDrift", "tcDriftV", function (v) { st.drift = v; },
+    function () { return (st.drift >= 0 ? "+" : "&#8722;") + Math.abs(st.drift / 100).toFixed(2) + "&#162;/tick"; });
+  $("tcCross").addEventListener("click", function () {
+    st.cross = true; this.setAttribute("aria-pressed", "true");
+    $("tcPost").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("tcPost").addEventListener("click", function () {
+    st.cross = false; this.setAttribute("aria-pressed", "true");
+    $("tcCross").setAttribute("aria-pressed", "false"); draw();
+  });
+  draw();
+})();
+
+/* ══════════════ WIDGET 3 · maker/taker mix ══════════════ */
+(function () {
+  var TEAMS = [
+    { n: "broker_1", m: 1.00, f: 10.00 }, { n: "rogue_3", m: 0.53, f: -1.36 },
+    { n: "rogue_4", m: 0.49, f: -3.10 }, { n: "exec_1", m: 0.17, f: -13.98 },
+    { n: "rogue_1", m: 0.05, f: -14.73 }, { n: "retail_1", m: 0.00, f: -15.00 }
+  ];
+  var st = { mix: 0, not: 49180, taker: 15.0, reb: 10.0, half: 5.0 };
+  function netFeeBps(m) { return st.reb * m - st.taker * (1 - m); }
+  function allInBps(m) { return -netFeeBps(m) + st.half * (1 - m) - st.half * m; }
+  function draw() {
+    var m = st.mix / 100;
+    var fees = st.not * st.taker / 1e4 * (1 - m), reb = st.not * st.reb / 1e4 * m;
+    $("mtFee").textContent = "$" + fees.toFixed(2);
+    $("mtRebate").textContent = "$" + reb.toFixed(2);
+    var nf = reb - fees;
+    $("mtNet").textContent = (nf >= 0 ? "+$" : "−$") + Math.abs(nf).toFixed(2);
+    $("mtNet").className = "sv " + (nf >= 0 ? "ok" : "bad");
+    var ai = allInBps(m);
+    $("mtAll").textContent = ai.toFixed(2) + " bps";
+    $("mtAll").className = "sv " + (ai <= 0 ? "ok" : "bad");
+    var mstar = (st.taker + st.half) / (st.taker + st.half + st.reb + st.half);
+    $("mtBe").textContent = (mstar * 100).toFixed(0) + "%";
+    $("mtBps").textContent = bps(netFeeBps(m)) + " bps";
+    $("mtBps").className = "sv " + (netFeeBps(m) >= 0 ? "ok" : "bad");
+    var v = $("mtVerdict");
+    if (ai <= 0) {
+      v.className = "verdict met";
+      v.textContent = "PAID TO TRADE · " + (mstar * 100).toFixed(0) +
+        "% passive is break-even; you are at " + st.mix + "%";
+    } else {
+      v.className = "verdict miss";
+      v.textContent = "YOUR URGENCY COSTS " + ai.toFixed(2) + " bps · break-even passive share is " +
+        (mstar * 100).toFixed(0) + "%";
+    }
+    var svg = $("mtSvg"), W = 700, H = 300, pad = { l: 58, r: 18, t: 28, b: 42 };
+    clear(svg);
+    var ys = [], xs = [], ai2 = [], i;
+    for (i = 0; i <= 100; i++) { xs.push(i); ys.push(netFeeBps(i / 100)); ai2.push(-allInBps(i / 100)); }
+    var lo = Math.min(Math.min.apply(null, ys), Math.min.apply(null, ai2), -1);
+    var hi = Math.max(Math.max.apply(null, ys), Math.max.apply(null, ai2), 1);
+    var pd = (hi - lo) * 0.12; lo -= pd; hi += pd;
+    axes(svg, W, H, pad, lo, hi, function (x) { return bps(x, 0); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10,
+      "bps of notional earned (+) or paid (−), against passive share of fills", 10, "#5f6673"));
+    polyline(svg, ys, W, H, pad, 0, 100, lo, hi, "#fda4af", 2.2, null, xs);
+    polyline(svg, ai2, W, H, pad, 0, 100, lo, hi, "#58a6ff", 1.6, "4 3", xs);
+    hline(svg, 0, W, H, pad, lo, hi, "#333a47", "3 3", null, false);
+    for (i = 0; i < TEAMS.length; i++) {
+      var tx = pad.l + TEAMS[i].m * (W - pad.l - pad.r);
+      var ty = H - pad.b - (TEAMS[i].f - lo) / (hi - lo) * (H - pad.t - pad.b);
+      svg.appendChild(mk("circle", { cx: tx.toFixed(1), cy: ty.toFixed(1), r: 3.6, fill: "#3fb950" }));
+      svg.appendChild(txt(Math.min(tx + 6, W - pad.r - 74), ty - 5, TEAMS[i].n, 8.5, "#3fb950", "start"));
+    }
+    var cxp = pad.l + m * (W - pad.l - pad.r);
+    var cyp = H - pad.b - (netFeeBps(m) - lo) / (hi - lo) * (H - pad.t - pad.b);
+    svg.appendChild(mk("circle", { cx: cxp.toFixed(1), cy: cyp.toFixed(1), r: 5, fill: "#e11d48" }));
+    svg.appendChild(txt(pad.l + 2, H - pad.b + 18, "0% passive", 9.5, "#5f6673"));
+    svg.appendChild(txt(W - pad.r - 2, H - pad.b + 18, "100% passive", 9.5, "#5f6673", "end"));
+    svg.appendChild(txt(pad.l + 2, H - pad.b + 32,
+      "rose = net fee only (the lab's six teams sit on it) · blue dashed = net of the half-spread too",
+      9.5, "#5f6673"));
+  }
+  function bind(id, vid, f, fm) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).textContent = fm(); draw(); });
+  }
+  bind("mtMix", "mtMixV", function (v) { st.mix = v; }, function () { return st.mix + "%"; });
+  bind("mtNot", "mtNotV", function (v) { st.not = v; }, function () { return "$" + fmt(st.not); });
+  bind("mtTaker", "mtTakerV", function (v) { st.taker = v / 10; },
+    function () { return st.taker.toFixed(1) + " bps"; });
+  bind("mtReb", "mtRebV", function (v) { st.reb = v / 10; },
+    function () { return st.reb.toFixed(1) + " bps"; });
+  bind("mtHalf", "mtHalfV", function (v) { st.half = v / 10; },
+    function () { return st.half.toFixed(1) + " bps"; });
+  draw();
+})();
+
+/* ══════════════ WIDGET 4 · quoted, effective, trade-weighted spread ══════════════ */
+(function () {
+  var SYM = [
+    { s: "AMD", p: 456.2 }, { s: "MSFT", p: 467.8 }, { s: "TSLA", p: 348.1 },
+    { s: "AAPL", p: 299.4 }, { s: "AMZN", p: 249.9 }, { s: "NVDA", p: 208.7 },
+    { s: "NFLX", p: 113.6 }, { s: "INTC", p: 112.8 }
+  ];
+  var st = { cents: 30, clust: 0.26, stale: 95 };
+  function draw() {
+    var i, q = [], lo = 0, hi = 0;
+    for (i = 0; i < SYM.length; i++) {
+      var bq = st.cents / 100 / SYM[i].p * 1e4;
+      q.push({ s: SYM[i].s, q: bq, e: bq * (1 - st.clust) });
+      hi = Math.max(hi, bq);
+    }
+    hi *= 1.15;
+    var widest = q[0], tightest = q[0];
+    for (i = 0; i < q.length; i++) {
+      if (q[i].q > widest.q) widest = q[i];
+      if (q[i].q < tightest.q) tightest = q[i];
+    }
+    $("spWide").textContent = widest.s + " " + widest.q.toFixed(1);
+    $("spTight").textContent = tightest.s + " " + tightest.q.toFixed(1);
+    $("spRatio").textContent = (widest.q / tightest.q).toFixed(1) + "×";
+    $("spEff").textContent = (1 - st.clust).toFixed(2) + "×";
+    $("spFresh").textContent = (100 - st.stale) + "%";
+    $("spNews").textContent = Math.round(444 * (100 - st.stale) / 100) + " / 444";
+    var v = $("spVerdict");
+    if (st.stale >= 90) {
+      v.className = "verdict miss";
+      v.textContent = "A MESSAGE IS NOT NEWS · " + st.stale +
+        "% of snapshots are identical to the one before";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "the book is moving — snapshot averages describe something real";
+    }
+    var svg = $("spSvg"), W = 700, H = 300, pad = { l: 52, r: 18, t: 28, b: 46 };
+    clear(svg);
+    axes(svg, W, H, pad, 0, hi, function (x) { return x.toFixed(0); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "spread in bps of the mid, from one " + st.cents +
+      "-cent quote", 10, "#5f6673"));
+    var bw = (W - pad.l - pad.r) / q.length;
+    var py = function (val) { return H - pad.b - val / hi * (H - pad.t - pad.b); };
+    for (i = 0; i < q.length; i++) {
+      var x = pad.l + i * bw + bw * 0.18, w = bw * 0.64;
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: py(q[i].q).toFixed(1), width: w.toFixed(1),
+        height: Math.max(1, H - pad.b - py(q[i].q)).toFixed(1), fill: "#fda4af", opacity: 0.55, rx: 2 }));
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: py(q[i].e).toFixed(1), width: w.toFixed(1),
+        height: Math.max(1, H - pad.b - py(q[i].e)).toFixed(1), fill: "#3fb950", opacity: 0.62, rx: 2 }));
+      svg.appendChild(txt(x + w / 2, H - pad.b + 16, q[i].s, 9.5, "#9aa0a6", "middle"));
+      svg.appendChild(txt(x + w / 2, py(q[i].q) - 4, q[i].q.toFixed(1), 9, "#fda4af", "middle", "700"));
+    }
+    svg.appendChild(txt(pad.l + 2, H - pad.b + 34,
+      "rose = quoted (time-weighted) · green = effective (trade-weighted), " +
+      (st.clust * 100).toFixed(0) + "% tighter because trades cluster when the spread is tight",
+      9.5, "#5f6673"));
+  }
+  function bind(id, vid, f, fm) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).innerHTML = fm(); draw(); });
+  }
+  bind("spCents", "spCentsV", function (v) { st.cents = v; }, function () { return st.cents + "&#162;"; });
+  bind("spClust", "spClustV", function (v) { st.clust = v / 100; },
+    function () { return st.clust.toFixed(2); });
+  bind("spStale", "spStaleV", function (v) { st.stale = v; }, function () { return st.stale + "%"; });
+  draw();
+})();
+
+/* ══════════════ WIDGET 5 · three surveillance detectors ══════════════ */
+(function () {
+  var LIVE = [
+    { n: "rogue_2·stuf", cf: 1e9, peak: 68, quota: 70, recip: 0.000, conc: 0.180, ng: 1.000, bad: true },
+    { n: "rogue_1·layr", cf: 5.825, peak: 12, quota: 0, recip: 0.000, conc: 0.392, ng: 1.000, bad: true },
+    { n: "rogue_3·wash", cf: 0.944, peak: 2, quota: 0, recip: 0.938, conc: 0.931, ng: 0.091, bad: true },
+    { n: "rogue_4·wash", cf: 0.919, peak: 2, quota: 0, recip: 0.938, conc: 0.931, ng: 0.091, bad: true },
+    { n: "broker_1·mm", cf: 1.653, peak: 9, quota: 0, recip: 0.868, conc: 0.336, ng: 0.258, bad: false, mm: true },
+    { n: "retail_1", cf: 0.000, peak: 7, quota: 0, recip: 0.868, conc: 0.336, ng: 0.258, bad: false },
+    { n: "exec_1", cf: 0.083, peak: 3, quota: 0, recip: 0.000, conc: 0.227, ng: 1.000, bad: false }
+  ];
+  var CLEAN = [
+    { n: "meanrev", cf: 0.211, peak: 6, quota: 0, recip: 0.992, conc: 0.706, ng: 0.017, bad: false },
+    { n: "momo", cf: 0.190, peak: 5, quota: 0, recip: 0.962, conc: 0.294, ng: 0.038, bad: false },
+    { n: "sim_brk·mm", cf: 1.402, peak: 8, quota: 0, recip: 0.988, conc: 0.512, ng: 0.021, bad: false, mm: true }
+  ];
+  var st = { live: true, exempt: false, cf: 10.0, rate: 40, recip: 0.90, conc: 0.50, ng: 0.15 };
+  function evaluate() {
+    var A = st.live ? LIVE : CLEAN, out = [], i;
+    for (i = 0; i < A.length; i++) {
+      var a = A[i], r1 = a.cf > st.cf, r3 = a.peak > st.rate || a.quota > 0;
+      var r2 = a.recip >= st.recip && a.conc >= st.conc && a.ng <= st.ng;
+      if (st.exempt && a.mm) r2 = false;
+      out.push({ a: a, r1: r1, r2: r2, r3: r3, alert: r1 || r2 || r3 });
+    }
+    return out;
+  }
+  function draw() {
+    var R = evaluate(), tp = 0, fp = 0, fn = 0, alerts = 0, i, j, tr, td, cells;
+    var tb = $("svTable").getElementsByTagName("tbody")[0];
+    while (tb.firstChild) tb.removeChild(tb.firstChild);
+    for (i = 0; i < R.length; i++) {
+      var r = R[i], flags = [];
+      if (r.r1) flags.push("R1");
+      if (r.r3) flags.push("R3");
+      if (r.r2) flags.push("R2");
+      if (r.alert) alerts++;
+      if (r.alert && r.a.bad) tp++;
+      if (r.alert && !r.a.bad) fp++;
+      if (!r.alert && r.a.bad) fn++;
+      cells = [r.a.n, r.a.cf > 1e6 ? "\u221e" : r.a.cf.toFixed(1), String(r.a.peak),
+               r.a.recip.toFixed(2), r.a.conc.toFixed(2), r.a.ng.toFixed(2),
+               r.alert ? flags.join("") : "—"];
+      tr = document.createElement("tr");
+      if (r.alert && !r.a.bad) tr.className = "lead-row";
+      for (j = 0; j < cells.length; j++) {
+        td = document.createElement("td");
+        td.textContent = cells[j];
+        if (j === 0) td.className = "n";
+        else if (j === 6) td.className = r.alert ? (r.a.bad ? "ok" : "bad") : "";
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+    $("svAlerts").textContent = String(alerts);
+    $("svCounts").textContent = tp + " / " + fp + " / " + fn;
+    var prec = (tp + fp) ? tp / (tp + fp) : 1;
+    var rec = (tp + fn) ? tp / (tp + fn) : 1;
+    $("svPrec").textContent = prec.toFixed(2);
+    $("svPrec").className = "sv " + (fp ? "bad" : "ok");
+    $("svRec").textContent = (tp + fn) ? rec.toFixed(2) : "n/a";
+    $("svRec").className = "sv " + (fn ? "warn" : "ok");
+    var v = $("svVerdict");
+    if (!st.live && fp) {
+      v.className = "verdict miss";
+      v.textContent = "FALSE POSITIVE ON A CLEAN TAPE · " + fp +
+        " honest bot(s) accused — every feature the rule keys on is legitimate mean reversion";
+    } else if (!st.live) {
+      v.className = "verdict met";
+      v.textContent = "silence on the clean control — and a new liability: the exemption list";
+    } else if (fn) {
+      v.className = "verdict miss";
+      v.textContent = fn + " abuser(s) missed · precision " + prec.toFixed(2) +
+        " on a population of suspects is not a precision";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "all " + tp + " abusers flagged — now run it on a tape you know is clean";
+    }
+  }
+  $("svLive").addEventListener("click", function () {
+    st.live = true; this.setAttribute("aria-pressed", "true");
+    $("svClean").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("svClean").addEventListener("click", function () {
+    st.live = false; this.setAttribute("aria-pressed", "true");
+    $("svLive").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("svExempt").addEventListener("click", function () {
+    st.exempt = !st.exempt;
+    this.setAttribute("aria-pressed", st.exempt ? "true" : "false");
+    this.classList.toggle("on", st.exempt); draw();
+  });
+  function bind(id, vid, f, fm) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).innerHTML = fm(); draw(); });
+  }
+  bind("svCf", "svCfV", function (v) { st.cf = v / 10; },
+    function () { return st.cf.toFixed(1) + "&#215;"; });
+  bind("svRate", "svRateV", function (v) { st.rate = v; }, function () { return st.rate + " /s"; });
+  bind("svRecip", "svRecipV", function (v) { st.recip = v / 100; },
+    function () { return st.recip.toFixed(2); });
+  bind("svConc", "svConcV", function (v) { st.conc = v / 100; },
+    function () { return st.conc.toFixed(2); });
+  bind("svNg", "svNgV", function (v) { st.ng = v / 100; }, function () { return st.ng.toFixed(2); });
+  draw();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>

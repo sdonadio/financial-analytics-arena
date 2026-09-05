@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 10 · Review Day &amp; Final — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week9.html">← Week 9</a> · <b>Week 10 · Review Day &amp; Final</b> · <a href="index.html">Home · start again</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 10</div>
+  <h1>Review Day &amp; Final</h1>
+  <p class="promise">Three things happen in this room, in this order. The <strong>second live scored
+  session</strong>, gated by a pre-flight that catches the failure where a market has been dead for
+  thirty-seven seconds and <em class="hi">547 messages still arrive</em>. Then <strong>peer analyst
+  reviews</strong> — you review another team by <em class="hi">re-running their numbers</em>, not by reading
+  their prose. Then the Phase-2 checklist and a structured review of the concept list the closed-book exam
+  draws from.</p>
+  <ul class="you">
+    <li>Run a six-check <strong>go/no-go</strong> before you connect, and see it fail
+    <code>FRESH</code> on a market that passed every other check.</li>
+    <li>Score a sample tearsheet against the <strong>published rubric</strong>, compare against the
+    consensus, and find out how much of a review score is the reviewer.</li>
+    <li>Name <em class="hi">the one number in your own tearsheet you would not sign</em> — the row we grade
+    hardest.</li>
+    <li>Close out <strong>Phase 2</strong> for your track, with a readiness dial that goes green only when
+    the reproducibility and honesty rows are done.</li>
+    <li>Walk the whole course back as <strong>one tearsheet</strong>, panel by panel, and mark every exam
+    concept you cannot yet explain in two sentences.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: pre-flight · second live session · peer reviews · exam review</span>
+    <span class="pill">Final exam, 25%, closed book, in session</span>
+    <span class="pill warn">Phase 2 due (21%)</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? A go/no-go, then a review, then an exam</h2>
+  <p class="lead">Review day is not a wrap-up. It is three pieces of professional practice compressed into
+  one session: a launch checklist, a peer review conducted by reproduction, and a closed-book examination
+  of judgement rather than syntax.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel">
+      <h3>Widget 1 · the ten-second pre-flight</h3>
+      <p class="sub">Six assertions, each printing what it actually did rather than "connected". Break
+      things with the buttons and watch which checks notice.</p>
+      <div class="chk" id="pfList" style="margin-top:12px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="pfKill" type="button" aria-pressed="false">Kill the market maker</button>
+        <button class="btn" id="pfHost" type="button" aria-pressed="false">.env points at the hosted arena</button>
+        <button class="btn" id="pfClosed" type="button" aria-pressed="false">Session not open yet</button>
+        <button class="btn" id="pfReset" type="button">Reset</button>
+      </div>
+      <div class="stats" style="margin-top:12px">
+        <div class="stat"><div class="sl">Checks passed</div><div class="sv acc" id="pfPass">6 / 6</div></div>
+        <div class="stat"><div class="sl">Messages in 12 s</div><div class="sv" id="pfMsg">607</div></div>
+        <div class="stat"><div class="sl">Symbols changed</div><div class="sv" id="pfFresh">5 / 11</div></div>
+        <div class="stat"><div class="sl">Exit code</div><div class="sv" id="pfExit">0</div></div>
+      </div>
+      <div class="smoke" id="pfSmoke" style="margin-top:14px"><span class="lamp"></span><span id="pfSmokeT">READY</span></div>
+      <div class="verdict" id="pfVerdict"></div>
+    </div>
+    <div class="stack">
+      <div class="note"><b>Read the frozen case carefully, because it is the most dangerous state in this
+      platform.</b> The socket is up. <strong>547 messages arrive in twelve seconds.</strong> Ten of eleven
+      books are two-sided, <code>best_bid</code> and <code>best_ask</code> are populated, the spreads are
+      sane. Every health check a student writes on the first attempt passes — and the market has been dead
+      for thirty-seven seconds, because a disconnected participant's resting orders are never cancelled.
+      Your bot will keep trading against a corpse, and its fills will be real. <strong>Liveness is not "the
+      data is arriving", it is "the data is changing"</strong>, and the only way to know is to compare two
+      snapshots.</div>
+      <div class="panel tight"><h3>The session run sheet</h3>
+        <div class="tablewrap"><table class="t">
+          <thead><tr><th>When</th><th>Your team</th></tr></thead>
+          <tbody>
+            <tr><td class="n">T&#8722;15</td><td><code>git pull</code>, install, pre-flight → READY</td></tr>
+            <tr><td class="n">T&#8722;10</td><td>dry-run against localhost 60 s; confirm one fill</td></tr>
+            <tr><td class="n">T&#8722;5</td><td>set position and loss limits; write down the P&amp;L you <em>expect</em></td></tr>
+            <tr><td class="n">T&#8722;0</td><td>connect, log <code>TEAM_ID</code>, keep your own order log</td></tr>
+            <tr><td class="n">T+X</td><td>shocks injected — do not intervene by hand</td></tr>
+            <tr><td class="n">T+25</td><td>flatten, save logs, copy the tape path into your report</td></tr>
+            <tr><td class="n">T+30</td><td>run week 9's four tools on your own tape, immediately</td></tr>
+          </tbody></table></div>
+        <p class="sub" style="margin-top:9px">Two rules that are not negotiable. <strong>Keep your own
+        order log</strong> — the recording is broadcast-only, so cancels, rejects and decision prices exist
+        nowhere else. And if the venue restarts mid-session, expect <code>realized_pnl</code> to read
+        <code>+0.00</code> for the rest of the run: that field is assigned by the exchange, whose ledger was
+        genuinely reset. Your bot is right and the source of truth forgot. Reconcile to net worth, note the
+        restart, and do not spend the session debugging your own counter.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How it works: review by re-running, and close out Phase 2</h2>
+  <p class="lead">A review that only reads the PDF is worth nothing — the whole point of the reproducibility
+  policy is that you can check. Three commands against their repo before you write a word: their
+  performance metrics at <em class="hi">their</em> claimed trial count, their tape's microstructure
+  statistics, and the surveillance rules with the market maker exempted.</p>
+
+  <h3 style="margin-top:22px">Widget 2 · score the sample tearsheet, then meet the consensus</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="trSvg" viewBox="0 0 700 320" role="img"
+        aria-label="Your rubric score against the consensus of two other reviewers, row by row"></svg></div>
+      <div class="stats" style="margin-top:12px">
+        <div class="stat"><div class="sl">Your total</div><div class="sv acc" id="trMine">0 / 24</div></div>
+        <div class="stat"><div class="sl">Consensus</div><div class="sv" id="trCons">13 / 24</div></div>
+        <div class="stat"><div class="sl">Mean deviation</div><div class="sv" id="trDev">—</div></div>
+        <div class="stat"><div class="sl">Rows &#8805;2 apart</div><div class="sv" id="trBig">—</div></div>
+      </div>
+      <div class="verdict" id="trVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>The row we grade hardest is the last one.</b> Every
+      tearsheet contains one number its authors cannot fully defend. A good reviewer finds it, says so
+      plainly, and is specific about what evidence would change their mind. And if your reproduced Sharpe
+      differs from theirs, you have found either a different data vintage or a different definition — both
+      are review findings, and <em class="hi">"which of us is right?"</em> is the most useful sentence in
+      the room.</div>
+    </div>
+    <div class="panel">
+      <h3>Team Kestrel · tearsheet v3 · momentum reproduction</h3>
+      <p class="sub"><code>make tearsheet</code> ran on the third attempt after a manual data download.
+      Claims: Sharpe <strong>1.94</strong> on a 2015–2026 walk-forward, "costs applied", one live session
+      attended, attribution table present, no trial count stated, tape path not in the report.</p>
+      <div id="trRows" style="margin-top:12px"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="trReveal" type="button">Reveal the consensus</button>
+        <button class="btn" id="trClear" type="button">Clear my scores</button>
+      </div>
+      <p class="sub" style="margin-top:10px">0 — absent · 1 — asserted · 2 — measured · 3 — defended.
+      Score every row, then reveal what two other reviewers gave. Reviewer variance is a real measurement
+      problem; reporting yours is a mature thing to do.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 3 · Phase 2 deliverables, and the readiness dial</h3>
+  <p>Due at the end of this week: 21% of the course, one repo plus one tearsheet, graded on measurement and
+  honesty rather than P&amp;L. <em class="hi">A carefully measured strategy that loses money beats a lucky
+  one whose authors cannot say why it worked.</em> Both tracks share every row except the one marked.</p>
+  <div class="split-r">
+    <div class="panel">
+      <div class="sw" role="group" aria-label="Phase 2 track" style="margin-bottom:12px">
+        <button id="phA" type="button" aria-pressed="true">Track (a) · your own signal</button>
+        <button id="phB" type="button" aria-pressed="false">Track (b) · reproduce an anomaly</button>
+      </div>
+      <div class="chk" id="phList"></div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>Readiness</h3>
+        <div class="bar"><i id="phBar"></i></div>
+        <div class="smoke" id="phSmoke"><span class="lamp"></span><span id="phSmokeT">0 of 13 done</span></div>
+        <div class="stats" style="margin-top:14px">
+          <div class="stat"><div class="sl">Done</div><div class="sv acc" id="phN">0</div></div>
+          <div class="stat"><div class="sl">Blocking rows</div><div class="sv" id="phCrit">0 / 5</div></div>
+        </div>
+        <div class="verdict" id="phVerdict"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="phAll" type="button">Tick everything</button>
+          <button class="btn" id="phNone" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="note"><b>The rubric that grades you is the one you just used on someone else.</b> That
+      symmetry is deliberate. In one sentence, what we are looking for: <em class="hi">a strategy whose
+      every number we can re-derive from your repo, whose backtest-to-live gap you have decomposed rather
+      than excused, and whose overfitting section tells us how many things you tried.</em> Bring week 9's
+      three numbers — backtest P&amp;L, live P&amp;L, and the split of the difference — on the first
+      page.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: the whole course is one tearsheet</h2>
+  <p class="lead">Every week produced a panel, and every panel consumes an artefact an earlier week
+  produced. That is not a curriculum device — it is what an analytics stack looks like when it is
+  honest.</p>
+
+  <h3 style="margin-top:22px">Widget 4 · the course in one tearsheet</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="ctSvg" viewBox="0 0 700 330" role="img"
+        aria-label="A ten-panel tearsheet layout, one panel per week of the course"></svg></div>
+      <div class="chips" id="ctChips" style="margin-top:12px"></div>
+    </div>
+    <div class="panel">
+      <h3 id="ctTitle">Pick a panel</h3>
+      <p class="sub" id="ctBody">Each panel of the final tearsheet was built in one week of this course,
+      from the artefact the week before it produced. Select a panel to see which week owns it, what it must
+      contain, and the one mistake that invalidates it.</p>
+      <div class="kv" style="margin-top:12px">
+        <div class="k">Built in</div><div class="v" id="ctWeek">—</div>
+        <div class="k">Consumes</div><div class="v" id="ctFeeds">—</div>
+        <div class="k">Fails if</div><div class="v" id="ctFail">—</div>
+      </div>
+      <div class="note" style="margin-top:14px"><b>Two questions the exam asks in some form, because they
+      are the course's spine.</b> <em class="hi">Where does the number come from?</em> — every figure must
+      be traceable to a script and a data vintage. And <em class="hi">how many things did you try?</em>
+      — the honest answer changes the significance of everything else.</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 5 · the exam-review map</h3>
+  <p>Closed book, in session, randomised question sets, no two papers alike, 25% of the grade. It examines
+  <em class="hi">concepts and judgement</em>, not syntax: you will not be asked to recall a keyword
+  argument, and you will be asked why plain <code>KFold</code> leaks on a return panel. Mark every week
+  whose concepts you cannot explain out loud in two sentences — that is your revision plan. An ungraded
+  <strong>Mock Final</strong> with unlimited attempts and answers shown is released before this session.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="chips" id="xmChips"></div>
+      <div class="bar" style="margin-top:16px"><i id="xmBar"></i></div>
+      <div class="stats" style="margin-top:10px">
+        <div class="stat"><div class="sl">Confident</div><div class="sv ok" id="xmOk">0 / 10</div></div>
+        <div class="stat"><div class="sl">To revise</div><div class="sv warn" id="xmTodo">10</div></div>
+        <div class="stat"><div class="sl">Concepts flagged</div><div class="sv" id="xmCount">—</div></div>
+      </div>
+      <div class="verdict" id="xmVerdict"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="xmAll" type="button">I can explain all of it</button>
+        <button class="btn" id="xmNone" type="button">Flag everything</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Your revision plan</h3>
+      <div class="log" id="xmPlan" role="status" aria-live="polite" style="max-height:340px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Four ways review day goes wrong</h2>
+  <p class="lead">Three of these cost teams the opening minutes of a scored session. The fourth costs them
+  the grade. Open them.</p>
+
+  <details class="pit"><summary>Trading into a frozen book because the socket was healthy</summary>
+    <div class="body">
+      <p>547 messages in twelve seconds, ten of eleven books two-sided, spreads sane, session open — and
+      nothing has changed for thirty-seven seconds because the market maker died and its resting orders were
+      never cancelled. Your fills against that book are real, and so is the P&amp;L.</p>
+      <p>The generalisation: every liveness check that counts <em class="hi">arrivals</em> rather than
+      <em class="hi">changes</em> passes on a dead market. That includes "the websocket is open", "we
+      received a book_snapshot", and "best_bid is not None".</p>
+      <p class="fix">Fix: compare two snapshots and assert something moved, per symbol, and gate the launch
+      on it — <code>w10_preflight.py</code> exits non-zero when anything WARNs or FAILs, so wire it into
+      your launch script. Then add a seventh check: the age of your <em class="hi">own</em> last fill, so a
+      bot that has stopped trading while the market moves flags itself.</p>
+    </div></details>
+
+  <details class="pit"><summary>Dialling the hosted arena from a "local" run</summary>
+    <div class="body">
+      <p><code>make register</code> wrote the class arena's address into <code>.env</code>, and
+      <code>shared/envfile.load_env()</code> feeds it to every config module. So a run you believe is local
+      quietly connects to the shared venue — with a 32-character <code>ARENA_TOKEN</code> attached, which
+      the local venue would have ignored because it runs with <code>AUTH_REQUIRED=false</code>. In week 9
+      that is how a test rogue bot attacks the class market in front of everyone.</p>
+      <p>Its cousin: <code>make kill</code> is port-blind. It <code>pkill</code>s every
+      <code>exchange.server</code> on the machine, so on a shared lab machine agree who runs it.</p>
+      <p class="fix">Fix: print the URL you actually connected to, in every process, at startup — that is
+      why the pre-flight's first line is the URL and whether it is local. Set
+      <code>EXCHANGE_HOST=localhost</code> explicitly on every client in a local run rather than relying on
+      the absence of a variable.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reviewing the PDF instead of the repo</summary>
+    <div class="body">
+      <p>A review that paraphrases someone's abstract back at them is worth no marks and helps nobody. The
+      reproducibility policy exists precisely so that a reviewer can re-run three commands and compare: the
+      performance metrics at the team's own claimed trial count, the microstructure statistics of their
+      tape, and the surveillance rules with the known market maker exempted.</p>
+      <p>The most common finding is not fraud, it is <em class="hi">definition drift</em> — a different
+      annualisation, a different data vintage, a Sharpe computed on marks rather than days. Both parties
+      learn something, and the disagreement is the deliverable.</p>
+      <p class="fix">Fix: file the review in their repo as <code>reviews/&lt;your-team&gt;.md</code>, with a
+      score and <strong>evidence</strong> in every rubric row, the commit SHA you reproduced from, and
+      whether <code>make tearsheet</code> ran. Then the three sections that carry the marks: what is strong,
+      what you could not verify, and the number you would not sign.</p>
+    </div></details>
+
+  <details class="pit"><summary>Excusing the backtest-to-live gap instead of decomposing it</summary>
+    <div class="body">
+      <p>"Live underperformed because of latency and market conditions" is not a Phase-2 report. The gap has
+      four measurable parts and you have the tools for all of them: <strong>fees</strong> from the TCA
+      report, <strong>spread</strong> from the effective-versus-quoted comparison, <strong>impact</strong>
+      from the implementation shortfall against your decision price, and <strong>unfilled intent</strong>
+      from the opportunity-cost term.</p>
+      <p>Whatever remains after those four is the part of the market your model does not contain — and
+      naming it honestly is worth more than making it small.</p>
+      <p class="fix">Fix: one table, four rows plus a residual, reconciling to the difference between the
+      backtested P&amp;L and the live P&amp;L. Put it on page one. If the components do not sum to the gap,
+      that is a reconciliation failure and week 7's rule applies: nothing after it is graded.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="2" data-exp="<b>Compare two snapshots.</b> Message arrivals, two-sidedness and spread sanity all pass on a book that has not changed for half a minute, because a disconnected maker's resting orders are never cancelled &#8212; so the only check that distinguishes a calm market from a dead one is whether any field moved between two observations. A higher message count proves nothing, order acknowledgements do not tell you about the market, and a token check answers a different question (which venue you are on).">
+    <p class="q"><span>Q1</span>You need one check that distinguishes a calm market from a dead one. Which
+    is it?</p>
+    <div class="opts">
+      <button class="opt" type="button">Message rate above a threshold — a dead venue stops sending</button>
+      <button class="opt" type="button">Every symbol has a non-null best bid and best ask</button>
+      <button class="opt" type="button">At least one symbol's book changed between two snapshots taken seconds apart</button>
+      <button class="opt" type="button">The token was accepted and the role came back as trader</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="1" data-exp="<b>Reconcile to net worth and note the restart.</b> realized_pnl is assigned from the exchange, whose ledger was genuinely reset when it restarted, so the field is telling the truth about a source that forgot; cash plus mark-to-mid is unaffected and remains the number every decomposition in this course reconciles to. Debugging your own counter mid-session burns the run, restarting your bot does not restore the venue's ledger, and reporting +0.00 as a result would be reporting a known artefact.">
+    <p class="q"><span>Q2</span>The venue restarts mid-session and your bot's <code>realized_pnl</code>
+    reads <b>+0.00</b> for the rest of the run. What do you do?</p>
+    <div class="opts">
+      <button class="opt" type="button">Stop and debug your P&amp;L counter — a zero after fills is a bug in your bot</button>
+      <button class="opt" type="button">Keep trading; reconcile to net worth instead, and note the restart in the report</button>
+      <button class="opt" type="button">Restart your bot so it re-syncs the exchange's ledger</button>
+      <button class="opt" type="button">Report +0.00 as the session result, since that is what the venue says</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>Decompose the gap, do not explain it away.</b> The four measurable terms are fees (from the TCA report), spread (effective versus quoted), impact (implementation shortfall against your decision price) and unfilled intent (the opportunity-cost term) &#8212; and whatever remains is the part of the market your model does not contain, which you name rather than minimise. Attributing the gap to latency without measuring it, re-fitting on the live tape, or averaging two sessions all replace a measurement with a story.">
+    <p class="q"><span>Q3</span>Your live P&amp;L is 40% below the backtest. What belongs on page one of
+    the Phase-2 report?</p>
+    <div class="opts">
+      <button class="opt" type="button">An explanation that latency and market conditions differed from the backtest</button>
+      <button class="opt" type="button">A re-fit of the strategy on the live tape, showing what would have worked</button>
+      <button class="opt" type="button">The average of the two sessions, so one bad session does not dominate</button>
+      <button class="opt" type="button">A four-row table — fees, spread, impact, unfilled intent — plus a residual, reconciling to the gap</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Pre-flight green, then the second live scored session. Keep your own order log; copy the tape path
+      into the report before you leave.</li>
+      <li>Two peer reviews, filed in the reviewed teams' repos, with a score and evidence in every rubric
+      row and the commit SHA you reproduced from.</li>
+      <li>Complete the Phase-2 checklist for your track, including the track-specific row and the
+      <code>AI-USE</code> note.</li>
+      <li>Mark every exam concept you cannot explain in two sentences; the room spends the remaining minutes
+      on whatever is marked most.</li>
+      <li>Clean up: <code>make kill</code>, <code>make prune KEEP=10</code>, and delete any tape you
+      generated.</li>
+    </ul></div>
+    <div class="panel"><h4>Phase 2 · due this week (21%)</h4><ul class="plain">
+      <li>A repo that runs on a clean checkout, a documented data contract, and a signal specification dated
+      in git history <em class="hi">before</em> the results.</li>
+      <li>A costed walk-forward, purged CV wherever a model is fitted, and an overfitting section with the
+      honest configuration count and the deflated Sharpe at that count.</li>
+      <li>Two live sessions, a TCA + attribution report, and a surveillance check on your own tape plus one
+      clean control.</li>
+      <li>The tearsheet defence follows the exam. Bring the three numbers from week 9 on the first page,
+      because that is the first thing we will ask about.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — the pre-flight and the four analytics tools all self-test.</div></a>
+    <a class="nextcard" href="week9.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 9 · Microstructure &amp; Execution Analytics</div><div class="nd">Where the four tools came from, and the three numbers you bring to review day.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">Home · start again</div><div class="nd">The 10-week map, from a return panel you fetched yourself to a live tape you surveilled.</div></a>
+    <a class="nextcard" href="week1.html"><div class="nl">Where it began</div>
+      <div class="nt">Week 1 · Financial Data &amp; Returns</div><div class="nd">Prices versus total return, and the look-ahead join you broke on purpose — read it again now that you know what it costs.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 10 — Review Day & Final
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("trSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+function moments(a) {
+  var m = mean(a), n = a.length, s2 = 0, s3 = 0, s4 = 0, i, d;
+  for (i = 0; i < n; i++) { d = a[i] - m; s2 += d * d; s3 += d * d * d; s4 += d * d * d * d; }
+  var v = s2 / n, s = Math.sqrt(v);
+  return { mean: m, sd: Math.sqrt(s2 / (n - 1)), skew: s3 / n / (s * s * s), kurt: s4 / n / (v * v) - 3 };
+}
+function money(x) {
+  var a = Math.abs(x);
+  if (a >= 1e6) return "$" + (x / 1e6).toFixed(2) + "m";
+  if (a >= 1e3) return "$" + Math.round(x / 1e3) + "k";
+  return "$" + Math.round(x);
+}
+/* standard normal cdf — Hart's double-precision rational approximation */
+function cnd(x) {
+  var a = Math.abs(x), cum;
+  if (a > 37) cum = 0;
+  else {
+    var e = Math.exp(-a * a / 2);
+    if (a < 7.07106781186547) {
+      var b = 0.0352624965998911 * a + 0.700383064443688;
+      b = b * a + 6.37396220353165; b = b * a + 33.912866078383;
+      b = b * a + 112.079291497871; b = b * a + 221.213596169931;
+      b = b * a + 220.206867912376;
+      var c = 0.0883883476483184 * a + 1.75566716318264;
+      c = c * a + 16.064177579207; c = c * a + 86.7807322029461;
+      c = c * a + 296.564248779674; c = c * a + 637.333633378831;
+      c = c * a + 793.826512519948; c = c * a + 440.413735824752;
+      cum = e * b / c;
+    } else {
+      var f = a + 1 / (a + 2 / (a + 3 / (a + 4 / (a + 0.65))));
+      cum = e / (f * 2.506628274631);
+    }
+  }
+  return x > 0 ? 1 - cum : cum;
+}
+function npdf(x) { return Math.exp(-x * x / 2) / 2.5066282746310002; }
+/* inverse standard normal cdf — Acklam */
+function invnorm(p) {
+  var A = [-3.969683028665376e+1, 2.209460984245205e+2, -2.759285104469687e+2,
+    1.383577518672690e+2, -3.066479806614716e+1, 2.506628277459239e+0];
+  var B = [-5.447609879822406e+1, 1.615858368580409e+2, -1.556989798598866e+2,
+    6.680131188771972e+1, -1.328068155288572e+1];
+  var C = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838e+0,
+    -2.549732539343734e+0, 4.374664141464968e+0, 2.938163982698783e+0];
+  var D = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996e+0, 3.754408661907416e+0];
+  var pl = 0.02425, q, r, x;
+  if (p <= 0) return -38; if (p >= 1) return 38;
+  if (p < pl) {
+    q = Math.sqrt(-2 * Math.log(p));
+    x = (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  } else if (p <= 1 - pl) {
+    q = p - 0.5; r = q * q;
+    x = (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q /
+        (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    x = -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  }
+  return x;
+}
+function quantile(sorted, p) {
+  var n = sorted.length; if (!n) return 0;
+  var h = (n - 1) * p, lo = Math.floor(h), hi = Math.min(lo + 1, n - 1);
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
+}
+
+/* ── generic axis + line helpers shared by every chart on the page ── */
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7,
+    "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function hline(svg, v, W, H, pad, y0, y1, color, dash, label, left) {
+  var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+  var l = mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: color, "stroke-width": 1.5 });
+  if (dash) l.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(l);
+  if (label) svg.appendChild(left
+    ? txt(pad.l + 4, yy - 4, label, 9.5, color, "start", "700")
+    : txt(W - pad.r - 3, yy - 4, label, 9.5, color, "end", "700"));
+}
+
+
+/* ══════════════ WIDGET 1 · the pre-flight go/no-go ══════════════ */
+(function () {
+  var st = { dead: false, hosted: false, closed: false };
+  var rows = [];
+  function checks() {
+    var msgs = st.dead ? 547 : 607;
+    return [
+      { k: "URL", ok: !st.hosted,
+        t: st.hosted ? "ws://arena.example:8765 (REMOTE — .env from make register)"
+                     : "ws://localhost:8765 (local)" },
+      { k: "AUTH", ok: true,
+        t: "role=observer token=sent (32 chars); " + msgs + " messages in 12s" },
+      { k: "SESSION", ok: !st.closed,
+        t: st.closed ? "no SESSION_OPEN seen — nothing will fill" : "open (SESSION_OPEN seen)" },
+      { k: "BOOK", ok: true, t: "10/11 symbols two-sided" },
+      { k: "FRESH", ok: !st.dead,
+        t: st.dead ? "0/11 symbols changed in 12s — the book is FROZEN; the market maker is probably gone"
+                   : "5/11 symbols changed in 12s" },
+      { k: "CLOCK", ok: true, t: "first message 12.0s ago; timestamps are local" }
+    ];
+  }
+  (function build() {
+    var box = $("pfList"), C = checks(), i;
+    for (i = 0; i < C.length; i++) {
+      var item = document.createElement("div");
+      item.className = "item";
+      var w = document.createElement("div");
+      w.className = "txt";
+      var t1 = document.createElement("div"); t1.className = "t";
+      var t2 = document.createElement("div"); t2.className = "c";
+      w.appendChild(t1); w.appendChild(t2);
+      item.appendChild(w);
+      box.appendChild(item);
+      rows.push({ item: item, t1: t1, t2: t2 });
+    }
+  })();
+  function draw() {
+    var C = checks(), pass = 0, i;
+    for (i = 0; i < C.length; i++) {
+      rows[i].t1.textContent = (C[i].ok ? "PASS  " : "FAIL  ") + C[i].k;
+      rows[i].t2.textContent = C[i].t;
+      rows[i].item.classList.toggle("done", C[i].ok);
+      if (C[i].ok) pass++;
+    }
+    $("pfPass").textContent = pass + " / 6";
+    $("pfPass").className = "sv " + (pass === 6 ? "ok" : "bad");
+    $("pfMsg").textContent = String(st.dead ? 547 : 607);
+    $("pfFresh").textContent = st.dead ? "0 / 11" : "5 / 11";
+    $("pfFresh").className = "sv " + (st.dead ? "bad" : "ok");
+    $("pfExit").textContent = pass === 6 ? "0" : "1";
+    var sm = $("pfSmoke");
+    sm.className = "smoke" + (pass === 6 ? " green" : (pass === 5 ? " amber" : ""));
+    $("pfSmokeT").textContent = pass === 6 ? "READY — 6/6 checks passed"
+                                           : "NOT READY — " + pass + "/6 checks passed";
+    var v = $("pfVerdict");
+    if (st.dead) {
+      v.className = "verdict miss";
+      v.textContent = "547 MESSAGES, ZERO CHANGE · every naive health check passes on this market";
+    } else if (st.hosted) {
+      v.className = "verdict miss";
+      v.textContent = "you are about to trade the CLASS venue from a run you think is local";
+    } else if (st.closed) {
+      v.className = "verdict miss";
+      v.textContent = "an idle bot looks identical to a broken one — wait for SESSION_OPEN";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "GO · gate your launch script on this exit code";
+    }
+  }
+  function toggle(id, key) {
+    $(id).addEventListener("click", function () {
+      st[key] = !st[key];
+      this.setAttribute("aria-pressed", st[key] ? "true" : "false");
+      this.classList.toggle("on", st[key]);
+      draw();
+    });
+  }
+  toggle("pfKill", "dead");
+  toggle("pfHost", "hosted");
+  toggle("pfClosed", "closed");
+  $("pfReset").addEventListener("click", function () {
+    st.dead = st.hosted = st.closed = false;
+    var ids = ["pfKill", "pfHost", "pfClosed"], i;
+    for (i = 0; i < ids.length; i++) {
+      $(ids[i]).setAttribute("aria-pressed", "false");
+      $(ids[i]).classList.remove("on");
+    }
+    draw();
+  });
+  draw();
+})();
+
+/* ══════════════ WIDGET 2 · peer-review rubric ══════════════ */
+(function () {
+  var RUB = [
+    { n: "Data contract &amp; adjustments", c: 2, e: "fetch script present, no reconciliation against Adj Close" },
+    { n: "Factor decomposition", c: 1, e: "R² quoted, no t-stats, no multiple-testing note" },
+    { n: "Portfolio construction", c: 2, e: "MVO and 1/N compared, turnover counted" },
+    { n: "Risk (VaR/ES + stress)", c: 2, e: "three methods, no exceedance backtest" },
+    { n: "Backtest honesty", c: 2, e: "costs applied but the lag is not named or sourced" },
+    { n: "Overfitting account", c: 0, e: "no trial count, no deflated Sharpe" },
+    { n: "Live-vs-backtest gap", c: 1, e: "P&L compared, gap not split into fees/spread/impact/unfilled" },
+    { n: "Reproducibility", c: 3, e: "clean-checkout CI green after a manual data step was removed" }
+  ];
+  var mine = [], revealed = false, i;
+  for (i = 0; i < RUB.length; i++) mine.push(null);
+  var chipSets = [];
+
+  (function build() {
+    var box = $("trRows"), k;
+    for (k = 0; k < RUB.length; k++) {
+      (function (idx) {
+        var row = document.createElement("div");
+        row.className = "ctl";
+        var lab = document.createElement("label");
+        lab.innerHTML = (idx + 1) + " · " + RUB[idx].n + " <b id=\"trV" + idx + "\">—</b>";
+        row.appendChild(lab);
+        var chips = document.createElement("div");
+        chips.className = "chips";
+        var set = [];
+        var s;
+        for (s = 0; s <= 3; s++) {
+          (function (score) {
+            var b = document.createElement("button");
+            b.type = "button"; b.className = "chip"; b.textContent = String(score);
+            b.setAttribute("aria-label", "score " + score + " for " + RUB[idx].n.replace(/&amp;/g, "and"));
+            b.addEventListener("click", function () {
+              mine[idx] = score;
+              var q;
+              for (q = 0; q < set.length; q++) set[q].classList.toggle("on", q === score);
+              draw();
+            });
+            chips.appendChild(b); set.push(b);
+          })(s);
+        }
+        chipSets.push(set);
+        row.appendChild(chips);
+        box.appendChild(row);
+      })(k);
+    }
+  })();
+
+  function draw() {
+    var tot = 0, cons = 0, dev = 0, n = 0, big = 0, i2;
+    for (i2 = 0; i2 < RUB.length; i2++) {
+      cons += RUB[i2].c;
+      var el = $("trV" + i2);
+      if (mine[i2] === null) { el.textContent = "—"; continue; }
+      tot += mine[i2]; n++;
+      dev += Math.abs(mine[i2] - RUB[i2].c);
+      if (Math.abs(mine[i2] - RUB[i2].c) >= 2) big++;
+      el.textContent = revealed ? mine[i2] + " (consensus " + RUB[i2].c + ")" : String(mine[i2]);
+    }
+    $("trMine").textContent = tot + " / 24";
+    $("trCons").textContent = revealed ? cons + " / 24" : "hidden";
+    $("trDev").textContent = n ? (dev / n).toFixed(2) : "—";
+    $("trDev").className = "sv " + (n && dev / n > 1 ? "bad" : "ok");
+    $("trBig").textContent = n ? String(big) : "—";
+    $("trBig").className = "sv " + (big ? "warn" : "ok");
+    var v = $("trVerdict");
+    if (n < RUB.length) {
+      v.className = "verdict miss";
+      v.textContent = (RUB.length - n) + " row(s) unscored — a review with a blank row is not a review";
+    } else if (big >= 2) {
+      v.className = "verdict miss";
+      v.textContent = big + " rows differ from the consensus by 2 or more · that spread IS the finding — " +
+        "report your reviewer variance";
+    } else {
+      v.className = "verdict met";
+      v.textContent = "scored in full · mean deviation " + (dev / n).toFixed(2) +
+        " · now name the one number you would not sign";
+    }
+    /* chart */
+    var svg = $("trSvg"), W = 700, H = 320, pad = { l: 150, r: 60, t: 28, b: 30 };
+    clear(svg);
+    var rowH = (H - pad.t - pad.b) / RUB.length, aw = W - pad.l - pad.r;
+    svg.appendChild(txt(pad.l, pad.t - 12, "0 absent · 1 asserted · 2 measured · 3 defended", 10, "#5f6673"));
+    var s3;
+    for (s3 = 0; s3 <= 3; s3++) {
+      var gx = pad.l + s3 / 3 * aw;
+      svg.appendChild(mk("line", { x1: gx.toFixed(1), y1: pad.t, x2: gx.toFixed(1),
+        y2: (H - pad.b).toFixed(1), stroke: s3 === 0 ? "#333a47" : "#242932" }));
+      svg.appendChild(txt(gx, H - pad.b + 16, String(s3), 9, "#5f6673", "middle"));
+    }
+    for (i2 = 0; i2 < RUB.length; i2++) {
+      var y = pad.t + i2 * rowH, h = rowH * 0.34;
+      var nm = RUB[i2].n.replace(/&amp;/g, "&");
+      svg.appendChild(txt(pad.l - 8, y + rowH * 0.5, nm.length > 26 ? nm.slice(0, 25) + "…" : nm,
+        9.5, "#c6c3bf", "end"));
+      if (mine[i2] !== null) {
+        svg.appendChild(mk("rect", { x: pad.l, y: (y + 2).toFixed(1),
+          width: Math.max(1, mine[i2] / 3 * aw).toFixed(1), height: h.toFixed(1),
+          fill: "#e11d48", opacity: 0.85, rx: 2 }));
+      }
+      if (revealed) {
+        svg.appendChild(mk("rect", { x: pad.l, y: (y + 4 + h).toFixed(1),
+          width: Math.max(1, RUB[i2].c / 3 * aw).toFixed(1), height: h.toFixed(1),
+          fill: "#58a6ff", opacity: 0.7, rx: 2 }));
+        svg.appendChild(txt(W - pad.r + 6, y + rowH * 0.62, RUB[i2].e.length > 8 ? "▸" : "",
+          9, "#5f6673", "start"));
+      }
+    }
+    svg.appendChild(txt(pad.l, H - pad.b + 28, revealed
+      ? "rose = your score · blue = consensus of two other reviewers"
+      : "rose = your score · reveal the consensus when every row is scored", 9.5, "#5f6673"));
+  }
+  $("trReveal").addEventListener("click", function () {
+    revealed = true;
+    var L = $("trVerdict");
+    L.className = "verdict met";
+    draw();
+  });
+  $("trClear").addEventListener("click", function () {
+    var k, q;
+    for (k = 0; k < mine.length; k++) {
+      mine[k] = null;
+      for (q = 0; q < chipSets[k].length; q++) chipSets[k][q].classList.remove("on");
+    }
+    revealed = false;
+    draw();
+  });
+  draw();
+})();
+
+/* ══════════════ WIDGET 3 · Phase-2 checklist ══════════════ */
+(function () {
+  var SHARED = [
+    ["Repo runs on a clean checkout", "make tearsheet fetches its own cached data, no manual steps", 1],
+    ["Data contract documented", "universe, source, adjustment policy, survivorship, look-ahead, vintage", 0],
+    ["Signal specification written before the results", "one paragraph, dated, in git history", 0],
+    ["Costed walk-forward backtest", "fee, spread and execution lag each named and sourced", 1],
+    ["Purged, embargoed cross-validation", "wherever a model is fitted, with the label horizon stated", 1],
+    ["Overfitting section", "how many configurations you ran, including abandoned ones, + DSR", 1],
+    ["Two live AlgoArena sessions", "tape paths recorded, your own order log kept for both", 0],
+    ["TCA + attribution report", "maker/taker mix, fees vs rebates, slippage, shortfall, live-vs-backtest gap", 1],
+    ["Surveillance check", "your own tape plus one clean control; any alert disclosed", 0],
+    ["AI-USE note", "one line naming what LLM assistance you used and for what", 0],
+    ["Two peer reviews filed", "in the reviewed teams' repos, score and evidence in every row", 0],
+    ["Tearsheet defence pack", "week 9's three numbers on page one", 0]
+  ];
+  var TRACK = {
+    a: ["Falsification test (track a)", "the market state in which your signal should fail — and what happened there", 0],
+    b: ["Reproduction table (track b)", "their number, your number, one sentence per discrepancy", 0]
+  };
+  var track = "a", boxes = [], state = [], items = [];
+  function rowsFor() { return SHARED.concat([TRACK[track]]); }
+  function build() {
+    var box = $("phList");
+    while (box.firstChild) box.removeChild(box.firstChild);
+    boxes = []; items = [];
+    var R = rowsFor(), k;
+    if (state.length !== R.length) { state = []; for (k = 0; k < R.length; k++) state.push(false); }
+    for (k = 0; k < R.length; k++) {
+      (function (idx) {
+        var item = document.createElement("div");
+        item.className = "item" + (state[idx] ? " done" : "");
+        var cb = document.createElement("input");
+        cb.type = "checkbox"; cb.checked = state[idx];
+        cb.setAttribute("aria-label", "Phase 2 row: " + R[idx][0]);
+        var w = document.createElement("div"); w.className = "txt";
+        var t1 = document.createElement("div"); t1.className = "t";
+        t1.textContent = R[idx][0] + (R[idx][2] ? "  ★" : "");
+        var t2 = document.createElement("div"); t2.className = "c"; t2.textContent = R[idx][1];
+        w.appendChild(t1); w.appendChild(t2);
+        item.appendChild(cb); item.appendChild(w);
+        box.appendChild(item);
+        boxes.push(cb); items.push(item);
+        cb.addEventListener("change", function () {
+          state[idx] = cb.checked;
+          item.classList.toggle("done", cb.checked);
+          draw();
+        });
+      })(k);
+    }
+  }
+  function draw() {
+    var R = rowsFor(), n = 0, crit = 0, tot = R.length, critTot = 0, k;
+    for (k = 0; k < R.length; k++) {
+      if (R[k][2]) critTot++;
+      if (state[k]) { n++; if (R[k][2]) crit++; }
+    }
+    $("phN").textContent = String(n);
+    $("phCrit").textContent = crit + " / " + critTot;
+    $("phCrit").className = "sv " + (crit === critTot ? "ok" : (crit >= 3 ? "warn" : "bad"));
+    $("phBar").style.width = (n / tot * 100).toFixed(0) + "%";
+    $("phSmokeT").textContent = n + " of " + tot + " done";
+    $("phSmoke").className = "smoke" + (n === tot ? " green" : (crit === critTot ? " amber" : ""));
+    var v = $("phVerdict");
+    if (n === tot) {
+      v.className = "verdict met";
+      v.textContent = "READY TO SUBMIT · graded on measurement and honesty, not P&L";
+    } else if (crit < critTot) {
+      v.className = "verdict miss";
+      v.textContent = "★ blocking rows outstanding · reproducibility, costs, purged CV, overfitting and TCA";
+    } else {
+      v.className = "verdict miss";
+      v.textContent = (tot - n) + " row(s) outstanding, none of them blocking";
+    }
+  }
+  $("phA").addEventListener("click", function () {
+    track = "a"; this.setAttribute("aria-pressed", "true");
+    $("phB").setAttribute("aria-pressed", "false"); build(); draw();
+  });
+  $("phB").addEventListener("click", function () {
+    track = "b"; this.setAttribute("aria-pressed", "true");
+    $("phA").setAttribute("aria-pressed", "false"); build(); draw();
+  });
+  $("phAll").addEventListener("click", function () {
+    var k;
+    for (k = 0; k < boxes.length; k++) {
+      if (!boxes[k].checked) { boxes[k].checked = true; boxes[k].dispatchEvent(new Event("change")); }
+    }
+  });
+  $("phNone").addEventListener("click", function () {
+    var k;
+    for (k = 0; k < boxes.length; k++) {
+      if (boxes[k].checked) { boxes[k].checked = false; boxes[k].dispatchEvent(new Event("change")); }
+    }
+  });
+  build(); draw();
+})();
+
+/* ══════════════ WIDGET 4 · the course in one tearsheet ══════════════ */
+(function () {
+  var P = [
+    { s: "Returns", w: "Week 1 · Financial data & returns",
+      f: "yfinance / CBOE pull, split and dividend adjustment",
+      x: "an Adj Close you cannot re-derive, or a look-ahead join",
+      d: "The return panel every later panel is built on: total return versus price return, log versus simple, alignment across calendars, and the survivorship decision stated out loud." },
+    { s: "Factors", w: "Week 2 · Factor models",
+      f: "the week-1 panel + the Ken French library",
+      x: "an alpha quoted without a t-stat, or 100 stocks tested as if they were one",
+      d: "Rolling betas and an FF-3 or FF-5 regression per name, read through the diagnostics rather than the R². The panel says what your returns are; this panel says what they already are." },
+    { s: "Portfolio", w: "Week 3 · Portfolio analytics",
+      f: "the week-1 covariance matrix, shrunk",
+      x: "MVO on a raw sample covariance, reported without turnover",
+      d: "Four constructions — MVO, shrunk MVO, risk parity, 1/N — compared out of sample with turnover counted. The benchmark that matters is 1/N, and it is hard to beat." },
+    { s: "Risk", w: "Week 4 · Risk analytics",
+      f: "the week-3 weights",
+      x: "a single VaR number with no exceedance backtest",
+      d: "VaR and ES three ways, a GARCH(1,1) with its persistence and half-life, a Kupiec exceedance backtest, and one stress scenario that is not in the sample." },
+    { s: "Curve", w: "Week 5 · Rates & the macro panel",
+      f: "FRED, bootstrapped to discount factors",
+      x: "duration quoted without saying which curve it was computed on",
+      d: "The Treasury curve, discount factors, duration, TIPS breakevens, and the three PCA components every curve move is made of: level, slope, curvature." },
+    { s: "Options", w: "Week 6 · Derivatives analytics",
+      f: "a live option chain",
+      x: "an arbitrage claim built on stale quotes",
+      d: "Black-Scholes inverted for implied volatility, the smile and the surface, the Greeks and their signs — and put-call parity as a data-quality test rather than a trading idea." },
+    { s: "Backtest", w: "Week 7 · Backtesting & attribution",
+      f: "an AlgoArena tape and the week-3 portfolio",
+      x: "a residual that is not zero, or a Sharpe with no drawdown beside it",
+      d: "A costed walk-forward with the lag named, Sharpe / Sortino / deflated Sharpe at an honest trial count, and a Brinson attribution that reconciles to the active return exactly." },
+    { s: "Model", w: "Week 8 · Machine learning for finance",
+      f: "the week-1 panel, as a design matrix",
+      x: "an AUC with no leak audit beside it",
+      d: "Features and a label with a stated horizon, purged and embargoed walk-forward CV, permutation importance per test block, and the AUC-to-money translation with costs." },
+    { s: "Execution", w: "Week 9 · Microstructure & execution",
+      f: "your own live tape and order log",
+      x: "slippage against a mid your own order moved",
+      d: "Spread, depth, imbalance and staleness; maker/taker mix and fees against rebates; implementation shortfall split into delay, impact and opportunity; three surveillance rules with a clean control." },
+    { s: "Review", w: "Week 10 · Review day",
+      f: "everything above, plus another team's repo",
+      x: "a live-versus-backtest gap that is excused rather than decomposed",
+      d: "The reproducibility standard, the four-row gap decomposition, the peer review conducted by re-running, and the number in your own tearsheet you would not sign." }
+  ];
+  var sel = -1;
+  (function chips() {
+    var box = $("ctChips"), k;
+    for (k = 0; k < P.length; k++) {
+      (function (idx) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "chip";
+        b.textContent = (idx + 1) + " " + P[idx].s;
+        b.setAttribute("aria-label", "show the " + P[idx].s + " panel, " + P[idx].w);
+        b.addEventListener("click", function () {
+          sel = idx;
+          var q, all = box.getElementsByTagName("button");
+          for (q = 0; q < all.length; q++) all[q].classList.toggle("on", q === idx);
+          draw();
+        });
+        box.appendChild(b);
+      })(k);
+    }
+  })();
+  function draw() {
+    if (sel >= 0) {
+      $("ctTitle").textContent = P[sel].s;
+      $("ctBody").textContent = P[sel].d;
+      $("ctWeek").textContent = P[sel].w;
+      $("ctFeeds").textContent = P[sel].f;
+      $("ctFail").textContent = P[sel].x;
+    }
+    var svg = $("ctSvg"), W = 700, H = 330, pad = { l: 16, r: 16, t: 34, b: 18 };
+    clear(svg);
+    svg.appendChild(txt(pad.l, pad.t - 14, "THE ANALYST'S BOOK · one panel a week", 10.5, "#fda4af", "start", "700"));
+    svg.appendChild(txt(W - pad.r, pad.t - 14, "10 panels · 10 weeks", 9.5, "#5f6673", "end"));
+    var cols = 5, rowsN = 2;
+    var cw = (W - pad.l - pad.r) / cols, ch = (H - pad.t - pad.b) / rowsN;
+    var i;
+    for (i = 0; i < P.length; i++) {
+      var c = i % cols, r = Math.floor(i / cols);
+      var x = pad.l + c * cw + 4, y = pad.t + r * ch + 4;
+      var w = cw - 8, h = ch - 8, on = i === sel;
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: y.toFixed(1), width: w.toFixed(1),
+        height: h.toFixed(1), rx: 6, fill: on ? "rgba(225,29,72,.26)" : "#1e222b",
+        stroke: on ? "#fda4af" : "#272c36", "stroke-width": on ? 2 : 1 }));
+      svg.appendChild(txt(x + 8, y + 17, String(i + 1), 9.5, on ? "#fda4af" : "#5f6673", "start", "700"));
+      svg.appendChild(txt(x + w / 2, y + 34, P[i].s, 11, on ? "#fff" : "#c6c3bf", "middle", "700"));
+      /* a tiny sparkline motif per panel, seeded per index */
+      var rnd = lcg(4200 + i * 91), k, d = "", n = 16;
+      for (k = 0; k < n; k++) {
+        var px = x + 10 + k / (n - 1) * (w - 20);
+        var py = y + h - 14 - (0.25 + 0.6 * rnd()) * (h - 58);
+        d += (k ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+      }
+      svg.appendChild(mk("path", { d: d, fill: "none",
+        stroke: on ? "#fda4af" : "#3a4150", "stroke-width": on ? 1.6 : 1.1 }));
+    }
+    if (sel < 0) svg.appendChild(txt(W / 2, H - pad.b - 2,
+      "select a panel below", 9.5, "#5f6673", "middle"));
+  }
+  draw();
+})();
+
+/* ══════════════ WIDGET 5 · exam-review map ══════════════ */
+(function () {
+  var WK = [
+    [1, "Total vs price return; what Adj Close absorbed; log vs simple returns and when each is additive; alignment and calendar joins; survivorship and look-ahead bias, and how a join introduces the latter"],
+    [2, "CAPM and beta; what alpha means and why its t-stat matters more than R²; FF-3 and FF-5; the multiple-testing problem when you test 100 stocks"],
+    [3, "Mean-variance optimisation and why it concentrates; estimation error in Σ and μ; Ledoit-Wolf shrinkage; risk parity; why 1/N is hard to beat out of sample; turnover as a cost"],
+    [4, "Volatility clustering; skew and kurtosis; drawdown; VaR vs Expected Shortfall and why ES is coherent; EWMA and GARCH(1,1); Kupiec backtesting; what a stress scenario is for"],
+    [5, "Yield curve, discount factors, bootstrapping; duration; TIPS breakevens; SOFR and credit spreads; the three PCA components of the curve and their names"],
+    [6, "Option payoffs; the Black-Scholes assumptions and which ones fail; the Greeks and their signs; implied vol as a quoting convention; the smile and the surface; put-call parity and stale quotes"],
+    [7, "Event-driven vs vectorised backtests; fees, spread and slippage as separate terms; walk-forward; Sharpe vs Sortino; why Sharpe cannot see ruin; deflated Sharpe and the trial count; Brinson allocation, selection, interaction, and the convention problem"],
+    [8, "Feature and label construction; the label horizon; why plain KFold leaks on overlapping labels; purging and embargoing; permutation vs impurity importance; why AUC 0.55 can be a good day, and when it is not"],
+    [9, "Limit order book mechanics; quoted, effective and realised spread; depth and imbalance; adverse selection; maker/taker economics; implementation shortfall and its decomposition; why a benchmark you move flatters you; three surveillance rules and their false positives"],
+    [10, "Liveness vs connectivity; reconciling to net worth; the reproducibility standard; what makes an analyst review useful"]
+  ];
+  var flagged = [], i;
+  for (i = 0; i < WK.length; i++) flagged.push(true);
+  var chips = [];
+  (function build() {
+    var box = $("xmChips"), k;
+    for (k = 0; k < WK.length; k++) {
+      (function (idx) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "chip on";
+        b.textContent = "wk " + WK[idx][0];
+        b.setAttribute("aria-pressed", "true");
+        b.setAttribute("aria-label", "toggle whether you can explain week " + WK[idx][0]);
+        b.addEventListener("click", function () {
+          flagged[idx] = !flagged[idx];
+          b.classList.toggle("on", flagged[idx]);
+          b.setAttribute("aria-pressed", flagged[idx] ? "true" : "false");
+          draw();
+        });
+        box.appendChild(b); chips.push(b);
+      })(k);
+    }
+  })();
+  function draw() {
+    var n = 0, k, plan = $("xmPlan"), words = 0;
+    while (plan.firstChild) plan.removeChild(plan.firstChild);
+    for (k = 0; k < WK.length; k++) {
+      if (flagged[k]) {
+        n++;
+        words += WK[k][1].split(";").length;
+        var d = document.createElement("div");
+        d.className = "hl";
+        d.textContent = "Week " + WK[k][0] + " — " + WK[k][1];
+        plan.appendChild(d);
+      }
+    }
+    if (!n) {
+      var e = document.createElement("div");
+      e.className = "ok";
+      e.textContent = "Nothing flagged. Then the exam is a formality — but check the two spine questions: where does the number come from, and how many things did you try?";
+      plan.appendChild(e);
+    }
+    $("xmOk").textContent = (WK.length - n) + " / " + WK.length;
+    $("xmTodo").textContent = String(n);
+    $("xmTodo").className = "sv " + (n === 0 ? "ok" : (n <= 3 ? "warn" : "bad"));
+    $("xmCount").textContent = n ? words + " concepts" : "—";
+    $("xmBar").style.width = ((WK.length - n) / WK.length * 100).toFixed(0) + "%";
+    var v = $("xmVerdict");
+    if (!n) {
+      v.className = "verdict met";
+      v.textContent = "READY · closed book, randomised sets, concepts and judgement rather than syntax";
+    } else {
+      v.className = "verdict miss";
+      v.textContent = n + " week(s) to revise · " + words +
+        " concepts, each to be explainable out loud in two sentences";
+    }
+  }
+  $("xmAll").addEventListener("click", function () {
+    var k;
+    for (k = 0; k < flagged.length; k++) {
+      flagged[k] = false; chips[k].classList.remove("on");
+      chips[k].setAttribute("aria-pressed", "false");
+    }
+    draw();
+  });
+  $("xmNone").addEventListener("click", function () {
+    var k;
+    for (k = 0; k < flagged.length; k++) {
+      flagged[k] = true; chips[k].classList.add("on");
+      chips[k].setAttribute("aria-pressed", "true");
+    }
+    draw();
+  });
+  draw();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>

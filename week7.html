@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>Week 7 · Backtesting &amp; Performance Attribution — Financial Analytics Arena</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    /* ── Financial Analytics Arena · shared palette (identical on every page) ── */
+    --accent:       #e11d48;
+    --accent-2:     #fda4af;
+    --accent-3:     #ffe4e6;
+    --accent-rgb:   225,29,72;
+    --accent-2-rgb: 253,164,175;
+    --bg:           #0f1115;
+    --panel:        #181b22;
+    --panel2:       #1e222b;
+    --panel-2:      #13161b;
+    --ink:          #e8e6e3;
+    --ink-dim:      #c6c3bf;
+    --ink-mute:     #6f757f;
+    --muted:        #9aa0a6;
+    --dim:          #5f6673;
+    --line:         #272c36;
+    --line-2:       #333a47;
+    --border:       #272c36;
+    --ok:           #3fb950;
+    --warn:         #d29922;
+    --bad:          #f85149;
+    --info:         #6cb6ff;
+    --sky:          #58a6ff;
+    --violet:       #a78bfa;
+    --teal:         #2dd4bf;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── nav / footer ─────────────────────────────────────────── */
+  nav.top{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:11px 22px;background:rgba(15,17,21,.94);border-bottom:1px solid var(--line)}
+  nav.top>a:first-child{font-weight:800;letter-spacing:-.2px;color:var(--ink);font-size:14.5px;
+    border-left:3px solid var(--accent);padding-left:10px}
+  nav.top .crumbs{font-size:12px;color:var(--muted)}
+  nav.top .crumbs b{color:var(--ink);font-weight:700}
+  footer{border-top:1px solid var(--line);background:var(--panel);
+    padding:26px 22px 34px;text-align:center;font-size:11.5px;color:var(--dim);letter-spacing:.3px}
+
+  /* ── sections & typography ────────────────────────────────── */
+  section{max-width:1180px;margin:0 auto;padding:36px 22px 42px;border-top:1px solid var(--line)}
+  section#hero{border-top:none}
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:1.9px;text-transform:uppercase;color:var(--accent-2)}
+  h1{font-size:clamp(26px,4.2vw,40px);font-weight:800;letter-spacing:-.9px;line-height:1.13;margin:10px 0 6px}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.3px;margin:4px 0 4px}
+  h3{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+  h4{font-size:13.5px;font-weight:700;margin-bottom:5px}
+  p{margin:9px 0;max-width:82ch}
+  .lead{color:var(--muted);font-size:15px;max-width:84ch}
+  .sub{color:var(--muted);font-size:12.5px}
+  strong{color:#fff;font-weight:650}
+  em.hi{color:var(--accent-2);font-style:normal;font-weight:600}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  code{background:rgba(var(--accent-2-rgb),.13);color:#fecdd3;padding:1px 5px;border-radius:4px}
+  ul.you{list-style:none;margin:16px 0 0;display:grid;gap:8px}
+  ul.you li{position:relative;padding-left:26px;font-size:13.5px;color:var(--ink);max-width:78ch}
+  ul.you li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  ul.plain{list-style:none;display:grid;gap:7px;font-size:13px;color:var(--muted)}
+  ul.plain li{padding-left:16px;position:relative}
+  ul.plain li::before{content:"\2022";position:absolute;left:2px;color:var(--accent-2)}
+
+  /* ── panels & layout ──────────────────────────────────────── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .panel.tight{padding:13px 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+  .split-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:18px;align-items:start}
+  .stack{display:grid;gap:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  /* ── controls ─────────────────────────────────────────────── */
+  .btn{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 14px;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent-2);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover:not(:disabled){filter:brightness(1.25)}
+  .btn.on{background:rgba(var(--accent-rgb),.28);border-color:var(--accent-2);color:#fff}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:20px;padding:6px 14px;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .ctl{display:grid;gap:4px;margin-bottom:12px}
+  .ctl label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;gap:10px}
+  .ctl label b{font-family:var(--mono);color:var(--accent-2);font-size:12px;text-transform:none;letter-spacing:0}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:#2b313d;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent-2);border:2px solid var(--bg);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent-2);
+    border:2px solid var(--bg);cursor:pointer}
+  input[type=range]:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-2-rgb),.4)}
+  select,textarea,input[type=text]{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent-2);outline-offset:1px}
+  textarea{line-height:1.55;resize:vertical}
+
+  /* ── stats / pills / code ─────────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:var(--panel);padding:10px 12px}
+  .stat .sl{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .stat .sv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .stat .sv.ok{color:var(--ok)} .stat .sv.bad{color:var(--bad)} .stat .sv.warn{color:var(--warn)}
+  .stat .sv.acc{color:var(--accent-2)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+    padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--ok);border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+  .pill.bad{color:var(--bad);border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}
+  .pill.warn{color:var(--warn);border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.1)}
+  .pill.acc{color:var(--accent-2);border-color:rgba(var(--accent-2-rgb),.5);background:rgba(var(--accent-rgb),.18)}
+  pre.code{font-family:var(--mono);font-size:11.8px;line-height:1.62;background:#0b0e14;color:#dbe3ea;
+    border:1px solid var(--line);border-radius:10px;padding:13px 14px;overflow-x:auto;white-space:pre}
+  pre.code .k{color:#6cb6ff} pre.code .s{color:#8ddb8c} pre.code .c{color:#6b7484;font-style:italic}
+  pre.code .n{color:#e0b070} pre.code .b{color:#fecdd3;font-weight:700}
+  .note{border-left:3px solid var(--accent);background:rgba(var(--accent-rgb),.12);border-radius:0 8px 8px 0;
+    padding:10px 13px;font-size:12.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .log{font-family:var(--mono);font-size:11.5px;max-height:230px;overflow-y:auto;display:grid;gap:5px}
+  .log div{background:var(--panel2);border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:6px 9px;color:var(--muted)}
+  .log div.hl{border-left-color:var(--accent-2);color:var(--ink);background:rgba(var(--accent-rgb),.15)}
+  .log div.ok{border-left-color:var(--ok)} .log div.bad{border-left-color:var(--bad)}
+  svg{display:block;max-width:100%;height:auto}
+  .svgwrap{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse;font-size:12px}
+  table.t th{font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+  table.t td{padding:7px 8px;border-bottom:1px solid rgba(39,44,54,.6);color:var(--muted);font-family:var(--mono);font-size:11.8px}
+  table.t td.n{color:var(--ink);font-weight:600}
+
+  /* ── pitfalls ─────────────────────────────────────────────── */
+  details.pit{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pit>summary{cursor:pointer;padding:12px 15px;font-size:13.5px;font-weight:650;color:var(--ink);
+    list-style:none;display:flex;gap:11px;align-items:flex-start}
+  details.pit>summary::-webkit-details-marker{display:none}
+  details.pit>summary::before{content:"\25B8";color:var(--accent-2);font-size:12px;line-height:1.5;transition:.2s}
+  details.pit[open]>summary::before{transform:rotate(90deg)}
+  details.pit>summary:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  details.pit .body{padding:0 15px 15px 39px;font-size:13px;color:var(--muted);display:grid;gap:9px}
+  details.pit .body .fix{color:var(--ok);font-weight:600}
+
+  /* ── MCQ ──────────────────────────────────────────────────── */
+  .mcq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:13px}
+  .mcq .q{font-size:13.8px;font-weight:650;color:var(--ink);margin:0 0 11px;max-width:84ch}
+  .mcq .q span{color:var(--accent-2);font-family:var(--mono);margin-right:7px}
+  .opts{display:grid;gap:7px}
+  .opt{text-align:left;font-family:inherit;font-size:13px;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;transition:.15s}
+  .opt:hover:not(:disabled){border-color:var(--accent-2);color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .opt.right{border-color:var(--ok);background:rgba(63,185,80,.13);color:#bce8c4}
+  .opt.wrong{border-color:var(--bad);background:rgba(248,81,73,.12);color:#f4b6b1}
+  .opt.dim{opacity:.5}
+  .fb{margin-top:11px;font-size:12.5px;line-height:1.6;color:var(--muted);display:none;
+    border-left:3px solid var(--line);padding-left:11px}
+  .fb.show{display:block}
+  .fb.show.good{border-left-color:var(--ok)} .fb.show.poor{border-left-color:var(--bad)}
+  .fb b{color:var(--ink)}
+
+  /* ── next ─────────────────────────────────────────────────── */
+  .nextgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .nextcard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:15px 17px;transition:.18s;color:inherit}
+  .nextcard:hover{border-color:var(--accent-2);transform:translateY(-2px);text-decoration:none}
+  .nextcard .nl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-2)}
+  .nextcard .nt{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:5px}
+  .nextcard .nd{font-size:12px;color:var(--muted);margin-top:5px}
+
+  @media (max-width:720px){
+    .grid2,.grid3,.split,.split-r{grid-template-columns:1fr}
+    section{padding:26px 15px 32px}
+    nav.top{padding:10px 15px;gap:8px}
+    nav.top .crumbs{font-size:11px}
+    p,.lead{max-width:none}
+  }
+
+  /* ── week-page shared ─────────────────────────────────────── */
+  #hero{padding:52px 22px 40px;
+    background:radial-gradient(ellipse 820px 340px at 22% -14%,rgba(var(--accent-rgb),.3),transparent 66%)}
+  #hero .wk{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--accent-2);font-weight:700}
+  #hero h1{max-width:24ch}
+  #hero .promise{font-size:16.5px;color:var(--ink);max-width:74ch;margin-top:10px;line-height:1.55}
+  .secnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;
+    background:rgba(var(--accent-rgb),.35);border:1px solid var(--accent-2);color:#fff;font-family:var(--mono);
+    font-size:11px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .sw{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .sw button{font-family:inherit;font-size:11.5px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:none;padding:7px 13px;transition:.15s}
+  .sw button[aria-pressed="true"]{background:rgba(var(--accent-rgb),.32);color:#fff}
+  .sw button:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+
+
+  /* ── shared week widgets (chips, checklists, tables) ───────── */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;transition:.15s}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .chip:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+  .chip.on{background:rgba(var(--accent-rgb),.3);border-color:var(--accent-2);color:#fff}
+  .svgwrap.hl{border-color:var(--accent-2);box-shadow:0 0 0 1px rgba(var(--accent-2-rgb),.45)}
+  .tablewrap{overflow-x:auto}
+  table.t td.bad{color:var(--bad)} table.t td.ok{color:var(--ok)} table.t td.acc{color:var(--accent-2)}
+  table.t tr.lead-row td{background:rgba(248,81,73,.09)}
+  .chk{display:grid;gap:9px}
+  .chk .item{display:flex;gap:11px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;transition:.18s}
+  .chk .item.done{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.07)}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+  .chk .txt{flex:1;min-width:0}
+  .chk .txt .t{font-size:13px;font-weight:650;color:var(--ink)}
+  .chk .item.done .txt .t{color:var(--ok)}
+  .chk .txt .c{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px;
+    word-break:break-word;background:#0b0e14;border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+  .bar{height:6px;border-radius:4px;background:#2b313d;overflow:hidden;margin:12px 0 6px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  .smoke{display:flex;align-items:center;gap:11px;font-size:13px;font-weight:700}
+  .smoke .lamp{width:14px;height:14px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px -1px var(--bad)}
+  .smoke.green .lamp{background:var(--ok);box-shadow:0 0 12px -1px var(--ok)}
+  .smoke.amber .lamp{background:var(--warn);box-shadow:0 0 12px -1px var(--warn)}
+  .verdict{margin-top:14px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.6px}
+  .verdict.met{color:var(--ok)} .verdict.miss{color:var(--bad)}
+  .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:12px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  /* ── mobile guard (identical on every page): single column under 720px,
+        no horizontal overflow. Must stay last in the sheet. ───────────── */
+  @media (max-width:720px){
+    .grid2,.grid3,.grid2.narrow-right,.split,.split-r,.codepair,
+    .nextgrid,.dash,.toggles,.lanes,.weeknav,.weeks,.roles,.stack{
+      grid-template-columns:minmax(0,1fr)}
+    [class*="grid"]>*,.stack>*,.wrap>*,.panel,.panel.tight,.nextcard,.wk,.row>*{min-width:0}
+    pre,pre.code,.svgwrap,svg,canvas,table,select,input,textarea,.mono{max-width:100%}
+    pre,pre.code,.svgwrap,.tablewrap{overflow-x:auto}
+    code,.mono{overflow-wrap:anywhere}
+    .ctl,.ctl>*,.controls>*,.row,.legend>*{min-width:0}
+    .ctl{flex-wrap:wrap} .ctl select,.ctl input[type=range]{flex:1 1 100%;width:100%}
+    p,.lead,.sub,.promise{max-width:none}
+  }
+</style>
+
+</head>
+<body>
+
+<nav class="top"><a href="index.html">Financial Analytics Arena</a><span class="crumbs"><a href="week6.html">← Week 6</a> · <b>Week 7 · Backtesting &amp; Performance Attribution</b> · <a href="week8.html">Week 8 →</a></span></nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero">
+  <div class="wk">WEEK 7</div>
+  <h1>Backtesting &amp; Performance Attribution</h1>
+  <p class="promise">A backtest is not an experiment. It is a <em class="hi">claim</em> — that if you had
+  been in the market, with this signal, paying these costs, this is what would have happened. This week you
+  take one signal and watch a single <code>.shift(1)</code> move its Sharpe from <strong>+3.10 to
+  &#8722;3.48</strong>, then subtract the spread, then the fee, then count how many configurations you
+  tried, and finally split what survives into allocation, selection and interaction with a residual of
+  exactly zero.</p>
+  <ul class="you">
+    <li>Build the same backtest <strong>twice</strong> — vectorised and event-driven — and find the
+    look-ahead bug that lives on exactly one line of the vectorised version.</li>
+    <li>Decompose a loss into its parts: on the arena tape, <code>&#8722;8,600</code> is
+    <em class="hi">spread &#8722;2,127</em>, <em class="hi">fee &#8722;6,473</em> and
+    <em class="hi">lag &#8722;1.35</em> — and defend the claim that the lag term is small because the alpha
+    is zero, not because your execution is fast.</li>
+    <li>Compute <strong>Sharpe, Sortino and the deflated Sharpe</strong> that knows how many things you
+    tried, and say why the run that lost 103% of the account has the best Sharpe of four.</li>
+    <li>Run a genuine <strong>walk-forward</strong> and watch a best-in-sample +2.87 become a mean
+    out-of-sample <strong>+0.45</strong>.</li>
+    <li>Reconcile a <strong>Brinson-Fachler</strong> attribution to the active return, name your
+    convention, and treat a non-zero residual as the bug it is.</li>
+  </ul>
+  <div class="row" style="margin-top:22px">
+    <span class="pill acc">Lab: backtest a signal on an AlgoArena tape · costs · one-bar lag · attribution</span>
+    <span class="pill">HW6: costed walk-forward + attribution table</span>
+    <span class="pill warn">Phase 2: signal specced this week</span>
+  </div>
+</section>
+
+<!-- ══════════════ WHAT ══════════════ -->
+<section id="what">
+  <div class="kicker">Part 1</div>
+  <h2><span class="secnum">1</span>What is it? Two architectures, and only one of them can lie quietly</h2>
+  <p class="lead">A backtest replays a decision rule over historical data and reports what it would have
+  earned. There are exactly two ways to build one, they answer the same question, and they fail in
+  completely different ways — which is why this course makes you write both.</p>
+
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel"><h4>Vectorised</h4>
+      <p class="sub">Weights and returns are two aligned matrices; P&amp;L is one elementwise product and a
+      row sum. Three lines, a hundred thousand bars, milliseconds.</p>
+      <ul class="plain" style="margin-top:9px">
+        <li>Fast enough to sweep a parameter grid over lunch.</li>
+        <li>Every position is filled, in full, at the price on the bar — no queue, no partial, no book.</li>
+        <li><strong>Alignment is the whole risk.</strong> The difference between an honest backtest and a
+        time machine is whether one series was shifted by one row.</li>
+      </ul>
+    </div>
+    <div class="panel"><h4>Event-driven</h4>
+      <p class="sub">A loop over messages. A snapshot arrives, the strategy is asked for an order, the order
+      goes into a queue, and it fills against the book on a <em class="hi">later</em> message.</p>
+      <ul class="plain" style="margin-top:9px">
+        <li>The causal order is structural — you cannot accidentally trade on a bar you have not seen yet,
+        because the bar has not arrived.</li>
+        <li>It models what vectorised code assumes away: partial fills, displayed size, queue position,
+        rejects.</li>
+        <li>Slower, more code, and it hides its own bugs in the controller rather than in the alignment —
+        as you will see when a missing in-flight-order check turns 868 fills into 8,405.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:16px"><b>The course's rule.</b> Prototype vectorised, confirm
+  event-driven, and reconcile the two before you believe either. On the AlgoArena tape the reconciliation
+  target is the change in net worth — cash plus mark-to-mid — because that number is sign-correct even
+  when the harness's own realised-P&amp;L line is not.</div>
+
+  <div class="grid3" style="margin-top:18px">
+    <div class="panel tight"><h3>The four questions a backtest exists to answer</h3>
+      <ul class="plain">
+        <li><strong>How much did it earn?</strong> Gross return, before anything is subtracted.</li>
+        <li><strong>How much of that was me paying the market?</strong> Spread, fee, impact — each named
+        and sourced, never one lump "cost assumption".</li>
+        <li><strong>Would I have believed it if I had been honest about my search?</strong> The trial
+        count, and the deflated Sharpe at that count.</li>
+        <li><strong>Where did it come from?</strong> Attribution — allocation, selection, interaction.</li>
+      </ul></div>
+    <div class="panel tight"><h3>What the arena tape is</h3>
+      <ul class="plain">
+        <li>A session recording: every broadcast the exchange sent, in order — <code>book_snapshot</code>,
+        <code>trade_execution</code>, <code>session_event</code>.</li>
+        <li>4,000 ticks &#215; 5 symbols = <strong>20,000 book snapshots</strong>, about 5&#160;MB.</li>
+        <li>It is <em class="hi">broadcast-only</em>: no order acknowledgements, no cancels, no per-team
+        ladder. Nothing order-level can be reconstructed from it — remember that in week 9.</li>
+        <li>The offline recorder makes one without a network, so no result in this course depends on
+        having attended a session.</li>
+      </ul></div>
+    <div class="panel tight"><h3>Measured before you backtest</h3>
+      <div class="kv">
+        <div class="k">mid move / snapshot</div><div class="v">2.1 – 5.0 bps</div>
+        <div class="k">quoted spread</div><div class="v">6.2 – 14.1 bps</div>
+        <div class="k">half-spread / vol</div><div class="v">1.66&#215;</div>
+        <div class="k">AC(1), AC(5)</div><div class="v">&#8722;0.018 … +0.020</div>
+        <div class="k">2&#963; band, n=3,999</div><div class="v">&#177;0.032</div>
+        <div class="k">taker fee</div><div class="v">15 bps of notional</div>
+      </div>
+      <p class="sub" style="margin-top:9px">Read together: crossing costs 1.66 snapshots of movement, and
+      there is no linear predictability to pay for it with. <strong>A taker strategy on this tape cannot
+      win, and its P&amp;L will be proportional to how often it trades.</strong> Predicting the result
+      before you run it is what makes the run trustworthy.</p></div>
+  </div>
+
+  <h3 style="margin-top:26px">Widget 1 · the same signal, two architectures, one shifted row</h3>
+  <div class="split">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div class="sw" role="group" aria-label="Backtest architecture">
+          <button id="vdVec" type="button" aria-pressed="true">Vectorised</button>
+          <button id="vdEvt" type="button" aria-pressed="false">Event-driven</button>
+        </div>
+        <div class="sw" role="group" aria-label="Alignment convention">
+          <button id="vdSame" type="button" aria-pressed="true">same bar (leaks)</button>
+          <button id="vdLag" type="button" aria-pressed="false">.shift(1)</button>
+        </div>
+      </div>
+      <div class="svgwrap"><svg id="vdSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Bar-by-bar timeline showing when a signal is computed and which bar's return it is paid"></svg></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="vdStep" type="button" aria-label="Advance one bar">Step &#9656;</button>
+        <button class="btn" id="vdRun" type="button" aria-label="Run to the end of the tape">Run to end</button>
+        <button class="btn" id="vdReset" type="button" aria-label="Reset the stepper">Reset</button>
+        <span class="pill acc" id="vdBar">bar 0 / 24</span>
+      </div>
+      <div class="stats" style="margin-top:12px">
+        <div class="stat"><div class="sl">Cumulative</div><div class="sv acc" id="vdCum">+0.00%</div></div>
+        <div class="stat"><div class="sl">Sharpe (&#215;&#8730;n)</div><div class="sv" id="vdSh">—</div></div>
+        <div class="stat"><div class="sl">Hit rate</div><div class="sv" id="vdHit">—</div></div>
+        <div class="stat"><div class="sl">Bars paid</div><div class="sv" id="vdFills">0</div></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:#fda4af"></i>signal computed at close of bar t</span>
+        <span><i style="background:#3fb950"></i>return paid</span>
+        <span><i style="background:#f85149"></i>information used before it existed</span>
+      </div>
+    </div>
+    <div class="stack">
+      <pre class="code" id="vdCode"></pre>
+      <div class="panel tight"><h3>Decision log</h3><div class="log" id="vdLog" role="status" aria-live="polite"></div></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:10px">The event-driven mode has no alignment switch that does anything:
+  an order created while bar <em class="hi">t</em> is on screen cannot fill until bar <em class="hi">t+1</em>
+  arrives, because that is when the next message is processed. The vectorised mode will happily pay you the
+  return of the bar you used to make the decision, and the code looks correct either way.</p>
+</section>
+
+<!-- ══════════════ HOW ══════════════ -->
+<section id="how">
+  <div class="kicker">Part 2</div>
+  <h2><span class="secnum">2</span>How it works: the lag flip, then the cost ladder</h2>
+  <p class="lead">Two mechanisms account for almost every backtest that cannot be reproduced live. The
+  first is a leak that turns negative autocorrelation into fake alpha. The second is a cost floor that is
+  usually larger than the edge it is subtracted from.</p>
+
+  <h3 style="margin-top:22px">Widget 2 · the one-bar-lag flip</h3>
+  <p>A mid computed from a two-sided book <em class="hi">bounces</em>: it sits nearer the bid, then nearer
+  the ask, as makers requote. That bounce is mechanically negative autocorrelation — pooled
+  <strong>AC(1) = &#8722;0.222</strong> on the deck's five-second bars, and the more negative the wider the
+  market, with a rank correlation of &#8722;0.321 against half-spread. It is not a forecastable return, and
+  it evaporates the instant you have to transact at the touch. Set the bounce and watch the sign of the
+  Sharpe change with one row of alignment.</p>
+  <div class="split-r">
+    <div class="panel">
+      <div class="ctl"><label for="lfAc">Bounce · AC(1) of bar returns <b id="lfAcV">&#8722;0.22</b></label>
+        <input type="range" id="lfAc" min="-45" max="10" value="-22" step="1" aria-label="First-order autocorrelation of bar returns"></div>
+      <div class="ctl"><label for="lfL">Signal lookback <b id="lfLV">3 bars</b></label>
+        <input type="range" id="lfL" min="2" max="72" value="3" step="1" aria-label="Signal lookback in bars"></div>
+      <div class="ctl"><label for="lfN">Sample length <b id="lfNV">373 bars</b></label>
+        <input type="range" id="lfN" min="120" max="1200" value="373" step="1" aria-label="Sample length in bars"></div>
+      <div class="sw" role="group" aria-label="Signal direction" style="margin-bottom:10px">
+        <button id="lfMom" type="button" aria-pressed="true">Momentum</button>
+        <button id="lfRev" type="button" aria-pressed="false">Reversal</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Same bar</div><div class="sv" id="lfShA">—</div></div>
+        <div class="stat"><div class="sl">.shift(1)</div><div class="sv" id="lfShB">—</div></div>
+        <div class="stat"><div class="sl">Flip</div><div class="sv" id="lfFlip">—</div></div>
+        <div class="stat"><div class="sl">Measured AC(1)</div><div class="sv" id="lfAcM">—</div></div>
+      </div>
+      <div class="verdict" id="lfVerdict"></div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap"><svg id="lfSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Two equity curves for the same signal: same-bar execution and one-bar-lagged execution"></svg></div>
+      <div class="note"><b>Reference, from the deck's real tape.</b> Same 60-second reversal signal, same
+      373 bars: same-bar total <strong>&#8722;50.010%</strong> at Sharpe <strong>&#8722;3.10</strong>;
+      one-bar lag <strong>+119.155%</strong> at Sharpe <strong>+3.48</strong>. Momentum on the same bars is
+      the mirror image: <strong>+90.697%</strong> / <strong>+3.10</strong> same-bar,
+      <strong>&#8722;56.868%</strong> / <strong>&#8722;3.48</strong> lagged. One
+      <code>.shift(1)</code>, 169 percentage points, both directions.</div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:10px">Lengthen the lookback and the flip weakens into a mere change of
+  magnitude: bar <em class="hi">t</em> enters a 12-bar mean with one twelfth of the weight, so the leak is
+  diluted even though it is still there. That is worth knowing and is not a defence —
+  <strong>a diluted leak is still a leak, and you cannot tell from the output which part of the Sharpe it
+  is.</strong></p>
+  <p class="sub" style="margin-top:10px">Note which way the trap points. A leaky <em class="hi">momentum</em>
+  backtest on a bouncing mid looks brilliant and is worthless. A leaky <em class="hi">reversal</em> backtest
+  looks catastrophic and hides a real (if unharvestable) effect. The sign of your leak depends on the sign
+  of your signal, so "my result looks bad, therefore I have not leaked" is not an argument.</p>
+
+  <h3 style="margin-top:28px">Widget 3 · the cost ladder — four levels of honesty</h3>
+  <p>Costs are not a haircut applied at the end. They decide whether the strategy exists. Measure them off
+  the tape you would have traded: the deck's mean half-spread is <strong>12.2 bps</strong> and the arena's
+  taker fee is <strong>15 bps</strong>, so a round trip costs <strong>54 bps</strong> against a per-bar
+  gross edge of <strong>+21.7 bps</strong> — and the answer is decided by turnover, not by Sharpe.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="clSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Waterfall from gross edge down to net edge, subtracting spread, fee and impact"></svg></div>
+      <div class="tablewrap" style="margin-top:12px"><table class="t" id="clTable">
+        <thead><tr><th>Variant</th><th>Total</th><th>Sharpe</th><th>DD</th><th>Hit</th></tr></thead>
+        <tbody></tbody></table></div>
+      <p class="sub">Real output from the deck's tape. Watch the hit rate fall 53.6% &#8594; 36.5% while the
+      total stays positive: costs turn a majority of small winners into small losers, so the surviving
+      P&amp;L comes from fewer, larger bars. Skew +8.85 and excess kurtosis 112 on 373 observations means a
+      handful of bars are doing all the work — and every statistic that assumes i.i.d. normal returns,
+      including the deflated Sharpe below, is being pushed outside its comfort zone.</p>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="clSpread">Half-spread paid per side <b id="clSpreadV">12.2 bps</b></label>
+        <input type="range" id="clSpread" min="0" max="300" value="122" step="1" aria-label="Half-spread in tenths of a basis point"></div>
+      <div class="ctl"><label for="clFee">Taker fee <b id="clFeeV">15.0 bps</b></label>
+        <input type="range" id="clFee" min="0" max="300" value="150" step="1" aria-label="Taker fee in tenths of a basis point"></div>
+      <div class="ctl"><label for="clImp">Extra impact / slippage <b id="clImpV">0.0 bps</b></label>
+        <input type="range" id="clImp" min="0" max="200" value="0" step="1" aria-label="Extra impact in tenths of a basis point"></div>
+      <div class="ctl"><label for="clTurn">Turnover per bar <b id="clTurnV">0.300</b></label>
+        <input type="range" id="clTurn" min="10" max="1000" value="300" step="5" aria-label="Gross weight turned over per bar"></div>
+      <div class="ctl"><label for="clGross">Gross edge <b id="clGrossV">+21.7 bps/bar</b></label>
+        <input type="range" id="clGross" min="0" max="600" value="217" step="1" aria-label="Gross edge in tenths of a basis point per bar"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Round trip</div><div class="sv" id="clRt">54 bps</div></div>
+        <div class="stat"><div class="sl">Net edge</div><div class="sv" id="clNet">—</div></div>
+        <div class="stat"><div class="sl">Costs / gross</div><div class="sv" id="clShare">—</div></div>
+        <div class="stat"><div class="sl">Break-even turnover</div><div class="sv" id="clBe">—</div></div>
+      </div>
+      <div class="verdict" id="clVerdict"></div>
+      <div class="note" style="margin-top:12px"><b>Rank the costs before you rank your ideas.</b> On the
+      arena the fee is 15 bps of notional and the half-spread about 5 bps of price, so the
+      <em class="hi">fee is three times the spread</em> and any signal needing 20 bps a round trip is dead
+      on arrival. That ranking is a fact about the venue, not about your idea, and it belongs on page one
+      of the Phase-2 report.</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:20px"><h4>The loss that adds up</h4>
+    <p class="sub">Frictionless, the crossover on <code>session_fa07.jsonl</code> lost $2,126.95 on 14,000
+    shares — which is <code>14000 &#215; $0.15</code>, exactly half a 30-cent spread. Charge the venue's
+    15 bps and the fee bill is $6,473.33, so P&amp;L becomes &#8722;$8,600.27: the same fills, the same
+    prices, one extra debit each. <strong>A well-behaved cost model is a pure subtraction when nothing else
+    changes.</strong> Then add a one-bar lag done properly and the P&amp;L moves by
+    <strong>$1.35</strong>.</p>
+    <div class="tablewrap" style="margin-top:10px"><table class="t">
+      <thead><tr><th>Run</th><th>P&amp;L</th><th>Fills</th><th>Fees</th><th>Signals</th></tr></thead>
+      <tbody>
+        <tr><td>frictionless</td><td class="n">&#8722;2,127</td><td>868</td><td>$0</td><td>868</td></tr>
+        <tr><td>inverted</td><td class="n">&#8722;2,073</td><td>780</td><td>$0</td><td>780</td></tr>
+        <tr><td>+ 15 bps fee</td><td class="n">&#8722;8,600</td><td>868</td><td>$6,473</td><td>868</td></tr>
+        <tr class="lead-row"><td>+ lag, buggy</td><td class="bad">&#8722;103,465</td><td>8,405</td><td>$79,684</td><td>18,670</td></tr>
+        <tr><td>+ lag, fixed</td><td class="n">&#8722;8,599</td><td>827</td><td>$6,473</td><td>827</td></tr>
+      </tbody></table></div>
+    <p class="sub" style="margin-top:9px">The inverted run is the cheapest sanity check in this course, and
+    it costs one environment variable: same 14,000 shares, same loss to within 2.5%. <strong>A strategy
+    whose sign does not change its P&amp;L is not a strategy, it is a trading-volume experiment.</strong>
+    And regressing P&amp;L on fill count across all 24 configurations gives R&#178; = 0.9966 with a slope
+    of &#8722;$2.91 a fill — 14.5 cents a share against a 15-cent half-spread. The search explored a space
+    of trading volumes, not a space of strategies.</p>
+  </div>
+</section>
+
+<!-- ══════════════ WHY ══════════════ -->
+<section id="why">
+  <div class="kicker">Part 3</div>
+  <h2><span class="secnum">3</span>Why it matters: how many things did you try?</h2>
+  <p class="lead">Every statistic in a backtest is conditional on a search you did not report. Walk-forward
+  measures the damage; the deflated Sharpe prices it; attribution says where whatever survives came
+  from.</p>
+
+  <h3 style="margin-top:22px">Widget 4 · in-sample versus walk-forward</h3>
+  <p>Fit the parameter on one fold, trade the next, roll, never re-fitting on data you have already traded.
+  The deck's four folds go in-sample <strong>+2.26 / +3.64 / +1.44</strong> and out-of-sample
+  <strong>+2.89 / +1.44 / &#8722;2.97</strong> — mean OOS <strong>+0.45</strong> against a best in-sample
+  <strong>+2.87</strong>, a haircut of about 2.4 Sharpe. Fold 3 is the point: it is not noise to be
+  averaged away, it is the honest distribution of outcomes for this procedure.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="wfSvg" viewBox="0 0 700 300" role="img"
+        aria-label="Per-fold in-sample and out-of-sample Sharpe ratios, with the mean of each"></svg></div>
+      <div class="legend">
+        <span><i style="background:#fda4af"></i>in-sample, best of the grid</span>
+        <span><i style="background:#58a6ff"></i>out-of-sample, the fold that follows</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ctl"><label for="wfFolds">Folds <b id="wfFoldsV">4</b></label>
+        <input type="range" id="wfFolds" min="2" max="10" value="4" step="1" aria-label="Number of walk-forward folds"></div>
+      <div class="ctl"><label for="wfGrid">Grid size searched per fold <b id="wfGridV">6</b></label>
+        <input type="range" id="wfGrid" min="1" max="60" value="6" step="1" aria-label="Configurations searched in each fold"></div>
+      <div class="ctl"><label for="wfEdge">True edge, Sharpe per fold <b id="wfEdgeV">0.00</b></label>
+        <input type="range" id="wfEdge" min="0" max="200" value="0" step="5" aria-label="True out-of-sample edge in Sharpe units"></div>
+      <div class="ctl"><label for="wfSeed">Seed <b id="wfSeedV">7</b></label>
+        <input type="range" id="wfSeed" min="1" max="40" value="7" step="1" aria-label="Random seed"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Mean IS</div><div class="sv acc" id="wfIS">—</div></div>
+        <div class="stat"><div class="sl">Mean OOS</div><div class="sv" id="wfOOS">—</div></div>
+        <div class="stat"><div class="sl">Haircut</div><div class="sv bad" id="wfCut">—</div></div>
+        <div class="stat"><div class="sl">OOS folds &gt; 0</div><div class="sv" id="wfPos">—</div></div>
+      </div>
+      <div class="verdict" id="wfVerdict"></div>
+      <p class="sub" style="margin-top:10px">Set the true edge to zero and every in-sample number is still
+      positive: with a grid of <em class="hi">M</em> configurations the best one is the maximum of
+      <em class="hi">M</em> draws, and the maximum of noise is not noise. That is the whole argument for the
+      next widget.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 5 · the deflated Sharpe ratio</h3>
+  <p>Bailey and L&#243;pez de Prado's correction asks the only question that matters about a backtest:
+  <em class="hi">how many did you try?</em> If you try one coin-flip strategy its expected Sharpe is zero;
+  if you try a hundred and keep the best, the best has a large positive Sharpe by construction. So the
+  correct null is not "Sharpe = 0", it is "Sharpe = SR&#8320;(M)", the expected
+  <strong>maximum</strong> of <em class="hi">M</em> trials with no edge at all — which grows like the square
+  root of log&#160;M. Then the third and fourth moments of the winner's returns enter the denominator,
+  because a Sharpe built from a handful of enormous bars is worth less than one built from many small
+  ones.</p>
+  <div class="split-r">
+    <div class="panel">
+      <div class="ctl"><label for="dsM">Trials searched, M <b id="dsMV">6</b></label>
+        <input type="range" id="dsM" min="1" max="500" value="6" step="1" aria-label="Number of configurations tried"></div>
+      <div class="ctl"><label for="dsSr">Best Sharpe observed <b id="dsSrV">+2.87</b></label>
+        <input type="range" id="dsSr" min="0" max="600" value="287" step="1" aria-label="Best Sharpe observed, hundredths"></div>
+      <div class="ctl"><label for="dsN">Observations, n <b id="dsNV">373</b></label>
+        <input type="range" id="dsN" min="60" max="2500" value="373" step="1" aria-label="Number of observations"></div>
+      <div class="ctl"><label for="dsSd">Dispersion of trial Sharpes <b id="dsSdV">0.86</b></label>
+        <input type="range" id="dsSd" min="5" max="300" value="86" step="1" aria-label="Standard deviation across trial Sharpes"></div>
+      <div class="ctl"><label for="dsSk">Skew of the winner <b id="dsSkV">+8.85</b></label>
+        <input type="range" id="dsSk" min="-400" max="1200" value="885" step="5" aria-label="Skewness of the winning curve"></div>
+      <div class="ctl"><label for="dsKu">Excess kurtosis <b id="dsKuV">112.2</b></label>
+        <input type="range" id="dsKu" min="0" max="1600" value="1122" step="2" aria-label="Excess kurtosis of the winning curve"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">SR&#8320; (luck's best)</div><div class="sv warn" id="dsSr0">—</div></div>
+        <div class="stat"><div class="sl">PSR</div><div class="sv" id="dsPsr">—</div></div>
+        <div class="stat"><div class="sl">Deflated Sharpe</div><div class="sv" id="dsDsr">—</div></div>
+        <div class="stat"><div class="sl">Verdict</div><div class="sv" id="dsVerd">—</div></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="dsHonest" type="button">Deck's 6 trials</button>
+        <button class="btn" id="dsReal" type="button">A real Phase-2 search (M = 200)</button>
+        <button class="btn" id="dsNoise" type="button">Pure noise, best of 60</button>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="svgwrap"><svg id="dsSvg" viewBox="0 0 700 300" role="img"
+        aria-label="SR-zero, the Sharpe that luck alone produces, plotted against the number of trials"></svg></div>
+      <div class="note"><b>The off-by-three that ships.</b> <code>scipy.stats.kurtosis</code> returns
+      <em class="hi">excess</em> kurtosis; the deflated-Sharpe formula wants the raw fourth moment. Forget
+      the <code>+ 3</code> and your denominator is wrong in the direction that flatters you. And watch what
+      happens above: push skew high enough and the moment correction
+      <code>1 &#8722; &#947;&#8323;&#183;SR + (&#947;&#8324;&#8722;1)/4&#183;SR&#178;</code> goes negative,
+      at which point the statistic is not conservative — it is undefined, and the honest report says
+      so.</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Widget 6 · Brinson-Fachler, and the residual that must be zero</h3>
+  <p>Sharpe judges a curve; attribution explains it. Split the active return into
+  <strong>allocation</strong> — you were in the right sectors —
+  <strong>selection</strong> — you owned the right names inside them — and <strong>interaction</strong>,
+  the cross term that is usually negative because people overweight exactly where their timing is worst.
+  The three sum to the active return as an algebraic identity, so <em class="hi">any residual is a
+  bug</em>: almost always a weight and a return averaged over different windows, or a zero-weight name whose
+  division produced a NaN that pandas quietly dropped.</p>
+  <div class="split">
+    <div class="panel">
+      <div class="svgwrap"><svg id="brSvg" viewBox="0 0 700 280" role="img"
+        aria-label="Allocation, selection and interaction bars summing to the active return"></svg></div>
+      <div class="tablewrap" style="margin-top:12px"><table class="t" id="brTable">
+        <thead><tr><th>Sec</th><th>w&#7529;</th><th>r&#7529;/r&#7495;</th><th>Alloc</th><th>Sel</th><th>Int</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="sw" role="group" aria-label="Attribution convention" style="margin-bottom:12px">
+        <button id="brFach" type="button" aria-pressed="true">Brinson-Fachler</button>
+        <button id="brBhb" type="button" aria-pressed="false">BHB</button>
+      </div>
+      <div class="ctl"><label for="brW">Portfolio weight · hardware <b id="brWV">80%</b></label>
+        <input type="range" id="brW" min="0" max="100" value="80" step="1" aria-label="Portfolio weight in the hardware sector"></div>
+      <div class="ctl"><label for="brRpH">r&#7529; hardware <b id="brRpHV">+3 bps</b></label>
+        <input type="range" id="brRpH" min="-400" max="400" value="3" step="1" aria-label="Portfolio return in hardware, basis points"></div>
+      <div class="ctl"><label for="brRbH">r&#7495; hardware <b id="brRbHV">&#8722;164 bps</b></label>
+        <input type="range" id="brRbH" min="-400" max="400" value="-164" step="1" aria-label="Benchmark return in hardware, basis points"></div>
+      <div class="ctl"><label for="brRpS">r&#7529; software <b id="brRpSV">+89 bps</b></label>
+        <input type="range" id="brRpS" min="-400" max="400" value="89" step="1" aria-label="Portfolio return in software, basis points"></div>
+      <div class="ctl"><label for="brRbS">r&#7495; software <b id="brRbSV">+64 bps</b></label>
+        <input type="range" id="brRbS" min="-400" max="400" value="64" step="1" aria-label="Benchmark return in software, basis points"></div>
+      <div class="stats">
+        <div class="stat"><div class="sl">Active return</div><div class="sv acc" id="brActive">—</div></div>
+        <div class="stat"><div class="sl">A + S + I</div><div class="sv" id="brSum">—</div></div>
+        <div class="stat"><div class="sl">Residual</div><div class="sv ok" id="brRes">—</div></div>
+        <div class="stat"><div class="sl">Inter / alloc</div><div class="sv" id="brRatio">—</div></div>
+      </div>
+      <p class="sub" style="margin-top:10px">Switch the convention and the total does not move by a basis
+      point while allocation and selection both do. BHB measures allocation against the sector's own
+      return; Brinson-Fachler measures it against the benchmark <em class="hi">total</em>, which makes
+      "overweight a sector that beat the benchmark" the thing you get paid for. <strong>A report that does
+      not name its convention is not reproducible.</strong></p>
+      <div class="note"><b>Single period only.</b> Chaining periods needs a linking scheme — Carino,
+      Menchero — because the components compound and the naive sum drifts from the geometric excess. Do not
+      chain by adding.</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:22px">
+    <div class="panel"><h4>Sharpe cannot see ruin</h4>
+      <p class="sub">Of the four curves in the lab, the one that <em class="hi">lost more than the entire
+      account</em> — &#8722;103.47%, max drawdown 103.51% — has the <strong>best</strong> Sharpe of the
+      four at &#8722;0.005, and a PSR of 0.295. As net worth approached zero its per-mark returns became
+      large and symmetric, and Sharpe is a ratio of moments. Report max drawdown next to every Sharpe you
+      ever quote, and never annualise a per-mark ratio across a tape that spans a few seconds of wall
+      clock: multiply by &#8730;252 and you have invented a year.</p></div>
+    <div class="panel"><h4>Sortino is a skewness detector</h4>
+      <p class="sub">Sortino is Sharpe with downside deviation in the denominator, so it flatters anything
+      with positive skew. Variant D's Sortino is <strong>2.9&#215;</strong> its Sharpe — that ratio is not a
+      second opinion about quality, it is a measurement of asymmetry. Quote both and the reader learns
+      something; quote only the larger and you are selling.</p></div>
+  </div>
+</section>
+
+<!-- ══════════════ PITFALLS ══════════════ -->
+<section id="pitfalls">
+  <div class="kicker">Part 4</div>
+  <h2><span class="secnum">4</span>Five ways this goes wrong</h2>
+  <p class="lead">Every one of these has appeared in a submitted backtest. Open them.</p>
+
+  <details class="pit"><summary>Trading on the bar you used to decide — the whole bug is one missing <code>.shift(1)</code></summary>
+    <div class="body">
+      <p>Compute a signal from the returns up to and including bar <em>t</em>, then multiply it by the
+      return of bar <em>t</em>. Nothing errors, nothing looks odd, and on a bouncing mid the result is a
+      Sharpe of +3.10 that reverses to &#8722;3.48 the moment the weights are shifted by one row. The leak
+      is worth 169 percentage points of total return on 373 bars.</p>
+      <p>Its subtler siblings: a feature built with a centred rolling window; a forward-filled price that
+      carries tomorrow's close backwards over a gap; a cross-sectional rank computed over the full sample
+      instead of per date.</p>
+      <p class="fix">Fix: build the event-driven version and reconcile. If a vectorised backtest and an
+      event-driven one agree to a basis point, your alignment is right; if they disagree, the vectorised one
+      is optimistic and you now know by how much. Assert it in a test with a series whose future you
+      control.</p>
+    </div></details>
+
+  <details class="pit"><summary>One "cost assumption" instead of three measured terms</summary>
+    <div class="body">
+      <p>"We assumed 10 bps of costs" is a number somebody made up. The tape says the mean half-spread is
+      12.2 bps, the venue's config says the taker fee is 15 bps, and the per-symbol vector matters because
+      META at 2.7 bps and NFLX at 20.8 bps are not the same instrument. Lumping them hides the ranking, and
+      the ranking is the finding: on this venue the <em class="hi">fee is three times the spread</em>.</p>
+      <p>The mirror error is charging costs on notional traded when your strategy is a
+      <strong>maker</strong>. Quoting at the touch turns the half-spread from a cost into a rebate and flips
+      the sign of the whole identity — but only if your fill model can honestly claim you were filled, which
+      a backtest that ignores queue position cannot.</p>
+      <p class="fix">Fix: publish the whole ladder — gross, minus spread, minus fee, minus impact — because
+      the <em class="hi">shape</em> of the decay tells the reader whether the edge is real or a cost
+      artefact. Name and source every term, and state whether you were maker or taker.</p>
+    </div></details>
+
+  <details class="pit"><summary>Reporting the best of a grid search as though it were a single result</summary>
+    <div class="body">
+      <p>Twenty-four configurations is a modest sweep for a student project. Regressing P&amp;L on fill count
+      across those 24 runs gave R&#178; = <strong>0.9966</strong> and a slope of &#8722;$2.91 a fill, which
+      on 20-share orders is 14.5 cents a share against a 15-cent half-spread. The "parameter search"
+      explored a space of trading volumes, and its winner was the configuration that never trades.</p>
+      <p>Then the deflated Sharpe: with only six trials, luck alone produces a Sharpe of +1.12, so +2.87
+      clears the bar. Six is a suspiciously honest count. Ask what SR&#8320; looks like at
+      <em class="hi">M</em> = 200 — the number you will actually have run by the time Phase 2 is due,
+      counting the ones you deleted.</p>
+      <p class="fix">Fix: log every configuration you run, including abandoned ones, and report the count as
+      the <code>--trials</code> argument. Then show the P&amp;L-versus-turnover regression: if R&#178; is
+      high, you measured your cost model, not your idea.</p>
+    </div></details>
+
+  <details class="pit"><summary>An attribution whose parts do not add to the change in net worth</summary>
+    <div class="body">
+      <p>The lab's harness reports <code>P&amp;L &#8722;2,126.95</code> and
+      <code>Realized &#8722;4,294.11</code> with the book flat and unrealised zero. Flat plus zero
+      unrealised means realised P&amp;L <em class="hi">is</em> the P&amp;L, so the two lines disagree by
+      $2,167 and at most one is right: <code>apply_buy</code> computes
+      <code>old_qty = max(0, position)</code>, so buying back a short realises nothing and resets the
+      average cost as if opening a fresh long. The realised line is long-only; net worth is
+      sign-correct.</p>
+      <p>The same failure in attribution: allocation + selection + interaction that misses the active return
+      by a basis point. That is not rounding, it is a weight and a return measured over different subsets,
+      or a NaN dropped by a <code>.sum()</code>.</p>
+      <p class="fix">Fix: <strong>trust the cash.</strong> Reconcile every decomposition to the change in
+      net worth and assert the residual is zero in your test suite. Chasing the last basis point is where
+      the real errors live.</p>
+    </div></details>
+
+  <details class="pit"><summary>Concluding "our execution is fast" from a lag sweep that measures nothing</summary>
+    <div class="body">
+      <p>Sweeping the execution lag over 0, 1, 5, 25 and 100 ticks moved P&amp;L from &#8722;8,600.27 to
+      &#8722;8,634.99. A hundred ticks of latency cost 0.4% of the loss. The flattering reading is that the
+      execution is excellent; the correct reading is that lag destroys P&amp;L in proportion to how fast
+      your alpha decays, and this signal has none. <strong>A lag term that measures zero is evidence your
+      signal is flat, not that your pipes are fast.</strong></p>
+      <p>The opposite failure hides in the same experiment. Adding a naive one-bar lag turned a 2% loser
+      into a &#8722;103.5% loser with a negative account balance and 18,670 signals against 868 — because
+      the controller compared its target against a position that had not moved yet and re-issued the same
+      order every tick. No traceback, no exception: the classic production bug is
+      <em class="hi">no in-flight order accounting</em>, and it cost $79,684 in fees.</p>
+      <p class="fix">Fix: treat a queued order as already filled when computing the next target, and put
+      signal count next to fill count in every report. A signal-to-fill ratio above about 2 is a controller
+      bug until proven otherwise.</p>
+    </div></details>
+</section>
+
+<!-- ══════════════ CHECK ══════════════ -->
+<section id="check">
+  <div class="kicker">Part 5</div>
+  <h2><span class="secnum">5</span>Check yourself</h2>
+  <p class="lead">Three questions, instant feedback, nothing recorded.</p>
+
+  <div class="mcq" data-a="2" data-exp="<b>The mid bounces, and your signal is reading its own footprint.</b> A mid computed from a two-sided book alternates between sitting nearer the bid and nearer the ask as makers requote, which is mechanically negative autocorrelation &#8212; pooled AC(1) = &#8722;0.222 on the deck's bars. A momentum signal that includes bar t in its own lookback and is then paid bar t's return is being handed the answer, so it flips sign the moment the weights are shifted. Neither a genuine trend nor a code error is required, and a longer lookback does not fix an alignment bug &#8212; it only dilutes it.">
+    <p class="q"><span>Q1</span>Your momentum backtest on five-second mid bars reports a Sharpe of
+    <b>+3.10</b>. You add <code>.shift(1)</code> to the weights and it becomes <b>&#8722;3.48</b>. What
+    happened?</p>
+    <div class="opts">
+      <button class="opt" type="button">The lag destroyed a real but fast-decaying edge — the alpha lives inside one bar</button>
+      <button class="opt" type="button">A bug in the shift: a correct alignment change cannot reverse the sign of a result</button>
+      <button class="opt" type="button">The same-bar run was paying itself the return it used to decide, and the mid's negative autocorrelation made that look like momentum</button>
+      <button class="opt" type="button">The lookback is too short; lengthening it will make both runs agree</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="1" data-exp="<b>Sharpe is a ratio of moments and cannot see ruin.</b> As net worth fell towards zero the per-mark returns became large and roughly symmetric, so mean over standard deviation improved even as the account was destroyed &#8212; which is why max drawdown of 103.51% must be reported beside every Sharpe. The tape's timestamps span a few seconds of wall clock, so there is no honest annualisation factor either: multiplying a per-mark ratio by &#8730;252 invents a year. The run is not the best of the four by any measure a risk committee would accept, and a negative Sharpe is not a division-by-zero artefact.">
+    <p class="q"><span>Q2</span>Four backtest curves. The one that <b>lost 103% of the account</b> has the
+    best Sharpe of the four (&#8722;0.005) and a PSR of 0.295. What should the report say?</p>
+    <div class="opts">
+      <button class="opt" type="button">Report it as the best curve — Sharpe is the risk-adjusted measure, and it is the highest</button>
+      <button class="opt" type="button">Report Sharpe beside max drawdown: Sharpe cannot see ruin, and 103.51% drawdown is the number that can</button>
+      <button class="opt" type="button">Discard the Sharpe as undefined, because the equity curve crossed zero</button>
+      <button class="opt" type="button">Annualise all four by &#8730;252 so they can be compared to published strategies</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+
+  <div class="mcq" data-a="3" data-exp="<b>The three effects sum to the active return by algebra, so a residual is a bug.</b> Allocation + selection + interaction is an identity, not an approximation: 4 bps of residual means the average weights and the average returns were computed over different windows, or a zero-weight sector produced a NaN that a .sum() silently dropped. Switching convention changes how allocation and selection split the total but never the total itself, so BHB will not close the gap; extra sectors and a linking scheme address different problems entirely &#8212; linking is for chaining periods, and this is a single period.">
+    <p class="q"><span>Q3</span>Your single-period Brinson attribution gives allocation +12 bps, selection
+    +31 bps, interaction &#8722;7 bps, and an active return of <b>+40 bps</b>. What do you do?</p>
+    <div class="opts">
+      <button class="opt" type="button">Nothing — 4 bps is floating-point noise on numbers this size</button>
+      <button class="opt" type="button">Switch from Brinson-Fachler to BHB, which reconciles exactly</button>
+      <button class="opt" type="button">Add a linking scheme (Carino or Menchero) to absorb the difference</button>
+      <button class="opt" type="button">Treat the 4 bps as a bug and find it: weights and returns averaged over different windows, or a dropped NaN</button>
+    </div>
+    <div class="fb" role="status"></div>
+  </div>
+</section>
+
+<!-- ══════════════ NEXT ══════════════ -->
+<section id="next">
+  <div class="kicker">Part 6</div>
+  <h2><span class="secnum">6</span>Do the work</h2>
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel"><h4>In the lab (~75 min)</h4><ul class="plain">
+      <li>Record a two-sided tape offline, then measure its cost floor and its autocorrelation
+      <em class="hi">before</em> backtesting anything — and write down the result you expect.</li>
+      <li>Run the crossover frictionless, then with the 15 bps taker fee, then with a one-bar lag; diagnose
+      the in-flight-order bug from its symptom (18,670 signals) rather than from a traceback.</li>
+      <li>Invert the signal. Same shares, same loss &#8594; the signal contributed nothing.</li>
+      <li>Sharpe, Sortino, PSR and DSR on all four curves at <code>--trials 24</code>, then the 24-point
+      sweep and the P&amp;L-versus-fills regression.</li>
+      <li>Brinson-Fachler over two sectors, and assert the residual is zero.</li>
+    </ul></div>
+    <div class="panel"><h4>Homework 6 · costed walk-forward + attribution</h4><ul class="plain">
+      <li>Your own signal, a genuine rolling walk-forward — train window, trade window, roll, never
+      re-fitting on data you have traded.</li>
+      <li>P&amp;L with and without costs and with your assumed lag, each term named and sourced.</li>
+      <li>An attribution table plus a Sharpe / Sortino / DSR row whose <code>--trials</code> is the honest
+      count of every configuration you ran, including the abandoned ones.</li>
+      <li>The rubric reads your reconciliation first: if the change in net worth does not equal the sum of
+      your components, nothing after that is graded.</li>
+      <li>One-line <code>AI-USE</code> note on the deliverable.</li>
+    </ul></div>
+  </div>
+  <div class="nextgrid" style="margin-top:18px">
+    <a class="nextcard" href="https://github.com/sdonadio/algoarena-team-template"><div class="nl">Code</div>
+      <div class="nt">Get the code</div><div class="nd">The starter repo is public. Use it as a template, clone, <code>make install</code> — then point <code>scripts/backtest.py</code> at a tape you recorded yourself.</div></a>
+    <a class="nextcard" href="week6.html"><div class="nl">Previous</div>
+      <div class="nt">&#8592; Week 6 · Derivatives Analytics</div><div class="nd">Where a price came from a model instead of a print — and where implied vol taught you that a quote is a convention.</div></a>
+    <a class="nextcard" href="https://sdonadio.github.io/systematic-trading-arena/week4.html"><div class="nl">See also</div>
+      <div class="nt">Systematic Trading Arena · Backtesting</div><div class="nd">The same harness from the trader's side: event-driven replay, fill models, and what a live session does to a backtested number.</div></a>
+    <a class="nextcard" href="index.html"><div class="nl">Course home</div>
+      <div class="nt">The 10-week map</div><div class="nd">Where week 7 sits, and the tearsheet sections it fills in.</div></a>
+    <a class="nextcard" href="week8.html"><div class="nl">Next</div>
+      <div class="nt">Week 8 · Machine Learning for Finance &#8594;</div><div class="nd">The same leak, industrialised: a shuffled <code>KFold</code> puts a million training rows on the same day as their own test fold, and the AUC that funds a desk collapses onto the coin toss.</div></a>
+  </div>
+</section>
+
+<footer>Financial Analytics Arena · an interactive companion for a 10-week course on financial analytics · <a href="https://github.com/sdonadio/financial-analytics-arena">Source</a></footer>
+
+<script>
+
+
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   Week 7 — Backtesting & Performance Attribution
+   ════════════════════════════════════════════════════════════════ */
+var $ = function (id) { return document.getElementById(id); };
+/* SVG namespace taken from the document so no absolute URL appears in this file */
+var SVGNS = $("vdSvg").namespaceURI;
+function mk(tag, attrs) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+  return e;
+}
+function txt(x, y, s, size, fill, anchor, weight) {
+  var t = mk("text", { x: x, y: y, "font-size": size || 10, "font-family": "monospace", fill: fill || "#9aa0a6" });
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  if (weight) t.setAttribute("font-weight", weight);
+  t.textContent = s;
+  return t;
+}
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function lcg(seed) { var s = seed >>> 0; return function () { s = (1664525 * s + 1013904223) >>> 0; return s / 4294967296; }; }
+function gauss(rnd) { var u = rnd(); if (u < 1e-12) u = 1e-12; return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function pct(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(d === undefined ? 1 : d) + "%"; }
+function mean(a) { var s = 0, i; for (i = 0; i < a.length; i++) s += a[i]; return a.length ? s / a.length : 0; }
+function sd(a) { if (a.length < 2) return 0; var m = mean(a), s = 0, i; for (i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return Math.sqrt(s / (a.length - 1)); }
+function moments(a) {
+  var m = mean(a), n = a.length, s2 = 0, s3 = 0, s4 = 0, i, d;
+  for (i = 0; i < n; i++) { d = a[i] - m; s2 += d * d; s3 += d * d * d; s4 += d * d * d * d; }
+  var v = s2 / n, s = Math.sqrt(v);
+  return { mean: m, sd: Math.sqrt(s2 / (n - 1)), skew: s3 / n / (s * s * s), kurt: s4 / n / (v * v) - 3 };
+}
+function money(x) {
+  var a = Math.abs(x);
+  if (a >= 1e6) return "$" + (x / 1e6).toFixed(2) + "m";
+  if (a >= 1e3) return "$" + Math.round(x / 1e3) + "k";
+  return "$" + Math.round(x);
+}
+/* standard normal cdf — Hart's double-precision rational approximation */
+function cnd(x) {
+  var a = Math.abs(x), cum;
+  if (a > 37) cum = 0;
+  else {
+    var e = Math.exp(-a * a / 2);
+    if (a < 7.07106781186547) {
+      var b = 0.0352624965998911 * a + 0.700383064443688;
+      b = b * a + 6.37396220353165; b = b * a + 33.912866078383;
+      b = b * a + 112.079291497871; b = b * a + 221.213596169931;
+      b = b * a + 220.206867912376;
+      var c = 0.0883883476483184 * a + 1.75566716318264;
+      c = c * a + 16.064177579207; c = c * a + 86.7807322029461;
+      c = c * a + 296.564248779674; c = c * a + 637.333633378831;
+      c = c * a + 793.826512519948; c = c * a + 440.413735824752;
+      cum = e * b / c;
+    } else {
+      var f = a + 1 / (a + 2 / (a + 3 / (a + 4 / (a + 0.65))));
+      cum = e / (f * 2.506628274631);
+    }
+  }
+  return x > 0 ? 1 - cum : cum;
+}
+function npdf(x) { return Math.exp(-x * x / 2) / 2.5066282746310002; }
+/* inverse standard normal cdf — Acklam */
+function invnorm(p) {
+  var A = [-3.969683028665376e+1, 2.209460984245205e+2, -2.759285104469687e+2,
+    1.383577518672690e+2, -3.066479806614716e+1, 2.506628277459239e+0];
+  var B = [-5.447609879822406e+1, 1.615858368580409e+2, -1.556989798598866e+2,
+    6.680131188771972e+1, -1.328068155288572e+1];
+  var C = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838e+0,
+    -2.549732539343734e+0, 4.374664141464968e+0, 2.938163982698783e+0];
+  var D = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996e+0, 3.754408661907416e+0];
+  var pl = 0.02425, q, r, x;
+  if (p <= 0) return -38; if (p >= 1) return 38;
+  if (p < pl) {
+    q = Math.sqrt(-2 * Math.log(p));
+    x = (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  } else if (p <= 1 - pl) {
+    q = p - 0.5; r = q * q;
+    x = (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q /
+        (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    x = -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5]) /
+        ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1);
+  }
+  return x;
+}
+function quantile(sorted, p) {
+  var n = sorted.length; if (!n) return 0;
+  var h = (n - 1) * p, lo = Math.floor(h), hi = Math.min(lo + 1, n - 1);
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
+}
+
+/* ── generic axis + line helpers shared by every chart on the page ── */
+function axes(svg, W, H, pad, y0, y1, yfmt, ticks) {
+  var n = ticks || 4, i;
+  for (i = 0; i <= n; i++) {
+    var v = y0 + (y1 - y0) * i / n;
+    var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy,
+      stroke: i === 0 ? "#333a47" : "#242932", "stroke-width": 1 }));
+    svg.appendChild(txt(pad.l - 6, yy + 3.5, yfmt(v), 9, "#5f6673", "end"));
+  }
+}
+function polyline(svg, ys, W, H, pad, x0, x1, y0, y1, color, width, dash, xs) {
+  var d = "", i, n = ys.length;
+  for (i = 0; i < n; i++) {
+    var xv = xs ? xs[i] : i;
+    var px = pad.l + (xv - x0) / (x1 - x0) * (W - pad.l - pad.r);
+    var py = H - pad.b - (ys[i] - y0) / (y1 - y0) * (H - pad.t - pad.b);
+    d += (i ? " L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
+  }
+  var p = mk("path", { d: d, fill: "none", stroke: color, "stroke-width": width || 1.7,
+    "stroke-linejoin": "round" });
+  if (dash) p.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(p);
+}
+function hline(svg, v, W, H, pad, y0, y1, color, dash, label, left) {
+  var yy = H - pad.b - (v - y0) / (y1 - y0) * (H - pad.t - pad.b);
+  var l = mk("line", { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: color, "stroke-width": 1.5 });
+  if (dash) l.setAttribute("stroke-dasharray", dash);
+  svg.appendChild(l);
+  if (label) svg.appendChild(left
+    ? txt(pad.l + 4, yy - 4, label, 9.5, color, "start", "700")
+    : txt(W - pad.r - 3, yy - 4, label, 9.5, color, "end", "700"));
+}
+
+
+/* ── shared: an AR(1) bar-return series with a bouncing (negative-AC) mid ── */
+function arSeries(seed, n, phi, vol) {
+  var rnd = lcg(seed), r = [], prev = 0, i, e;
+  for (i = 0; i < n; i++) {
+    e = gauss(rnd) * vol * Math.sqrt(1 - phi * phi);
+    prev = phi * prev + e;
+    r.push(prev);
+  }
+  return r;
+}
+function ac1(a) {
+  var m = mean(a), n = a.length, num = 0, den = 0, i;
+  for (i = 0; i < n; i++) den += (a[i] - m) * (a[i] - m);
+  for (i = 1; i < n; i++) num += (a[i] - m) * (a[i - 1] - m);
+  return den ? num / den : 0;
+}
+function sharpeScaled(a) {
+  var s = sd(a);
+  return s > 0 ? mean(a) / s * Math.sqrt(a.length) : 0;
+}
+function sgn(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
+
+/* ══════════════ WIDGET 1 · vectorised vs event-driven stepper ══════════════ */
+(function () {
+  var N = 25, LOOK = 3;
+  var R = arSeries(70701, N, -0.30, 0.0042);
+  var st = { evt: false, lag: false, i: 0, paid: [] };
+
+  function weightAt(t) {                       /* signal from r[t-LOOK+1 .. t] */
+    if (t < LOOK - 1) return 0;
+    var w = 0, k;
+    for (k = t - LOOK + 1; k <= t; k++) w += R[k];
+    return sgn(w / LOOK);
+  }
+  function contribAt(t) {                      /* what bar t pays you */
+    var lag = st.evt ? true : st.lag;
+    var wt = lag ? weightAt(t - 1) : weightAt(t);
+    return { w: wt, r: R[t], c: wt * R[t], lag: lag,
+             from: lag ? (t - 1 - LOOK + 1) : (t - LOOK + 1),
+             to: lag ? t - 1 : t };
+  }
+
+  function code() {
+    var lag = st.evt ? true : st.lag;
+    if (st.evt) {
+      return '<span class="c"># event-driven: the queue enforces causality</span>\n' +
+        'for msg <span class="k">in</span> tape:\n' +
+        '    book.apply(msg)\n' +
+        '    <span class="c"># fills happen on a LATER message</span>\n' +
+        '    <span class="b">for o in queue.due(msg.ts): fill(o, book)</span>\n' +
+        '    o = strategy.on_snapshot(book)\n' +
+        '    <span class="k">if</span> o: queue.push(o, msg.ts)\n' +
+        '\n<span class="c"># there is no line to get wrong: the order cannot</span>\n' +
+        '<span class="c"># fill against the snapshot that created it.</span>';
+    }
+    return '<span class="c"># vectorised: three lines, one of them decides</span>\n' +
+      '<span class="c"># whether this is a backtest or a time machine</span>\n' +
+      'ret = bars.pct_change().fillna(<span class="n">0.0</span>)\n' +
+      'sig = np.sign(ret.rolling(<span class="n">' + LOOK + '</span>).mean())\n' +
+      (lag
+        ? 'w   = sig<span class="b">.shift(1)</span>.fillna(<span class="n">0.0</span>)   <span class="c"># honest</span>\n'
+        : 'w   = sig.fillna(<span class="n">0.0</span>)             <span class="b"><span class="c"># LEAKS</span></span>\n') +
+      'pnl = (w * ret).sum(axis=<span class="n">1</span>)\n' +
+      '\n<span class="c"># same-bar: w[t] was built FROM ret[t] and is then</span>\n' +
+      '<span class="c"># paid ret[t]. The code looks correct either way.</span>';
+  }
+
+  function draw() {
+    var svg = $("vdSvg"), W = 700, H = 300, pad = { l: 44, r: 14, t: 26, b: 58 };
+    clear(svg);
+    var xw = (W - pad.l - pad.r) / N, mid = pad.t + 78, amp = 62;
+    var mx = 0, i;
+    for (i = 0; i < N; i++) mx = Math.max(mx, Math.abs(R[i]));
+    svg.appendChild(txt(pad.l, pad.t - 8, "bar return, % — the tape", 10, "#5f6673"));
+    svg.appendChild(mk("line", { x1: pad.l, y1: mid, x2: W - pad.r, y2: mid, stroke: "#333a47" }));
+    var cur = st.i, info = contribAt(cur);
+    /* lookback bracket */
+    if (info.from >= 0) {
+      var bx = pad.l + info.from * xw, bw = (info.to - info.from + 1) * xw;
+      svg.appendChild(mk("rect", { x: bx.toFixed(1), y: (mid - amp - 12).toFixed(1),
+        width: bw.toFixed(1), height: (2 * amp + 24).toFixed(1),
+        fill: "rgba(253,164,175,.14)", stroke: "#fda4af", "stroke-width": 1,
+        "stroke-dasharray": "3 3" }));
+      svg.appendChild(txt(bx + bw / 2, mid - amp - 18, "signal built here", 9.5, "#fda4af", "middle", "700"));
+    }
+    for (i = 0; i < N; i++) {
+      var h = Math.abs(R[i]) / mx * amp, x = pad.l + i * xw + 1.5, w = xw - 3;
+      var done = i < cur, isCur = i === cur;
+      var col = R[i] >= 0 ? "#3fb950" : "#f85149";
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: (R[i] >= 0 ? mid - h : mid).toFixed(1),
+        width: Math.max(2, w).toFixed(1), height: Math.max(1, h).toFixed(1), fill: col,
+        opacity: done || isCur ? 0.95 : 0.28 }));
+      if (i % 4 === 0) svg.appendChild(txt(x + w / 2, H - pad.b + 30, String(i), 9, "#5f6673", "middle"));
+    }
+    /* the bar being paid */
+    var px = pad.l + cur * xw;
+    svg.appendChild(mk("rect", { x: px.toFixed(1), y: (mid - amp - 12).toFixed(1),
+      width: xw.toFixed(1), height: (2 * amp + 24).toFixed(1), fill: "none",
+      stroke: "#3fb950", "stroke-width": 2 }));
+    svg.appendChild(txt(px + xw / 2, mid + amp + 34, "paid", 9.5, "#3fb950", "middle", "700"));
+    if (!info.lag && info.to === cur && info.w !== 0) {
+      svg.appendChild(mk("rect", { x: px.toFixed(1), y: (mid - amp - 12).toFixed(1),
+        width: xw.toFixed(1), height: (2 * amp + 24).toFixed(1), fill: "rgba(248,81,73,.22)" }));
+      svg.appendChild(txt(Math.min(px + xw + 6, W - pad.r - 4), mid - amp - 2,
+        "this bar is on both sides of the equation", 9.5, "#f85149", "start", "700"));
+    }
+    /* equity strip */
+    var eq = [0], s = 0;
+    for (i = 0; i < st.paid.length; i++) { s += st.paid[i]; eq.push(s); }
+    var e0 = Math.min(0, Math.min.apply(null, eq)) * 1.15 - 1e-4;
+    var e1 = Math.max(0, Math.max.apply(null, eq)) * 1.15 + 1e-4;
+    var ep = { l: pad.l, r: pad.r, t: mid + amp + 44, b: pad.b - 24 };
+    svg.appendChild(txt(pad.l, ep.t - 6, "cumulative P&L, %", 10, "#5f6673"));
+    svg.appendChild(mk("line", { x1: pad.l, y1: H - ep.b, x2: W - pad.r, y2: H - ep.b, stroke: "#272c36" }));
+    if (eq.length > 1) {
+      var xs = [], j;
+      for (j = 0; j < eq.length; j++) xs.push(j);
+      polyline(svg, eq, W, H, ep, 0, Math.max(1, N), e0, e1, "#fda4af", 2, null, xs);
+      svg.appendChild(txt(W - pad.r - 2, ep.t + 12, (s * 100).toFixed(2) + "%", 11,
+        s >= 0 ? "#3fb950" : "#f85149", "end", "700"));
+    }
+  }
+
+  function log(msg, cls) {
+    var d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = msg;
+    var L = $("vdLog");
+    L.insertBefore(d, L.firstChild);
+    while (L.childNodes.length > 14) L.removeChild(L.lastChild);
+  }
+  function stats() {
+    var s = 0, hits = 0, i;
+    for (i = 0; i < st.paid.length; i++) { s += st.paid[i]; if (st.paid[i] > 0) hits++; }
+    $("vdCum").textContent = (s >= 0 ? "+" : "−") + Math.abs(s * 100).toFixed(2) + "%";
+    $("vdCum").className = "sv " + (s >= 0 ? "ok" : "bad");
+    var nz = st.paid.filter(function (x) { return x !== 0; });
+    $("vdSh").textContent = nz.length > 2 ? (sharpeScaled(nz) >= 0 ? "+" : "−") +
+      Math.abs(sharpeScaled(nz)).toFixed(2) : "—";
+    $("vdHit").textContent = nz.length ? (hits / nz.length * 100).toFixed(0) + "%" : "—";
+    $("vdFills").textContent = String(nz.length);
+    $("vdBar").textContent = "bar " + st.i + " / " + (N - 1);
+  }
+  function step() {
+    if (st.i >= N - 1) return;
+    st.i++;
+    var info = contribAt(st.i);
+    st.paid.push(info.c);
+    var tag = info.lag ? "w[t−1]" : "w[t]";
+    var leak = (!info.lag && info.w !== 0);
+    log("bar " + st.i + " · " + tag + " = " + (info.w > 0 ? "+1" : info.w < 0 ? "−1" : " 0") +
+        " from r[" + Math.max(0, info.from) + ".." + Math.max(0, info.to) + "]" +
+        " · paid r[" + st.i + "] = " + pct(info.r, 2) +
+        " → " + pct(info.c, 2) + (leak ? "  ← leak" : ""),
+        leak ? "bad" : (info.c >= 0 ? "ok" : ""));
+    draw(); stats();
+  }
+  function reset(quiet) {
+    st.i = 0; st.paid = [];
+    if (!quiet) { var L = $("vdLog"); while (L.firstChild) L.removeChild(L.firstChild); }
+    $("vdCode").innerHTML = code();
+    draw(); stats();
+  }
+  function setMode(evt) {
+    st.evt = evt;
+    $("vdVec").setAttribute("aria-pressed", evt ? "false" : "true");
+    $("vdEvt").setAttribute("aria-pressed", evt ? "true" : "false");
+    $("vdSame").disabled = evt; $("vdLag").disabled = evt;
+    if (evt) log("event-driven: alignment is structural — the queue fills on the NEXT message", "hl");
+    else log("vectorised: alignment is one line of code", "hl");
+    reset(true);
+  }
+  function setAlign(lag) {
+    st.lag = lag;
+    $("vdSame").setAttribute("aria-pressed", lag ? "false" : "true");
+    $("vdLag").setAttribute("aria-pressed", lag ? "true" : "false");
+    log(lag ? "weights shifted by one row — honest" : "weights NOT shifted — same-bar execution", "hl");
+    reset(true);
+  }
+  $("vdVec").addEventListener("click", function () { setMode(false); });
+  $("vdEvt").addEventListener("click", function () { setMode(true); });
+  $("vdSame").addEventListener("click", function () { setAlign(false); });
+  $("vdLag").addEventListener("click", function () { setAlign(true); });
+  $("vdStep").addEventListener("click", step);
+  $("vdRun").addEventListener("click", function () { while (st.i < N - 1) step(); });
+  $("vdReset").addEventListener("click", function () { reset(false); });
+  reset(false);
+})();
+
+/* ══════════════ WIDGET 2 · the one-bar-lag flip ══════════════ */
+(function () {
+  var st = { phi: -0.22, L: 3, n: 373, mom: true };
+  function run() {
+    var R = arSeries(31459, st.n, st.phi, 0.0055);
+    var i, k, s, w = [], a = [], b = [], sign = st.mom ? 1 : -1;
+    for (i = 0; i < st.n; i++) {
+      if (i < st.L - 1) { w.push(0); continue; }
+      s = 0;
+      for (k = i - st.L + 1; k <= i; k++) s += R[k];
+      w.push(sign * sgn(s));
+    }
+    for (i = 0; i < st.n; i++) {
+      a.push(w[i] * R[i]);
+      b.push((i > 0 ? w[i - 1] : 0) * R[i]);
+    }
+    return { R: R, a: a, b: b };
+  }
+  function draw() {
+    var o = run(), sa = sharpeScaled(o.a), sb = sharpeScaled(o.b);
+    var svg = $("lfSvg"), W = 700, H = 300, pad = { l: 52, r: 16, t: 22, b: 34 };
+    clear(svg);
+    var ea = [0], eb = [0], i, s1 = 0, s2 = 0;
+    for (i = 0; i < o.a.length; i++) { s1 += o.a[i]; s2 += o.b[i]; ea.push(s1); eb.push(s2); }
+    var lo = Math.min(0, Math.min.apply(null, ea), Math.min.apply(null, eb));
+    var hi = Math.max(0, Math.max.apply(null, ea), Math.max.apply(null, eb));
+    var pd = (hi - lo) * 0.12 + 1e-4;
+    axes(svg, W, H, pad, lo - pd, hi + pd, function (v) { return (v * 100).toFixed(0) + "%"; }, 4);
+    var xs = [], j;
+    for (j = 0; j < ea.length; j++) xs.push(j);
+    polyline(svg, ea, W, H, pad, 0, ea.length - 1, lo - pd, hi + pd, "#f85149", 1.9, null, xs);
+    polyline(svg, eb, W, H, pad, 0, eb.length - 1, lo - pd, hi + pd, "#3fb950", 1.9, null, xs);
+    hline(svg, 0, W, H, pad, lo - pd, hi + pd, "#333a47", "3 3", null, false);
+    svg.appendChild(txt(pad.l + 4, pad.t + 12, "same bar (leaks) — Sharpe " +
+      (sa >= 0 ? "+" : "−") + Math.abs(sa).toFixed(2), 10.5, "#f85149", "start", "700"));
+    svg.appendChild(txt(pad.l + 4, pad.t + 26, ".shift(1) — Sharpe " +
+      (sb >= 0 ? "+" : "−") + Math.abs(sb).toFixed(2), 10.5, "#3fb950", "start", "700"));
+    svg.appendChild(txt(W - pad.r - 2, H - pad.b + 22, st.n + " bars", 9.5, "#5f6673", "end"));
+    $("lfShA").textContent = (sa >= 0 ? "+" : "−") + Math.abs(sa).toFixed(2);
+    $("lfShA").className = "sv " + (sa >= 0 ? "ok" : "bad");
+    $("lfShB").textContent = (sb >= 0 ? "+" : "−") + Math.abs(sb).toFixed(2);
+    $("lfShB").className = "sv " + (sb >= 0 ? "ok" : "bad");
+    var flipped = sgn(sa) !== 0 && sgn(sb) !== 0 && sgn(sa) !== sgn(sb);
+    $("lfFlip").textContent = flipped ? "SIGN FLIP" : "same sign";
+    $("lfFlip").className = "sv " + (flipped ? "bad" : "warn");
+    var am = ac1(o.R);
+    $("lfAcM").textContent = (am >= 0 ? "+" : "−") + Math.abs(am).toFixed(3);
+    var v = $("lfVerdict");
+    if (flipped) {
+      v.className = "verdict miss";
+      v.textContent = "Δ Sharpe " + Math.abs(sa - sb).toFixed(2) +
+        " · the leak is worth the entire result";
+    } else {
+      v.className = "verdict met";
+      v.textContent = Math.abs(am) < 0.04
+        ? "AC(1) ≈ 0: nothing to leak, so the alignment barely matters"
+        : "no sign flip — but the magnitudes still differ by " + Math.abs(sa - sb).toFixed(2);
+    }
+  }
+  $("lfAc").addEventListener("input", function () {
+    st.phi = +this.value / 100;
+    $("lfAcV").textContent = (st.phi >= 0 ? "+" : "−") + Math.abs(st.phi).toFixed(2);
+    draw();
+  });
+  $("lfL").addEventListener("input", function () {
+    st.L = +this.value; $("lfLV").textContent = st.L + " bars"; draw();
+  });
+  $("lfN").addEventListener("input", function () {
+    st.n = +this.value; $("lfNV").textContent = st.n + " bars"; draw();
+  });
+  $("lfMom").addEventListener("click", function () {
+    st.mom = true; this.setAttribute("aria-pressed", "true");
+    $("lfRev").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("lfRev").addEventListener("click", function () {
+    st.mom = false; this.setAttribute("aria-pressed", "true");
+    $("lfMom").setAttribute("aria-pressed", "false"); draw();
+  });
+  draw();
+})();
+
+/* ══════════════ WIDGET 3 · the cost ladder ══════════════ */
+(function () {
+  var LADDER = [
+    ["A same bar (leaks)", "−50.0%", "−3.10", "−51.1%", "31.1%"],
+    ["B one-bar lag", "+119.2%", "+3.48", "−4.1%", "53.6%"],
+    ["C + half-spread", "+94.2%", "+2.96", "−6.0%", "41.0%"],
+    ["D + 15 bp fee", "+64.2%", "+2.24", "−11.9%", "36.5%"]
+  ];
+  (function fill() {
+    var tb = $("clTable").getElementsByTagName("tbody")[0], i, j, tr, td;
+    for (i = 0; i < LADDER.length; i++) {
+      tr = document.createElement("tr");
+      for (j = 0; j < LADDER[i].length; j++) {
+        td = document.createElement("td");
+        td.textContent = LADDER[i][j];
+        if (j === 0) td.className = "n";
+        else if (j === 1 || j === 2) td.className = LADDER[i][j].charAt(0) === "−" ? "bad" : "ok";
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+  })();
+
+  var st = { hs: 12.2, fee: 15.0, imp: 0.0, turn: 0.300, gross: 21.7 };
+  function draw() {
+    var cs = st.turn * st.hs, cf = st.turn * st.fee, ci = st.turn * st.imp;
+    var net = st.gross - cs - cf - ci;
+    var rt = 2 * st.hs + 2 * st.fee + 2 * st.imp;
+    var tot = cs + cf + ci;
+    var be = (st.hs + st.fee + st.imp) > 0 ? st.gross / (st.hs + st.fee + st.imp) : Infinity;
+    $("clRt").textContent = rt.toFixed(0) + " bps";
+    $("clNet").textContent = (net >= 0 ? "+" : "−") + Math.abs(net).toFixed(2) + " bps";
+    $("clNet").className = "sv " + (net >= 0 ? "ok" : "bad");
+    $("clShare").textContent = st.gross > 0 ? (tot / st.gross * 100).toFixed(0) + "%" : "—";
+    $("clBe").textContent = isFinite(be) ? be.toFixed(3) : "∞";
+    var v = $("clVerdict");
+    if (net > 0) {
+      v.className = "verdict met";
+      v.textContent = "NET POSITIVE · " + (net / st.gross * 100).toFixed(0) +
+        "% of the gross edge survives";
+    } else {
+      v.className = "verdict miss";
+      v.textContent = "NET NEGATIVE · the whole P&L is the toll you paid to cross";
+    }
+    /* waterfall */
+    var svg = $("clSvg"), W = 700, H = 300, pad = { l: 52, r: 18, t: 26, b: 46 };
+    clear(svg);
+    var steps = [
+      { l: "gross", v: st.gross, d: 0, c: "#3fb950" },
+      { l: "− spread", v: -cs, d: 1, c: "#f85149" },
+      { l: "− fee", v: -cf, d: 1, c: "#d29922" },
+      { l: "− impact", v: -ci, d: 1, c: "#a78bfa" },
+      { l: "= net", v: net, d: 0, c: net >= 0 ? "#fda4af" : "#f85149" }
+    ];
+    var lo = Math.min(0, net) * 1.2 - 1, hi = Math.max(st.gross, net, 1) * 1.15;
+    axes(svg, W, H, pad, lo, hi, function (x) { return x.toFixed(0); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "bps per bar", 10, "#5f6673"));
+    var bw = (W - pad.l - pad.r) / steps.length, run = 0, i;
+    for (i = 0; i < steps.length; i++) {
+      var s = steps[i], y0, y1;
+      if (s.d === 0) { y0 = 0; y1 = s.v; run = s.v; }
+      else { y0 = run; y1 = run + s.v; run = y1; }
+      var py = function (val) { return H - pad.b - (val - lo) / (hi - lo) * (H - pad.t - pad.b); };
+      var top = Math.min(py(y0), py(y1)), hgt = Math.max(1.5, Math.abs(py(y0) - py(y1)));
+      var x = pad.l + i * bw + bw * 0.18;
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: top.toFixed(1),
+        width: (bw * 0.64).toFixed(1), height: hgt.toFixed(1), fill: s.c,
+        opacity: s.d === 0 ? 0.9 : 0.72, rx: 2 }));
+      svg.appendChild(txt(x + bw * 0.32, H - pad.b + 16, s.l, 10, "#9aa0a6", "middle", "700"));
+      svg.appendChild(txt(x + bw * 0.32, H - pad.b + 30,
+        (s.d === 0 ? "" : (s.v <= 0 ? "" : "+")) + s.v.toFixed(2), 9.5,
+        s.d === 0 ? "#e8e6e3" : "#5f6673", "middle"));
+      if (i < steps.length - 1) {
+        svg.appendChild(mk("line", { x1: (x + bw * 0.64).toFixed(1), y1: py(run).toFixed(1),
+          x2: (x + bw).toFixed(1), y2: py(run).toFixed(1), stroke: "#333a47",
+          "stroke-dasharray": "2 2" }));
+      }
+    }
+    hline(svg, 0, W, H, pad, lo, hi, "#333a47", null, null, false);
+  }
+  function bind(id, vid, f, fmt) {
+    $(id).addEventListener("input", function () {
+      f(+this.value); $(vid).innerHTML = fmt(); draw();
+    });
+  }
+  bind("clSpread", "clSpreadV", function (v) { st.hs = v / 10; },
+    function () { return st.hs.toFixed(1) + " bps"; });
+  bind("clFee", "clFeeV", function (v) { st.fee = v / 10; },
+    function () { return st.fee.toFixed(1) + " bps"; });
+  bind("clImp", "clImpV", function (v) { st.imp = v / 10; },
+    function () { return st.imp.toFixed(1) + " bps"; });
+  bind("clTurn", "clTurnV", function (v) { st.turn = v / 1000; },
+    function () { return st.turn.toFixed(3); });
+  bind("clGross", "clGrossV", function (v) { st.gross = v / 10; },
+    function () { return "+" + st.gross.toFixed(1) + " bps/bar"; });
+  draw();
+})();
+
+/* ══════════════ WIDGET 4 · in-sample vs walk-forward ══════════════ */
+(function () {
+  var st = { folds: 4, grid: 6, edge: 0, seed: 7 };
+  function run() {
+    var rnd = lcg(st.seed * 7919 + 13), out = [], f, g, best, oos;
+    for (f = 0; f < st.folds; f++) {
+      best = -99;
+      for (g = 0; g < st.grid; g++) best = Math.max(best, st.edge + gauss(rnd) * 1.55);
+      oos = st.edge + gauss(rnd) * 1.85;
+      out.push({ is: best, oos: oos });
+    }
+    return out;
+  }
+  function draw() {
+    var F = run(), svg = $("wfSvg"), W = 700, H = 300, pad = { l: 50, r: 16, t: 26, b: 48 };
+    clear(svg);
+    var lo = -4.2, hi = 5.2, i;
+    axes(svg, W, H, pad, lo, hi, function (v) { return (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(1); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "Sharpe (×√n), per fold", 10, "#5f6673"));
+    var bw = (W - pad.l - pad.r) / F.length;
+    var py = function (v) { return H - pad.b - (v - lo) / (hi - lo) * (H - pad.t - pad.b); };
+    var mis = 0, moos = 0, pos = 0;
+    for (i = 0; i < F.length; i++) {
+      var x = pad.l + i * bw;
+      var pair = [[F[i].is, "#fda4af", 0.10], [F[i].oos, "#58a6ff", 0.52]];
+      for (var k = 0; k < 2; k++) {
+        var v = pair[k][0], bx = x + bw * pair[k][2], w = bw * 0.36;
+        var y0 = py(0), y1 = py(v);
+        svg.appendChild(mk("rect", { x: bx.toFixed(1), y: Math.min(y0, y1).toFixed(1),
+          width: w.toFixed(1), height: Math.max(1.5, Math.abs(y1 - y0)).toFixed(1),
+          fill: pair[k][1], opacity: 0.82, rx: 2 }));
+        svg.appendChild(txt(bx + w / 2, (v >= 0 ? Math.min(y0, y1) - 4 : Math.max(y0, y1) + 11),
+          (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2), 9, pair[k][1], "middle", "700"));
+      }
+      svg.appendChild(txt(x + bw / 2, H - pad.b + 18, "fold " + (i + 1), 10, "#9aa0a6", "middle"));
+      mis += F[i].is; moos += F[i].oos; if (F[i].oos > 0) pos++;
+    }
+    mis /= F.length; moos /= F.length;
+    hline(svg, 0, W, H, pad, lo, hi, "#333a47", null, null, false);
+    hline(svg, moos, W, H, pad, lo, hi, "#58a6ff", "5 3", "mean OOS " +
+      (moos >= 0 ? "+" : "−") + Math.abs(moos).toFixed(2), false);
+    hline(svg, mis, W, H, pad, lo, hi, "#fda4af", "5 3", "mean IS " +
+      (mis >= 0 ? "+" : "−") + Math.abs(mis).toFixed(2), true);
+    $("wfIS").textContent = (mis >= 0 ? "+" : "−") + Math.abs(mis).toFixed(2);
+    $("wfOOS").textContent = (moos >= 0 ? "+" : "−") + Math.abs(moos).toFixed(2);
+    $("wfOOS").className = "sv " + (moos >= 0 ? "ok" : "bad");
+    $("wfCut").textContent = (mis - moos).toFixed(2) + " Sharpe";
+    $("wfPos").textContent = pos + " / " + F.length;
+    var v2 = $("wfVerdict");
+    if (moos <= 0) {
+      v2.className = "verdict miss";
+      v2.textContent = "OUT OF SAMPLE, THIS IS NOTHING · the in-sample number was the max of " +
+        st.grid + " draws";
+    } else {
+      v2.className = "verdict met";
+      v2.textContent = "survives, at " + (mis !== 0 ? (moos / mis * 100).toFixed(0) : "0") +
+        "% of the in-sample Sharpe";
+    }
+  }
+  function bind(id, vid, f, fmt) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).textContent = fmt(); draw(); });
+  }
+  bind("wfFolds", "wfFoldsV", function (v) { st.folds = v; }, function () { return String(st.folds); });
+  bind("wfGrid", "wfGridV", function (v) { st.grid = v; }, function () { return String(st.grid); });
+  bind("wfEdge", "wfEdgeV", function (v) { st.edge = v / 100; }, function () { return st.edge.toFixed(2); });
+  bind("wfSeed", "wfSeedV", function (v) { st.seed = v; }, function () { return String(st.seed); });
+  draw();
+})();
+
+/* ══════════════ WIDGET 5 · the deflated Sharpe ratio ══════════════ */
+(function () {
+  var EM = 0.5772156649;
+  var st = { M: 6, sr: 2.87, n: 373, sdT: 0.86, skew: 8.85, kurt: 112.2 };
+  function sr0scaled(M, sdT) {                 /* the Sharpe luck alone produces */
+    if (M <= 1) return 0;
+    var z1 = invnorm(1 - 1 / M), z2 = invnorm(1 - 1 / (M * Math.E));
+    return sdT * ((1 - EM) * z1 + EM * z2);
+  }
+  function calc() {
+    var srb = st.sr / Math.sqrt(st.n);
+    var s0s = sr0scaled(st.M, st.sdT), s0b = s0s / Math.sqrt(st.n);
+    var g4 = st.kurt + 3;
+    var den2 = 1 - st.skew * srb + (g4 - 1) / 4 * srb * srb;
+    if (den2 <= 0) return { s0: s0s, psr: null, dsr: null };
+    var den = Math.sqrt(den2), root = Math.sqrt(Math.max(1, st.n - 1));
+    return { s0: s0s,
+             psr: cnd(srb * root / den),
+             dsr: cnd((srb - s0b) * root / den) };
+  }
+  function draw() {
+    var c = calc();
+    $("dsSr0").textContent = (c.s0 >= 0 ? "+" : "−") + Math.abs(c.s0).toFixed(2);
+    $("dsPsr").textContent = c.psr === null ? "undef" : c.psr.toFixed(4);
+    $("dsDsr").textContent = c.dsr === null ? "undef" : c.dsr.toFixed(4);
+    $("dsDsr").className = "sv " + (c.dsr === null ? "warn" : (c.dsr > 0.95 ? "ok" : (c.dsr > 0.5 ? "warn" : "bad")));
+    var v = $("dsVerd");
+    if (c.dsr === null) { v.textContent = "broken"; v.className = "sv warn"; }
+    else if (st.sr <= c.s0) { v.textContent = "luck"; v.className = "sv bad"; }
+    else if (c.dsr > 0.95) { v.textContent = "keep it"; v.className = "sv ok"; }
+    else { v.textContent = "not proven"; v.className = "sv warn"; }
+    /* SR0 vs M */
+    var svg = $("dsSvg"), W = 700, H = 300, pad = { l: 50, r: 18, t: 26, b: 44 };
+    clear(svg);
+    var Ms = [], ys = [], m, hi = 0;
+    for (m = 1; m <= 500; m += 1) { Ms.push(m); var y = sr0scaled(m, st.sdT); ys.push(y); hi = Math.max(hi, y); }
+    hi = Math.max(hi, st.sr) * 1.15 + 0.05;
+    axes(svg, W, H, pad, 0, hi, function (x) { return "+" + x.toFixed(1); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "SR₀ — the Sharpe the best of M no-edge trials produces", 10, "#5f6673"));
+    polyline(svg, ys, W, H, pad, 1, 500, 0, hi, "#d29922", 2, null, Ms);
+    hline(svg, st.sr, W, H, pad, 0, hi, "#fda4af", "4 3", "your best Sharpe +" + st.sr.toFixed(2), true);
+    var mx = pad.l + (st.M - 1) / 499 * (W - pad.l - pad.r);
+    var my = H - pad.b - sr0scaled(st.M, st.sdT) / hi * (H - pad.t - pad.b);
+    svg.appendChild(mk("line", { x1: mx.toFixed(1), y1: pad.t, x2: mx.toFixed(1), y2: H - pad.b,
+      stroke: "#e11d48", "stroke-width": 1, "stroke-dasharray": "3 3" }));
+    svg.appendChild(mk("circle", { cx: mx.toFixed(1), cy: my.toFixed(1), r: 4, fill: "#e11d48" }));
+    svg.appendChild(txt(Math.min(mx + 8, W - pad.r - 90), my - 8, "M = " + st.M, 10, "#e11d48", "start", "700"));
+    var i;
+    for (i = 0; i <= 5; i++) {
+      var mm = 1 + i * 99.8;
+      svg.appendChild(txt(pad.l + i / 5 * (W - pad.l - pad.r), H - pad.b + 17,
+        "M=" + Math.round(mm), 9, "#5f6673", "middle"));
+    }
+    var note = c.dsr === null
+      ? "moment correction ≤ 0 — the statistic is undefined at this skew"
+      : (st.sr > c.s0 ? "clears SR₀ by " + (st.sr - c.s0).toFixed(2) + " Sharpe"
+                      : "below SR₀ — luck over " + st.M + " trials beats this");
+    svg.appendChild(txt(pad.l + 4, H - pad.b - 8, note, 10,
+      c.dsr === null ? "#d29922" : (st.sr > c.s0 ? "#3fb950" : "#f85149"), "start", "700"));
+  }
+  function setAll(o) {
+    st.M = o.M; st.sr = o.sr; st.n = o.n; st.sdT = o.sdT; st.skew = o.skew; st.kurt = o.kurt;
+    $("dsM").value = st.M; $("dsMV").textContent = String(st.M);
+    $("dsSr").value = Math.round(st.sr * 100); $("dsSrV").textContent = "+" + st.sr.toFixed(2);
+    $("dsN").value = st.n; $("dsNV").textContent = String(st.n);
+    $("dsSd").value = Math.round(st.sdT * 100); $("dsSdV").textContent = st.sdT.toFixed(2);
+    $("dsSk").value = Math.round(st.skew * 100);
+    $("dsSkV").innerHTML = (st.skew >= 0 ? "+" : "&#8722;") + Math.abs(st.skew).toFixed(2);
+    $("dsKu").value = Math.round(st.kurt * 10); $("dsKuV").textContent = st.kurt.toFixed(1);
+    draw();
+  }
+  $("dsM").addEventListener("input", function () { st.M = +this.value; $("dsMV").textContent = String(st.M); draw(); });
+  $("dsSr").addEventListener("input", function () { st.sr = +this.value / 100; $("dsSrV").textContent = "+" + st.sr.toFixed(2); draw(); });
+  $("dsN").addEventListener("input", function () { st.n = +this.value; $("dsNV").textContent = String(st.n); draw(); });
+  $("dsSd").addEventListener("input", function () { st.sdT = +this.value / 100; $("dsSdV").textContent = st.sdT.toFixed(2); draw(); });
+  $("dsSk").addEventListener("input", function () {
+    st.skew = +this.value / 100;
+    $("dsSkV").innerHTML = (st.skew >= 0 ? "+" : "&#8722;") + Math.abs(st.skew).toFixed(2); draw();
+  });
+  $("dsKu").addEventListener("input", function () { st.kurt = +this.value / 10; $("dsKuV").textContent = st.kurt.toFixed(1); draw(); });
+  $("dsHonest").addEventListener("click", function () {
+    setAll({ M: 6, sr: 2.87, n: 373, sdT: 0.86, skew: 8.85, kurt: 112.2 });
+  });
+  $("dsReal").addEventListener("click", function () {
+    setAll({ M: 200, sr: 2.87, n: 373, sdT: 0.86, skew: 0.4, kurt: 6 });
+  });
+  $("dsNoise").addEventListener("click", function () {
+    setAll({ M: 60, sr: 0.95, n: 500, sdT: 0.9, skew: 0.05, kurt: 1 });
+  });
+  draw();
+})();
+
+/* ══════════════ WIDGET 6 · Brinson-Fachler attribution ══════════════ */
+(function () {
+  var st = { fach: true, w: 80, rpH: 3, rbH: -164, rpS: 89, rbS: 64 };
+  function calc() {
+    var wpH = st.w / 100, wpS = 1 - wpH, wb = 0.5;
+    var rpH = st.rpH, rbH = st.rbH, rpS = st.rpS, rbS = st.rbS;   /* bps */
+    var rbTot = wb * rbH + wb * rbS;
+    var rpTot = wpH * rpH + wpS * rpS;
+    var active = rpTot - rbTot;
+    function row(name, wp, rp, rb) {
+      var base = st.fach ? (rb - rbTot) : rb;
+      var alloc = (wp - wb) * base;
+      var sel = wb * (rp - rb);
+      var inter = (wp - wb) * (rp - rb);
+      return { name: name, wp: wp, rp: rp, rb: rb, alloc: alloc, sel: sel, inter: inter,
+               tot: alloc + sel + inter };
+    }
+    var rows = [row("hardware", wpH, rpH, rbH), row("software", wpS, rpS, rbS)];
+    var A = rows[0].alloc + rows[1].alloc, S = rows[0].sel + rows[1].sel,
+        I = rows[0].inter + rows[1].inter;
+    return { rows: rows, A: A, S: S, I: I, sum: A + S + I, active: active, rbTot: rbTot, rpTot: rpTot };
+  }
+  function bp(x, d) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d === undefined ? 2 : d); }
+  function draw() {
+    var c = calc();
+    $("brActive").textContent = bp(c.active) + " bps";
+    $("brSum").textContent = bp(c.sum) + " bps";
+    $("brSum").className = "sv " + (Math.abs(c.sum - c.active) < 1e-9 ? "ok" : "bad");
+    var res = c.sum - c.active;
+    $("brRes").textContent = (Math.abs(res) < 1e-9 ? "0.000000" : res.toExponential(1)) + " bps";
+    $("brRes").className = "sv " + (Math.abs(res) < 1e-9 ? "ok" : "bad");
+    $("brRatio").textContent = Math.abs(c.A) > 1e-9 ? bp(c.I / c.A) + "×" : "—";
+    /* table */
+    var tb = $("brTable").getElementsByTagName("tbody")[0];
+    while (tb.firstChild) tb.removeChild(tb.firstChild);
+    var i, j, tr, td, cells;
+    for (i = 0; i < c.rows.length; i++) {
+      var r = c.rows[i];
+      cells = [r.name.slice(0, 4), (r.wp * 100).toFixed(0) + "%", bp(r.rp, 0) + "/" + bp(r.rb, 0),
+               bp(r.alloc), bp(r.sel), bp(r.inter)];
+      tr = document.createElement("tr");
+      for (j = 0; j < cells.length; j++) {
+        td = document.createElement("td");
+        td.textContent = cells[j];
+        if (j === 0) td.className = "n";
+        else if (j >= 3) td.className = cells[j].charAt(0) === "−" ? "bad" : "ok";
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+    tr = document.createElement("tr");
+    cells = ["TOT", "100%", bp(c.rpTot, 0) + "/" + bp(c.rbTot, 0), bp(c.A), bp(c.S), bp(c.I)];
+    for (j = 0; j < cells.length; j++) {
+      td = document.createElement("td");
+      td.textContent = cells[j];
+      td.className = j === 0 ? "n" : "acc";
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+    /* bars */
+    var svg = $("brSvg"), W = 700, H = 280, pad = { l: 56, r: 18, t: 26, b: 50 };
+    clear(svg);
+    var items = [
+      { l: "allocation", v: c.A, c: "#58a6ff" },
+      { l: "selection", v: c.S, c: "#3fb950" },
+      { l: "interaction", v: c.I, c: "#a78bfa" },
+      { l: "= sum", v: c.sum, c: "#fda4af" },
+      { l: "active", v: c.active, c: "#e11d48" }
+    ];
+    var lo = 0, hi = 0, i2;
+    for (i2 = 0; i2 < items.length; i2++) { lo = Math.min(lo, items[i2].v); hi = Math.max(hi, items[i2].v); }
+    var pd2 = Math.max(2, (hi - lo) * 0.15);
+    lo -= pd2; hi += pd2;
+    axes(svg, W, H, pad, lo, hi, function (v) { return bp(v, 0); }, 4);
+    svg.appendChild(txt(pad.l, pad.t - 10, "bps of active return · " +
+      (st.fach ? "Brinson-Fachler" : "BHB") + " convention", 10, "#5f6673"));
+    var bw = (W - pad.l - pad.r) / items.length;
+    var py = function (v) { return H - pad.b - (v - lo) / (hi - lo) * (H - pad.t - pad.b); };
+    for (i2 = 0; i2 < items.length; i2++) {
+      var it = items[i2], x = pad.l + i2 * bw + bw * 0.2, w = bw * 0.6;
+      var y0 = py(0), y1 = py(it.v);
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: Math.min(y0, y1).toFixed(1),
+        width: w.toFixed(1), height: Math.max(1.5, Math.abs(y1 - y0)).toFixed(1),
+        fill: it.c, opacity: i2 >= 3 ? 0.92 : 0.75, rx: 2 }));
+      svg.appendChild(txt(x + w / 2, H - pad.b + 18, it.l, 10, "#9aa0a6", "middle", "700"));
+      svg.appendChild(txt(x + w / 2, (it.v >= 0 ? Math.min(y0, y1) - 5 : Math.max(y0, y1) + 12),
+        bp(it.v), 9.5, it.c, "middle", "700"));
+      if (i2 === 2) svg.appendChild(mk("line", { x1: (x + w + bw * 0.2).toFixed(1), y1: pad.t,
+        x2: (x + w + bw * 0.2).toFixed(1), y2: H - pad.b, stroke: "#333a47", "stroke-dasharray": "2 3" }));
+    }
+    hline(svg, 0, W, H, pad, lo, hi, "#333a47", null, null, false);
+    svg.appendChild(txt(W - pad.r - 2, H - pad.b + 34, "residual = sum − active = 0.000000 bps",
+      9.5, "#3fb950", "end", "700"));
+  }
+  function bind(id, vid, f, fmt) {
+    $(id).addEventListener("input", function () { f(+this.value); $(vid).innerHTML = fmt(); draw(); });
+  }
+  bind("brW", "brWV", function (v) { st.w = v; }, function () { return st.w + "%"; });
+  bind("brRpH", "brRpHV", function (v) { st.rpH = v; },
+    function () { return (st.rpH >= 0 ? "+" : "&#8722;") + Math.abs(st.rpH) + " bps"; });
+  bind("brRbH", "brRbHV", function (v) { st.rbH = v; },
+    function () { return (st.rbH >= 0 ? "+" : "&#8722;") + Math.abs(st.rbH) + " bps"; });
+  bind("brRpS", "brRpSV", function (v) { st.rpS = v; },
+    function () { return (st.rpS >= 0 ? "+" : "&#8722;") + Math.abs(st.rpS) + " bps"; });
+  bind("brRbS", "brRbSV", function (v) { st.rbS = v; },
+    function () { return (st.rbS >= 0 ? "+" : "&#8722;") + Math.abs(st.rbS) + " bps"; });
+  $("brFach").addEventListener("click", function () {
+    st.fach = true; this.setAttribute("aria-pressed", "true");
+    $("brBhb").setAttribute("aria-pressed", "false"); draw();
+  });
+  $("brBhb").addEventListener("click", function () {
+    st.fach = false; this.setAttribute("aria-pressed", "true");
+    $("brFach").setAttribute("aria-pressed", "false"); draw();
+  });
+  draw();
+})();
+
+/* ── MCQ engine (shared across week pages) ───────────────────── */
+Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (q) {
+  var answer = parseInt(q.getAttribute("data-a"), 10);
+  var opts = Array.prototype.slice.call(q.querySelectorAll(".opt"));
+  var fb = q.querySelector(".fb");
+  opts.forEach(function (o, i) {
+    o.addEventListener("click", function () {
+      if (q.dataset.done === "1") return;
+      q.dataset.done = "1";
+      var right = i === answer;
+      opts.forEach(function (b, j) {
+        b.disabled = true;
+        if (j === answer) b.classList.add("right");
+        else if (j === i) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      fb.innerHTML = (right ? "<b>Correct.</b> " : "<b>Not quite.</b> ") + q.getAttribute("data-exp");
+      fb.className = "fb show " + (right ? "good" : "poor");
+    });
+  });
+});
+</script>
+</body>
+</html>
